@@ -1,6 +1,6 @@
 ifndef CROSS_COMPILE
-#CROSS_COMPILE = mips-linux-gnu-
-CROSS_COMPILE = /home/zyy/mips_tool_chain/buildroot-2015.08.1/output/host/usr/bin/mips-buildroot-linux-gnu-
+CROSS_COMPILE = mips-linux-gnu-
+#CROSS_COMPILE = /home/zyy/mips_tool_chain/buildroot-2015.08.1/output/host/usr/bin/mips-buildroot-linux-gnu-
 endif
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc
@@ -47,3 +47,4 @@ gen:
 
 asm: $(CSRC)
 	$(CC) $(SCFLAGS) $(CSRC) -o ../tools/q.S
+	rm ../tools/q.d
