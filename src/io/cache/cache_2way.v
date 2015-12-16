@@ -70,17 +70,21 @@ cache_oneline #(OFFSET_WIDTH,BLOCK_SIZE,INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) c0(en
 cache_oneline #(OFFSET_WIDTH,BLOCK_SIZE,INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) c1(enable1, index, word_sel,
     cmp, write1, tag_in, data_in, valid_in, byte_w_en, clk, rst, hit1, dirty1, tag1, data1, valid1);
 
+// bug ?????????????????
 assign enable0 = cmp ? enable : ~victimway;
 assign enable1 = cmp ? enable : victimway;
 
-assign write0 = cmp ? (write & valid0 & hit0) : ~victimway_ff;
-assign write1 = cmp ? (write & valid1 &  hit1) : victimway_ff;
+assign write0 = write &(cmp ? (valid0 & hit0) : ~victimway_ff);
+assign write1 = write &(cmp ? (valid1 & hit1) : victimway_ff);
+//assign write1 = cmp ? (write & valid1 &  hit1) : victimway_ff;
 
 assign hit = (valid1 & hit1) | (valid0 & hit0);
 assign dirty = dirty0 & dirty1;
 assign data_out = cmp ? ((hit0 & valid0) ? data0 : data1) : (victimway_ff ? data1 : data0);
 assign valid_out = valid0 | valid1;
-assign tag_out = cmp ? ((hit0&valid0) ? tag0 : tag1) : tag_in;
+//if !cmp, then tag_out is used for write back, and it should be the victimway's tag
+//assign tag_out = cmp ? ((hit0&valid0) ? tag0 : tag1) : tag_in;
+assign tag_out = cmp ? ((hit0&valid0) ? tag0 : tag1) : (victimway_ff ? tag1 : tag0);
 
 
 endmodule
