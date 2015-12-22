@@ -40,6 +40,8 @@ output [31:0] dc_data_out,ic_data_out;
 output mem_stall,ram_en_out,ram_write_out;
 output [29:0] ram_addr_out;
 
+reg [2:0] status,counter;
+
 wire ic_enable, ic_cmp, ic_write, ic_data_sel, ic_valid_2ic;
 wire dc_enable, dc_cmp, dc_write, dc_data_sel, dc_valid_2dc;
 wire [OFFSET_WIDTH-1:0] ic_word_sel, dc_word_sel;
@@ -52,12 +54,13 @@ wire [1:0] ram_addr_sel;
 wire [OFFSET_WIDTH-1:0] ic_offset, dc_offset;
 wire [INDEX_WIDTH-1:0] ic_index, dc_index;
 wire [TAG_WIDTH-1:0] ic_tag, dc_tag, ic_tag_out, dc_tag_out;
+wire loading_ic = status ==`STAT_IC_MISS || status == `STAT_DOUBLE_MISS;
 assign ic_tag = ic_addr[29:29-TAG_WIDTH+1];
-assign dc_tag = dc_addr[29:29-TAG_WIDTH+1];
+assign dc_tag = (~loading_ic) ? dc_addr[29:29-TAG_WIDTH+1] : ic_tag;
 assign ic_index = ic_addr[29-TAG_WIDTH:OFFSET_WIDTH];
-assign dc_index = dc_addr[29-TAG_WIDTH:OFFSET_WIDTH];
+assign dc_index = (~loading_ic) ? dc_addr[29-TAG_WIDTH:OFFSET_WIDTH] : ic_index;
 assign ic_offset = ic_addr[OFFSET_WIDTH-1:0];
-assign dc_offset = dc_addr[OFFSET_WIDTH-1:0];
+assign dc_offset =  dc_addr[OFFSET_WIDTH-1:0];
 assign ram_addr_ic = {ic_tag,ic_index,counter};
 assign ram_addr_dc = {dc_tag,dc_index,counter};
 assign ram_addr_dc_wb = {dc_tag_out,dc_index,counter};//write back
@@ -66,7 +69,6 @@ assign ram_addr_out = ram_addr_sel[1] ? ram_addr_dc_wb : (ram_addr_sel[0] ? ram_
 wire ic_hit, ic_valid, ic_dirty; //ic_dirty is useless
 wire dc_hit, dc_valid, dc_dirty; // 6 output of i&d cache
 
-reg [2:0] status,counter;
 
 cache_control cctrl (dc_read_in, dc_write_in, ic_offset, dc_offset, dc_byte_w_en_in, 
     ic_hit, ic_valid,/*ic's output*/
@@ -78,7 +80,7 @@ cache_control cctrl (dc_read_in, dc_write_in, ic_offset, dc_offset, dc_byte_w_en
     status_next,counter_next
 );
 
-assign ic_data2ic = data_ram;
+assign ic_data2ic = ic_data_sel ? data_ram : dc_data_out; //0:load from dc
 assign dc_data2dc = dc_data_sel ? data_ram : data_reg;
 
 cache_2ways ic(ic_enable, ic_index, ic_word_sel, ic_cmp, ic_write, ic_tag, ic_data2ic,

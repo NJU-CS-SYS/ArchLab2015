@@ -80,21 +80,29 @@ always @(*) begin
             ic_enable_reg = 1;
             ic_cmp_reg = 0;
             ic_write_reg = 1;
-            ic_data_sel_reg = 1;//from ram
+            if(dc_hit_in&&dc_valid_in)begin
+                ic_data_sel_reg = 0;//from dc
+                ram_en_out = 0;
+            end
+            else begin
+                ic_data_sel_reg = 1;//from ram
+                ram_en_out = 1;
+            end
             ic_valid_reg = 1;
             ic_word_sel_reg = counter_in;
             ic_byte_w_en_reg = 4'b1111;
 
-            dc_enable_reg = 0;
-            dc_cmp_reg = 0;
+            //for data coherrence
+            dc_enable_reg = 1;
+            dc_cmp_reg = 1;
             dc_write_reg = 0;
             dc_data_sel_reg = 0;
             dc_valid_reg = 0;
-            dc_word_sel_reg = dc_word_sel_in;
+            //dc_word_sel_reg = dc_word_sel_in;
+            dc_word_sel_reg = counter_in;//it is meaningful while loading from dc
             dc_byte_w_en_reg = dc_byte_w_en_in;
 
             ram_addr_sel_reg = 2'b00;
-            ram_en_out = 1;
             ram_write_out = 0;
 
             if(counter_in == 3'd7) begin
@@ -118,7 +126,7 @@ always @(*) begin
             ic_enable_reg = 0;
             ic_cmp_reg = 0;
             ic_write_reg = 0;
-            ic_data_sel_reg = 0;
+            ic_data_sel_reg = 1;
             ic_valid_reg = 0;
             ic_word_sel_reg = counter_in;
             ic_byte_w_en_reg = 4'b1111;
@@ -155,7 +163,7 @@ always @(*) begin
             ic_enable_reg = 0;
             ic_cmp_reg = 0;
             ic_write_reg = 0;
-            ic_data_sel_reg = 0;
+            ic_data_sel_reg = 1;
             ic_valid_reg = 0;
             ic_word_sel_reg = counter_in;
             ic_byte_w_en_reg = 4'b1111;
@@ -192,21 +200,27 @@ always @(*) begin
             ic_enable_reg = 1;
             ic_cmp_reg = 0;
             ic_write_reg = 1;
-            ic_data_sel_reg = 1;
+            if(dc_hit_in&&dc_valid_in)begin
+                ic_data_sel_reg = 0;//from dc
+                ram_en_out = 0;
+            end
+            else begin
+                ic_data_sel_reg = 1;//from ram
+                ram_en_out = 1;
+            end
             ic_valid_reg = 1;
             ic_word_sel_reg = counter_in;
             ic_byte_w_en_reg = 4'b1111;
 
-            dc_enable_reg = 0;
-            dc_cmp_reg = 0;
+            dc_enable_reg = 1;
+            dc_cmp_reg = 1;
             dc_write_reg = 0;
             dc_data_sel_reg = 0;
             dc_valid_reg = 0;
-            dc_word_sel_reg = dc_word_sel_in;
+            dc_word_sel_reg = counter_in;
             dc_byte_w_en_reg = 4'b0000;
 
             ram_addr_sel_reg = 2'b00;
-            ram_en_out = 1;
             ram_write_out = 0;
 
             if(counter_in == 3'd7) begin
@@ -229,7 +243,7 @@ always @(*) begin
             ic_enable_reg = 0;
             ic_cmp_reg = 0;
             ic_write_reg = 0;
-            ic_data_sel_reg = 0;
+            ic_data_sel_reg = 1;
             ic_valid_reg = 0;
             ic_word_sel_reg = counter_in;
             ic_byte_w_en_reg = 4'b1111;
@@ -266,7 +280,7 @@ always @(*) begin
             ic_enable_reg = 1;
             ic_cmp_reg = 1;
             ic_write_reg = 0;
-            ic_data_sel_reg = 0;
+            ic_data_sel_reg = 1;
             ic_valid_reg = ic_valid_in;
             ic_word_sel_reg = ic_word_sel_in;
             ic_byte_w_en_reg = 4'b0000;
@@ -305,7 +319,7 @@ always @(*) begin
                     end
                 end
             end
-            else begin
+            else begin //dc hit
                 if(!(ic_hit_in && ic_valid_in)) begin
                     status_next_reg = `STAT_IC_MISS;
                     counter_next_reg = 3'b000;
