@@ -86,6 +86,7 @@ initial begin
     dc_addr = 30'h00000140;
     
     #(PERIOD*16);
+    ic_addr = 30'h00000140;
     dc_write = 1;
     dc_read = 0;
     dc_addr = 30'h00000340;
@@ -99,8 +100,16 @@ initial begin
     dc_write = 0;
     dc_read = 1;
     dc_addr = 30'h00000040;
-    data_reg = 32'h00000340;
 
+    #(PERIOD*16);
+    dc_write = 0;
+    dc_read = 1;
+    dc_addr = 30'h00000140;
+
+    #(PERIOD*16);
+    dc_write = 0;
+    dc_read = 1;
+    dc_addr = 30'h00000340;
 
 end
 
