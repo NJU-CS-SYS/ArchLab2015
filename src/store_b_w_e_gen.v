@@ -1,47 +1,43 @@
-`include "Define.v"
 module store_b_w_e_gen(
 	input [1:0]addr,
 	input [2:0]store_sel,
-	output reg[3:0]b_w_en
+	output [3:0]b_w_en
 );
-reg [5:0]sw_sel;
+
+reg [3:0] b_w_en_reg;
+
 always@(*) begin
 	case(store_sel)
-	   0:sw_sel=`SB;
-	   1:sw_sel=`SH;
-	   2:sw_sel=`SWL;
-	   3:sw_sel=`SW;
-	   6:sw_sel=`SWR;
-	endcase
-	case(sw_sel)
-		`SB:
+		3'd0:
 			case(addr)
-				0:b_w_en=4'b1000;
-				1:b_w_en=4'b0100;
-				2:b_w_en=4'b0010;
-				3:b_w_en=4'b0001;
+				2'd0:b_w_en_reg = 4'b1000;
+				2'd1:b_w_en_reg = 4'b0100;
+				2'd2:b_w_en_reg = 4'b0010;
+				2'd3:b_w_en_reg = 4'b0001;
 			endcase
-		`SH:
+		3'd1:
 			case(addr[1])
-				1'b0:b_w_en=4'b1100;
-				1'b1:b_w_en=4'b0011;
+				1'b0:b_w_en_reg = 4'b1100;
+				1'b1:b_w_en_reg = 4'b0011;
 			endcase
-		`SW: b_w_en=4'b1111;
-		`SWL:
+		3'd2: b_w_en_reg = 4'b1111;
+		3'd3:
 			case(addr)
-				0:b_w_en=4'b1111;
-				1:b_w_en=4'b0111;
-				2:b_w_en=4'b0011;
-				3:b_w_en=4'b0001;
+				2'd0:b_w_en_reg = 4'b1111;
+				2'd1:b_w_en_reg = 4'b0111;
+				2'd2:b_w_en_reg = 4'b0011;
+				2'd3:b_w_en_reg = 4'b0001;
 			endcase
-		`SWR:
+		default:
 			case(addr)
-				0:b_w_en=4'b1000;
-				1:b_w_en=4'b1100;
-				2:b_w_en=4'b1110;
-				3:b_w_en=4'b1111;
+				2'd0:b_w_en_reg = 4'b1000;
+				2'd1:b_w_en_reg = 4'b1100;
+				2'd2:b_w_en_reg = 4'b1110;
+				2'd3:b_w_en_reg = 4'b1111;
 			endcase
 	endcase
 end
-endmodule
 
+assign b_w_en = b_w_en_reg;
+
+endmodule
