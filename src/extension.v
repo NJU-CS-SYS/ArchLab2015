@@ -32,9 +32,3 @@ module extension(
     end
 
 endmodule
-
-`undef IMM_WIDTH
-`undef IMM_BUS
-`undef EXT_SEL_BUS
-`undef DATA_WIDTH
-`undef DATA_BUS

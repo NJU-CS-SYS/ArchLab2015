@@ -99,13 +99,13 @@ module control_unit(
         //j handle
         if(~branch_hazard & id_jump) begin
             cu_pc_src = 4'b0000;
-            ifid_flush = 1;
+            cu_ifid_flush = 1;
         end
 
         //jr handle
         if(~branch_hazard & id_jr) begin
             cu_pc_src = 4'b0001;
-            ifid_flush = 1;
+            cu_ifid_flush = 1;
         end
 
         //syscal handle

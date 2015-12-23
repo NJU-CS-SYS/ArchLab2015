@@ -23,7 +23,7 @@ module decoder(
     output  reg idex_cp0_w_en,
     output  reg idex_syscall,
     output  reg idex_eret,
-    output  reg id_imm_ext,
+    output  reg [1:0] id_imm_ext,
     output  reg id_jr,
     output  reg id_jump,
     output  reg [1:0] id_rd_addr_sel,
@@ -232,7 +232,7 @@ module decoder(
             3'b000:
             begin
       
-                stall = 0;
+                idex_syscall = 0;
                 id_jr = 1;
                 idex_reg_w = 0;
                 idex_movn = 0;
@@ -242,7 +242,7 @@ module decoder(
             3'b011:
             begin
       
-                stall = 0;
+                idex_syscall = 0;
                 id_jr = 0;
                 idex_reg_w = 1;
                 idex_movn = 1;
@@ -251,7 +251,7 @@ module decoder(
             // MOVZ
             3'b010:
             begin
-                stall = 0;
+                idex_syscall = 0;
                 id_jr = 0;
                 idex_reg_w = 1;
                 idex_movn = 0;

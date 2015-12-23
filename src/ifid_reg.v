@@ -57,12 +57,3 @@ module ifid_reg(
     end
 
 endmodule
-
-`undef PC_WIDTH
-`undef INSTR_WIDTH
-`undef PC_BUS
-`undef DATA_BUS
-`undef JMP_SLICE
-`undef RS_SLICE
-`undef RT_SLICE
-`undef RD_SLICE

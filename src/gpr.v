@@ -23,14 +23,15 @@ module GPR
     integer reg_cnt;
 
     initial begin
-        reg_cnt = 2**ADDR_WIDTH;
-        for (i = 0; i < reg_cnt; i = i + 1)
+        reg_cnt = 2**ADDR_WIDTH - 1;
+        for (i = 0; i <= reg_cnt; i = i + 1)
             register[i] = 0;
     end
 
     `define BYTE_SLICE(idx) (7 + idx * 8) : (idx * 8)
     always @(negedge clk or posedge reset) begin
         if (reset) begin
+            reg_cnt = 2**ADDR_WIDTH - 1;
             for (i = 0; i < reg_cnt; i = i + 1)
                 register[i] = 0;
         end
