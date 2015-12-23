@@ -9,11 +9,7 @@
  *   3 - 常数4, 为后面计算 JAL 指令的返回地址 PC + 8 做准备
  */
 
-`define IMM_WIDTH 16
-`define IMM_BUS (`IMM_WIDTH - 1):0
-`define EXT_SEL_BUS 1:0
-`define DATA_WIDTH 32
-`define DATA_BUS (`DATA_WIDTH - 1):0
+`include "common.vh"
 
 module extension(
     input [`IMM_BUS] ifid_imm,
