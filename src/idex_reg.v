@@ -32,7 +32,7 @@ module idex_reg(
     input idex_branch_in,
     input [2:0] idex_condition_in,
     input idex_of_w_disen_in,
-    input idex_exres_sel_in,
+    input [1:0] idex_exres_sel_in,
     input idex_B_sel_in,
     input [3:0] idex_ALU_op_in,
     input idex_shamt_sel_in,
@@ -52,10 +52,6 @@ module idex_reg(
     input idex_cp0_w_en_in,
     input idex_syscall_in,
     input idex_eret_in,
-    input [31:0] ifid_pc,
-    input [31:0] ifid_pc_4,
-    input [31:0] gpr_rs,
-    input [31:0] id_imm_ext,
     input id_movz,
     input id_movn,
     output reg idex_mem_w,
@@ -64,7 +60,7 @@ module idex_reg(
     output reg idex_branch,
     output reg [2:0] idex_condition,
     output reg idex_of_w_disen,
-    output reg idex_exres_sel,
+    output reg [1:0] idex_exres_sel,
     output reg idex_B_sel,
     output reg [3:0] idex_ALU_op,
     output reg idex_shamt_sel,
@@ -96,7 +92,7 @@ module idex_reg(
             idex_branch <= 1'd0;
             idex_condition <= 3'd0;
             idex_of_w_disen <= 1'd0;
-            idex_exres_sel <= 1'd0;
+            idex_exres_sel <= 2'd0;
             idex_B_sel <= 1'd0;
             idex_ALU_op <= 4'd0;
             idex_shamt_sel <= 1'd0;
