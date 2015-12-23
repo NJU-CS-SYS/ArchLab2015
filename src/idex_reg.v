@@ -56,6 +56,8 @@ module idex_reg(
     input [31:0] ifid_pc_4,
     input [31:0] gpr_rs,
     input [31:0] id_imm_ext,
+    input id_movz,
+    input id_movn,
     output reg idex_mem_w,
     output reg idex_mem_r,
     output reg idex_reg_w,
@@ -79,6 +81,8 @@ module idex_reg(
     output reg [4:0] idex_rs_addr,
     output reg [4:0] idex_rt_addr,
     output reg [4:0] idex_cp0_dst_addr,
+    output reg idex_movz,
+    output reg idex_movn,
     output reg idex_cp0_w_en,
     output reg idex_syscall,
     output reg idex_eret
@@ -112,6 +116,8 @@ module idex_reg(
             idex_cp0_w_en <= 1'd0;
             idex_syscall <= 1'd0;
             idex_eret <= 1'd0;
+            idex_movz <= 1'b0;
+            idex_movn <= 1'b0;
         end
         else if(!cu_stall) begin
             idex_mem_w<= idex_mem_w_in;
@@ -140,6 +146,8 @@ module idex_reg(
             idex_cp0_w_en<=idex_cp0_w_en_in;
             idex_syscall<=idex_syscall_in;
             idex_eret<=idex_eret_in;
+            idex_movz <= id_movz;
+            idex_movn <= id_movn;
         end
     end
 endmodule
