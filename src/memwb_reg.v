@@ -32,7 +32,7 @@ module memwb_reg(
     input [4:0] exmem_cp0_dst_addr,
     input exmem_cp0_w_en,
     input aligned_rt_data_in,
-    output reg memwb_mem_w,
+    output reg memwb_mem_r,
     output reg memwb_reg_w,
     output reg [3:0] reg_byte_w_en_out,
     output reg [4:0] memwb_rd_addr,
@@ -45,7 +45,7 @@ module memwb_reg(
 
     always@(negedge clk) begin
         if (reset) begin
-            memwb_mem_w         <= 0;
+            memwb_mem_r         <= 0;
             memwb_reg_w         <= 0;
             reg_byte_w_en_out   <= 0;
             memwb_rd_addr       <= 0;
@@ -56,7 +56,7 @@ module memwb_reg(
             aligned_rt_data_out <= 0;
         end
         else begin
-            memwb_mem_w         <= exmem_mem_r;
+            memwb_mem_r         <= exmem_mem_r;
             memwb_reg_w         <= exmem_reg_w;
             reg_byte_w_en_out   <= reg_byte_w_en_in;
             memwb_rd_addr       <= exmem_rd_addr;
