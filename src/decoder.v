@@ -232,7 +232,7 @@ module decoder(
             3'b000:
             begin
       
-                scall = 0;
+                stall = 0;
                 id_jr = 1;
                 idex_reg_w = 0;
                 idex_movn = 0;
@@ -242,7 +242,7 @@ module decoder(
             3'b011:
             begin
       
-                scall = 0;
+                stall = 0;
                 id_jr = 0;
                 idex_reg_w = 1;
                 idex_movn = 1;
@@ -251,7 +251,7 @@ module decoder(
             // MOVZ
             3'b010:
             begin
-                scall = 0;
+                stall = 0;
                 id_jr = 0;
                 idex_reg_w = 1;
                 idex_movn = 0;
