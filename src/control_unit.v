@@ -135,6 +135,13 @@ module control_unit(
         if(~branch_hazard & exmem_eret) begin
             cu_pc_src = 4'b0011;
         end
+
+        if(mem_stall) begin
+            cu_pc_stall = 1'b1;
+            cu_ifid_stall = 1'b1;
+            cu_idex_stall = 1'b1;
+            cu_exmem_stall = 1'b1;
+        end
     end
 
 endmodule

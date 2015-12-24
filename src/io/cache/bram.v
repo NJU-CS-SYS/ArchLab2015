@@ -9,7 +9,8 @@ module xilinx_single_port_ram_no_change #(
   parameter RAM_WIDTH = 32,                       // Specify RAM data width
   parameter RAM_DEPTH = 512,                     // Specify RAM depth (number of entries)
   parameter RAM_PERFORMANCE = "LOW_LATENCY", // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
-  parameter INIT_FILE = ""                        // Specify name/location of RAM initialization file if using one (leave blank if not)
+  parameter INIT_FILE = "/home/zyy/co/testbench4mips/single-cycle/ram.txt"
+  // Specify name/location of RAM initialization file if using one (leave blank if not)
 ) (
   input [clogb2(RAM_DEPTH-1)-1:0] addra,  // Address bus, width determined from RAM_DEPTH
   input [RAM_WIDTH-1:0] dina,           // RAM input data
