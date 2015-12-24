@@ -165,6 +165,7 @@ wire [`DATA_BUS] mem_alu_res;
 // MEM memory related
 wire [`REG_ADDR_BUS] mem_cp0_dst_addr;
 wire [`DATA_BUS] mem_rt_data;
+wire [`DATA_BUS] mem_aligned_mem_data ;
 // MEM control
 wire mem_branch;
 wire mem_lf;
@@ -652,7 +653,7 @@ load_shifter  inst_load_shifter (
    .addr        ( mem_alu_res[1:0] ),
    .load_sel    ( mem_load_sel ),
    .mem_data    ( mem_data ),
-   .data_to_reg ( mem_aligned_rt_data )
+   .data_to_reg ( mem_aligned_mem_data )
 );
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -671,7 +672,7 @@ memwb_reg  inst_memwb_reg (
     .exmem_reg_w         ( mem_reg_w ),
     .reg_byte_w_en_in    ( mem_reg_byte_w_en ),
     .exmem_rd_addr       ( mem_rd_addr ),
-    .mem_data            ( mem_data ),
+    .mem_data            ( mem_aligned_mem_data ),
     .ex_data             ( mem_alu_res ),
     .exmem_cp0_dst_addr  ( mem_cp0_dst_addr ),
     .exmem_cp0_w_en      ( mem_cp0_w_en ),
