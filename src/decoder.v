@@ -1,3 +1,5 @@
+`timescale 1ns / 1ps
+
 /*
  * @decoder 译码器模块
  * @author XuanBaoQiong

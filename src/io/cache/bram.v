@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
-//  Xilinx Single Port No Change RAM
+
+//  Xilinx Single Port No Change RAM
 //  This code implements a parameterizable single-port no-change memory where when data is written
 //  to the memory, the output remains unchanged.  This is the most power efficient write mode.
 //  If a reset or enable is not necessary, it may be tied off or removed from the code.
@@ -9,7 +10,7 @@ module xilinx_single_port_ram_no_change #(
   parameter RAM_WIDTH = 32,                       // Specify RAM data width
   parameter RAM_DEPTH = 512,                     // Specify RAM depth (number of entries)
   parameter RAM_PERFORMANCE = "LOW_LATENCY", // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
-  parameter INIT_FILE = "/home/zyy/co/testbench4mips/single-cycle/ram.txt"
+  parameter INIT_FILE = "../../../sim/ram.txt"
   // Specify name/location of RAM initialization file if using one (leave blank if not)
 ) (
   input [clogb2(RAM_DEPTH-1)-1:0] addra,  // Address bus, width determined from RAM_DEPTH
