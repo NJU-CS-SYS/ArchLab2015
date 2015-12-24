@@ -57,7 +57,7 @@ always @(*) begin
        predicted_pc = { bpu_pc[predict_tag], 2'd0 };
    end
    else begin
-       predicted_pc = { valid_current_pc + 1, 2'd0 };
+       predicted_pc = current_pc;
    end
 end
 

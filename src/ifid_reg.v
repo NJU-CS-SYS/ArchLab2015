@@ -28,7 +28,7 @@ module ifid_reg(
 
     initial begin
         ifid_pc    = `PC_WIDTH'd0;
-        ifid_pc_4  = `PC_WIDTH'd4;
+        ifid_pc_4  = `PC_WIDTH'd0;
         ifid_instr = `PC_WIDTH'd0;
     end
 
@@ -41,7 +41,7 @@ module ifid_reg(
     always @(negedge clk or posedge reset) begin
         if (reset || cu_flush) begin
             ifid_pc    <= `PC_WIDTH'd0;
-            ifid_pc_4  <= `PC_WIDTH'd4;
+            ifid_pc_4  <= `PC_WIDTH'd0;
             ifid_instr <= `PC_WIDTH'd0;
         end
         else if (cu_stall) begin
