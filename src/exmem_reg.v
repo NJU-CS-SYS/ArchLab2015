@@ -55,7 +55,7 @@ module exmem_reg(
     output reg [4:0] exmem_rd_addr,
     output reg [3:0] mem_byte_w_en_out,
     output reg [31:0] exmem_alu_res,
-    output reg [31:0] exmem_rt_data,
+    output reg [31:0] exmem_aligned_rt_data,
     output reg exmem_branch,
     output reg [2:0] exmem_condition,
     output reg [31:0] exmem_target,
@@ -80,7 +80,7 @@ module exmem_reg(
             exmem_rd_addr   <= 0;
             mem_byte_w_en_out   <= 0;
             exmem_alu_res   <= 0;
-            exmem_rt_data   <= 0;
+            exmem_aligned_rt_data   <= 0;
             exmem_branch    <= 0;
             exmem_condition <= 0;
             exmem_target    <= 0;
@@ -103,7 +103,7 @@ module exmem_reg(
             exmem_rd_addr   <= real_rd_addr;
             mem_byte_w_en_out   <= mem_byte_w_en_in;
             exmem_alu_res   <= ex_res;
-            exmem_rt_data   <= aligned_rt_data;
+            exmem_aligned_rt_data   <= aligned_rt_data;
             exmem_branch    <= idex_branch;
             exmem_condition <= idex_condition;
             exmem_target    <= addr_target;

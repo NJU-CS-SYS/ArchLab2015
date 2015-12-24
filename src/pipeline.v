@@ -159,7 +159,9 @@ wire [`REG_ADDR_BUS] mem_rd_addr;
 wire [`DATA_BUS] mem_alu_res;
 // MEM memory related
 wire [`REG_ADDR_BUS] mem_cp0_dst_addr;
-wire [`DATA_BUS] mem_rt_data;
+// The data from EX, used in the MEM segment.
+// It has been aligned in the EX segment, and will provide data to MEMWB and Memory when SW* is excuted.
+wire [`DATA_BUS] mem_aligned_rt_data;
 wire [`DATA_BUS] mem_aligned_mem_data ;
 // MEM control
 wire mem_branch;
@@ -514,7 +516,7 @@ reg_w_gen reg_w_gen (
     .idex_reg_w(ex_reg_w),
     .idex_of_w_disen(ex_of_w_disen),
     // Output
-    .new_reg_w(ex_reg_w)
+    .new_reg_w(mem_reg_w)
 );
 
 // Special load and store byte write enable
@@ -559,6 +561,7 @@ ForwardUnit inst_ForwardUnit (
     .B_sel         ( B_sel )
 );
 
+
 exmem_reg  inst_exmem_reg (
     // Input from global
     .clk                ( clk ),
@@ -599,7 +602,7 @@ exmem_reg  inst_exmem_reg (
     .exmem_rd_addr      ( mem_rd_addr ),
     .mem_byte_w_en_out  ( mem_mem_byte_w_en ),
     .exmem_alu_res      ( mem_alu_res ),
-    .exmem_rt_data      ( mem_rt_data ),
+    .exmem_aligned_rt_data ( mem_aligned_rt_data ),
     .exmem_branch       ( mem_branch ),
     .exmem_condition    ( mem_condition ),
     .exmem_target       ( mem_target ),
@@ -641,8 +644,6 @@ final_target  inst_final_target (
 ////////////////////////////////////////////////////////////////////////////////
 //  Load shifter
 ////////////////////////////////////////////////////////////////////////////////
-
-wire [`DATA_BUS] mem_aligned_rt_data;
 
 load_shifter  inst_load_shifter (
    .addr        ( mem_alu_res[1:0] ),
@@ -761,7 +762,7 @@ cpu_interface inst_ci (
     .dc_read_in(mem_mem_r),
     .dc_write_in(mem_mem_w),
     .dc_addr(mem_alu_res[31:2]), //????
-    .data_reg(mem_rt_data),
+    .data_reg(mem_aligned_rt_data),
     .dc_byte_w_en(mem_mem_byte_w_en),
     .clk(clk),
     .rst(reset),
