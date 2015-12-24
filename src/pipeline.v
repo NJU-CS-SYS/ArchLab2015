@@ -21,8 +21,6 @@ parameter DATA_WIDTH = 32;
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-wire [DATA_WIDTH - 1 : 0] tag_pc;        // PC from MEM
-wire [DATA_WIDTH - 1 : 0] next_pc;       // The expected PC after in EX
 wire [DATA_WIDTH - 1 : 0] predicted_pc;
 wire bpu_w_en;                           // Whether the PC in EX is expected
 
@@ -50,7 +48,6 @@ wire [DATA_WIDTH - 1 : 0] ifid_instr;
 wire [`REG_ADDR_BUS] ifid_rs_addr, ifid_rt_addr, ifid_rd_addr;
 wire [`IMM_BUS] ifid_imm;
 
-wire [`REG_ADDR_BUS] op0_src_addr;
 wire id_jr;
 wire id_jump;
 wire idex_syscall;
@@ -79,8 +76,6 @@ wire idex_movz;
 
 reg [`REG_ADDR_BUS] id_rt_addr;
 
-wire wb_write;
-wire [3:0] wb_rd_byte_w_en;
 wire [DATA_WIDTH - 1 : 0] wb_data_in;
 wire [DATA_WIDTH - 1 : 0] id_rs_out;
 wire [DATA_WIDTH - 1 : 0] id_rt_out;
