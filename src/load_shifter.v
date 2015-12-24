@@ -31,13 +31,17 @@ always@(*) begin
             dout = {16'd0,shift_mid[15:0]};
         end
         3'd4:begin
+            shift_mid = 32'd0;
+            shamt = 5'd0;
             dout = mem_data;
         end
         3'd5:begin
+            shift_mid = 32'd0;
             shamt = addr<<3;
             dout = mem_data<<shamt;
         end
         default:begin //lwr
+            shift_mid = 32'd0;
             shamt = (~addr)<<3;
             dout = mem_data>>shamt;
         end
