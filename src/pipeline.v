@@ -7,11 +7,6 @@
 
 module pipeline (
     // Just to simpilfy RTL generation,
-    // Use cpu_interface to replace these ports.
-    input [31:0] ic_data_out,
-    input mem_stall,
-    input [31:0] mem_data,
-    
     input clk,         // the global clock
     input reset,       // the global reset
     input [7:0] intr   // 8 hardware interruption
@@ -47,8 +42,7 @@ wire [DATA_WIDTH - 1 : 0] pc_out;  // PC to fetch instruction
 //  later.
 ////////////////////////////////////////////////////////////////////////////
 
-wire [DATA_WIDTH - 1 : 0] ic_addr;
-//wire [DATA_WIDTH - 1 : 0] ic_data_out;
+wire [DATA_WIDTH - 1 : 0] ic_data_out;
 
 wire [DATA_WIDTH - 1 : 0] ifid_pc, ifid_pc_4;
 wire [DATA_WIDTH - 1 : 0] ifid_jump_addr;
@@ -202,7 +196,7 @@ wire [`DATA_BUS] memwb_data = (wb_mem_r) ? wb_mem_data : wb_ex_data;
 
 wire [`PC_BUS] mem_final_target;  // output from final_target to control unit
 
-//wire [`DATA_BUS] mem_data;  // output from cpu_interface.data_out to load_shifter.mem_data
+wire [`DATA_BUS] mem_data;  // output from cpu_interface.data_out to load_shifter.mem_data
 
 ////////////////////////////////////////////////////////////////////////////
 //
@@ -765,4 +759,19 @@ cp0 inst_cp0 (
 //  Memory interface
 //
 ////////////////////////////////////////////////////////////////////////////////
+
+cpu_interface inst_ci (
+    .ic_addr(pc_out[31:2]),
+    .dc_read_in(mem_mem_r),
+    .dc_write_in(mem_mem_w),
+    .dc_addr(mem_alu_res[31:2]), //????
+    .data_reg(mem_rt_data),
+    .dc_byte_w_en(mem_mem_byte_w_en),
+    .clk(clk),
+    .rst(reset),
+    .ic_data_out(ic_data_out),
+    .dc_data_out(mem_data),
+    .mem_stall(mem_stall)
+);
+
 endmodule
