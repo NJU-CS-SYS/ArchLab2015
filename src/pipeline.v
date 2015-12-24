@@ -208,14 +208,14 @@ wire [`DATA_BUS] mem_data;  // output from cpu_interface.data_out to load_shifte
 
 BPU bpu (
     // Input
-    .clk(clk),
-    .reset(reset),
-    .bpu_w_en(bpu_w_en),
-    .current_pc(ifid_pc),
-    .tag_pc(mem_pc),
-    .next_pc(mem_final_target),
+    .clk          ( clk ),
+    .reset        ( reset ),
+    .bpu_w_en     ( bpu_w_en ),
+    .current_pc   ( ifid_pc_4 ),  // When reseted, ifid is flushed, and ifid_pc_4 is zero.
+    .tag_pc       ( mem_pc ),
+    .next_pc      ( mem_final_target ),
     // Output
-    .predicted_pc(predicted_pc)
+    .predicted_pc ( predicted_pc )
 );
 
 wire [3:0] cu_pc_src;  // Select pc source, get data from control unit.
