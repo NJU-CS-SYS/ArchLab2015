@@ -60,7 +60,7 @@ cache_manage_unit u_cm_0(
 );
 
 ram_top u_ram_0(
-    ram_addr[8:0],
+    ram_addr[11:0],
     dc_data_out,
     clk,
     ram_en,

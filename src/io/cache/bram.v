@@ -8,9 +8,9 @@
 
 module xilinx_single_port_ram_no_change #(
   parameter RAM_WIDTH = 32,                       // Specify RAM data width
-  parameter RAM_DEPTH = 512,                     // Specify RAM depth (number of entries)
+  parameter RAM_DEPTH = 4096,                     // Specify RAM depth (number of entries)
   parameter RAM_PERFORMANCE = "LOW_LATENCY", // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
-  //parameter INIT_FILE = "../../../sim/ram.txt"
+  //parameter INIT_FILE = "./ram.txt"
   parameter INIT_FILE = "/home/zyy/ar/sim/ram.txt"
   // Specify name/location of RAM initialization file if using one (leave blank if not)
 ) (
