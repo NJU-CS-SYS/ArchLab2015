@@ -129,7 +129,7 @@ reg [4:0] shamt_after_sel;
 wire [`DATA_BUS] alu_out;
 wire [`DATA_BUS] shifter_out;
 //wire [`PC_BUS] branch_addr = (ex_pc_4 << 2) + ex_imm_ext;
-wire [`PC_BUS] branch_addr = ex_pc + (ex_imm_ext<<2);
+wire [`PC_BUS] branch_addr = ex_pc_4 + (ex_imm_ext<<2);
 
 // Forwarding selectors
 wire [1:0] A_sel;
