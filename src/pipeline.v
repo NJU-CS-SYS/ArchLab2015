@@ -725,6 +725,7 @@ control_unit  inst_control_unit (
     .id_jr             ( id_jr ),
     .mem_stall         ( mem_stall ),
     .mem_nop           ( mem_nop ),
+    .ex_nop            ( ex_nop ),
     .ifid_rs_addr      ( ifid_rs_addr ),
     .real_rt_addr      ( id_rt_addr ),
     .idex_rd_addr      ( id_rd_addr ),
