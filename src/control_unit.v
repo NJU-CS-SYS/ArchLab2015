@@ -33,6 +33,7 @@ module control_unit(
     input id_jump,
     input exmem_eret,
     input exmem_syscall,
+    input mem_nop;
     //stall
     output reg [3 : 0]cu_pc_src,
     output reg cu_pc_stall,
@@ -56,7 +57,7 @@ module control_unit(
     wire load_use_hazard;
     wire branch_hazard;
     assign load_use_hazard = idex_mem_read & (idex_rd_addr == ifid_rs_addr | idex_rd_addr == real_rt_addr);
-    assign branch_hazard = predicted_idex_pc != target_exmem_pc;
+    assign branch_hazard = !mem_nop && (predicted_idex_pc != target_exmem_pc);
 
 
     always @(*) begin
@@ -87,7 +88,7 @@ module control_unit(
         //branch_hazard handle
         if(branch_hazard) begin
             cu_ifid_flush = 1'b1;
-          cu_idex_flush = 1'b1;
+            cu_idex_flush = 1'b1;
             cu_exmem_flush = 1'b1;
             if(~cp0_intr)
             begin
