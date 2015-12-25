@@ -274,7 +274,8 @@ ifid_reg ifid (
     .ifid_rs_addr   ( ifid_rs_addr ),
     .ifid_rt_addr   ( ifid_rt_addr ),
     .ifid_rd_addr   ( ifid_rd_addr ),
-    .ifid_imm       ( ifid_imm )
+    .ifid_imm       ( ifid_imm ),
+    .ifid_nop       ( id_nop )
 );
 
 ////////////////////////////////////////////////////////////////////////////
@@ -400,6 +401,7 @@ idex_reg idex_reg (
     .idex_eret_in(idex_eret),
     .id_movz(idex_movz),
     .id_movn(idex_movn),
+    .ifid_nop(id_nop),
     // Output
     .idex_mem_w(ex_mem_w),
     .idex_mem_r(ex_mem_r),
@@ -428,7 +430,8 @@ idex_reg idex_reg (
     .idex_movn(ex_movn),
     .idex_cp0_w_en(ex_cp0_w_en),
     .idex_syscall(ex_syscall),
-    .idex_eret(ex_eret)
+    .idex_eret(ex_eret),
+    .idex_nop(ex_nop)
 );
 
 ////////////////////////////////////////////////////////////////////////////
@@ -597,6 +600,7 @@ exmem_reg  inst_exmem_reg (
     .cp0_w_en_in        ( ex_cp0_w_en ),
     .syscall_in         ( ex_syscall ),
     .idex_eret          ( ex_eret ),
+    .idex_nop           ( ex_nop ),
     // Output to MEM
     .exmem_pc           ( mem_pc ),
     .exmem_pc_4         ( mem_pc_4 ),
@@ -618,7 +622,8 @@ exmem_reg  inst_exmem_reg (
     .exmem_cp0_dst_addr ( mem_cp0_dst_addr ),
     .cp0_w_en_out       ( mem_cp0_w_en ),
     .syscall_out        ( mem_syscall ),
-    .exmem_eret         ( mem_eret )
+    .exmem_eret         ( mem_eret ),
+    .exmem_nop          ( mem_nop )
 );
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -720,6 +725,7 @@ control_unit  inst_control_unit (
    .id_jump           ( id_jump ),
    .exmem_eret        ( mem_eret ),
    .exmem_syscall     ( mem_syscall ),
+   .mem_nop           ( mem_nop ),
    .cu_pc_src         ( cu_pc_src ),
    .cu_pc_stall       ( cu_pc_stall ),
    .cu_ifid_stall     ( cu_ifid_stall ),
