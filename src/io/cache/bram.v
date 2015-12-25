@@ -1,5 +1,11 @@
 `timescale 1ns / 1ps
 
+//  Conditionally preprocess the INIT_FILE in order to be friendly to version control
+//  Set your own test file path in
+//      Simulation Settings -> Verilog options -> Defines
+`ifndef TEST_FILE
+`define TEST_FILE ""
+`endif
 
 //  Xilinx Single Port No Change RAM
 //  This code implements a parameterizable single-port no-change memory where when data is written
@@ -10,8 +16,7 @@ module xilinx_single_port_ram_no_change #(
   parameter RAM_WIDTH = 32,                       // Specify RAM data width
   parameter RAM_DEPTH = 4096,                     // Specify RAM depth (number of entries)
   parameter RAM_PERFORMANCE = "LOW_LATENCY", // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
-  //parameter INIT_FILE = "./ram.txt"
-  parameter INIT_FILE = "/home/zyy/ar/sim/ram.txt"
+  parameter INIT_FILE = `TEST_FILE
   // Specify name/location of RAM initialization file if using one (leave blank if not)
 ) (
   input [clogb2(RAM_DEPTH-1)-1:0] addra,  // Address bus, width determined from RAM_DEPTH
