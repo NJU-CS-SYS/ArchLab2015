@@ -128,7 +128,8 @@ reg [4:0] shamt_after_sel;
 // Exec result candidates
 wire [`DATA_BUS] alu_out;
 wire [`DATA_BUS] shifter_out;
-wire [`PC_BUS] branch_addr = (ex_pc_4 << 2) + ex_imm_ext;
+//wire [`PC_BUS] branch_addr = (ex_pc_4 << 2) + ex_imm_ext;
+wire [`PC_BUS] branch_addr = ex_pc + (ex_imm_ext<<2);
 
 // Forwarding selectors
 wire [1:0] A_sel;
@@ -232,7 +233,9 @@ always @(*) begin
     endcase
 end
 
-assign target = ifid_jump_addr;
+//assign target = ifid_jump_addr; ????
+assign target = mem_final_target;
+
 
 ////////////////////////////////////////////////////////////////////////////
 //  PC register

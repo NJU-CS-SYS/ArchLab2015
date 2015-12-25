@@ -71,7 +71,7 @@ module exmem_reg(
     );
 
     always@(negedge clk) begin
-        if (reset | cu_flush) begin
+        if (reset || (!cu_stall && cu_flush)) begin
             exmem_pc        <= 0;
             exmem_mem_w     <= 0;
             exmem_mem_r     <= 0;

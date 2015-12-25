@@ -85,7 +85,7 @@ module idex_reg(
     );
     
     always @(negedge clk or posedge reset) begin
-        if(reset||cu_flush) begin
+        if(reset||(cu_flush && !cu_stall)) begin
             idex_mem_w <= 1'd0;
             idex_mem_r <= 1'd0;
             idex_reg_w <= 1'd0;
