@@ -42,24 +42,21 @@ xilinx_single_port_ram_no_change u_bram_0(
 );
 
 reg ready;
-reg last_is_rst;
+reg last_is_disen;
 always @ (posedge clk) begin
     if(rst) begin
         ready <= 0;
-        last_is_rst <= 1;
+        last_is_disen <= 1;
     end
     else begin 
-        if (~ready)begin
-            if(last_is_rst) begin
-                last_is_rst <= 0;
-            end
-            else begin
-                ready <= 1;
-            end
+        if(~ram_en) begin
+            last_is_disen <= 1;
+            ready <= 0;
         end
         else begin
-            if(ram_en)begin
-                ready <= 0;
+            last_is_disen <= 0;
+            if(~last_is_disen) begin
+                ready = ~ready;
             end
         end
     end
