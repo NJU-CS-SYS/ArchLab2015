@@ -1,3 +1,5 @@
+`timescale 1ns / 1ps
+
 module store_b_w_e_gen(
 	input [1:0]addr,
 	input [2:0]store_sel,

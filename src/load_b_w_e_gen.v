@@ -1,3 +1,5 @@
+`timescale 1ns / 1ps
+
 module load_b_w_e_gen(
 	input [1:0]addr,
 	input [2:0]load_sel,

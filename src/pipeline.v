@@ -188,7 +188,6 @@ wire [`REG_ADDR_BUS] wb_rd_addr;  // Write to this register
 // Exception part
 wire [`REG_ADDR_BUS] wb_cp0_dst_addr;
 wire wb_cp0_w_en;
-wire [`DATA_BUS] aligned_rt_data;  // Alhough never get aligned for MTC0
 
 // Output
 wire [`DATA_BUS] memwb_data = (wb_mem_r) ? wb_mem_data : wb_ex_data;
@@ -207,12 +206,14 @@ wire [`DATA_BUS] mem_data;  // output from cpu_interface.data_out to load_shifte
 //  BPU
 ////////////////////////////////////////////////////////////////////////////
 
+wire [`PC_BUS] if_pc_4;
+
 BPU bpu (
     // Input
     .clk          ( clk ),
     .reset        ( reset ),
     .bpu_w_en     ( bpu_w_en ),
-    .current_pc   ( ifid_pc_4 ),  // When reseted, ifid is flushed, and ifid_pc_4 is zero.
+    .current_pc   ( if_pc_4 ),  // When reseted, ifid is flushed, and ifid_pc_4 is zero.
     .tag_pc       ( mem_pc ),
     .next_pc      ( mem_final_target ),
     // Output
@@ -233,7 +234,6 @@ always @(*) begin
     endcase
 end
 
-//assign target = ifid_jump_addr; ????
 assign target = mem_final_target;
 
 
@@ -255,6 +255,7 @@ PC PC (
 
 assign jmp = ifid_jump_addr;
 assign jr = id_rs_out;
+assign if_pc_4 = (reset) ? 0 : pc_out + 4;  // Start from zero
 
 ifid_reg ifid (
     // Input
@@ -263,6 +264,7 @@ ifid_reg ifid (
     .cu_stall       ( cu_ifid_stall ),
     .cu_flush       ( cu_ifid_flush ),
     .pc             ( pc_in ),
+    .pc_4           ( if_pc_4 ),
     .instr          ( ic_data_out ),
      // Output        
     .ifid_pc        ( ifid_pc ),
