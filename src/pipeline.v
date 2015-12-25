@@ -257,6 +257,10 @@ assign jmp = ifid_jump_addr;
 assign jr = id_rs_out;
 assign if_pc_4 = (reset) ? 0 : pc_out + 4;  // Start from zero
 
+wire id_nop;  // Indicate that the current instr in ID is nop
+              // The ifid does not have a input nop-indicator,
+              // because PC is always right in the next cycle.
+
 ifid_reg ifid (
     // Input
     .clk            ( clk ),
@@ -266,7 +270,8 @@ ifid_reg ifid (
     .pc             ( pc_out ),
     .pc_4           ( if_pc_4 ),
     .instr          ( ic_data_out ),
-     // Output        
+    // Output
+    .id_nop         ( id_nop ),
     .ifid_pc        ( ifid_pc ),
     .ifid_pc_4      ( ifid_pc_4 ),
     .ifid_instr     ( ifid_instr ),
@@ -365,10 +370,13 @@ always @(*) begin
     endcase
 end
 
+wire ex_nop;  // Indicate that the current instr in EX is nop
+
 idex_reg idex_reg (
     // Input
     .clk(clk),
     .reset(reset),
+    .id_nop(id_nop),
     .cu_stall(cu_idex_stall),
     .cu_flush(cu_idex_flush),
     .id_rd_addr(id_rd_addr),
@@ -401,6 +409,7 @@ idex_reg idex_reg (
     .id_movz(idex_movz),
     .id_movn(idex_movn),
     // Output
+    .ex_nop(ex_nop),
     .idex_mem_w(ex_mem_w),
     .idex_mem_r(ex_mem_r),
     .idex_reg_w(ex_reg_w),
@@ -567,6 +576,8 @@ ForwardUnit inst_ForwardUnit (
 );
 
 
+wire mem_nop;  // Indicate that the current instr in MEM is a nop.
+
 exmem_reg  inst_exmem_reg (
     // Input from global
     .clk                ( clk ),
@@ -575,6 +586,7 @@ exmem_reg  inst_exmem_reg (
     .cu_stall           ( cu_exmem_stall ),
     .cu_flush           ( cu_exmem_flush ),
     // Input from EX
+    .ex_nop             ( ex_nop ),
     .idex_mem_w         ( idex_mem_w ),
     .idex_mem_r         ( ex_mem_r ),
     .idex_reg_w         ( ex_reg_w ),
@@ -598,6 +610,7 @@ exmem_reg  inst_exmem_reg (
     .syscall_in         ( ex_syscall ),
     .idex_eret          ( ex_eret ),
     // Output to MEM
+    .mem_nop            ( mem_nop ),
     .exmem_pc           ( mem_pc ),
     .exmem_pc_4         ( mem_pc_4 ),
     .exmem_mem_w        ( mem_mem_w ),
@@ -708,31 +721,34 @@ wire [4:0] cu_exec_code;
 wire [`PC_BUS] cu_epc;
 
 control_unit  inst_control_unit (
-   .id_jr             ( id_jr ),
-   .mem_stall         ( mem_stall ),
-   .ifid_rs_addr      ( ifid_rs_addr ),
-   .real_rt_addr      ( id_rt_addr ),
-   .idex_rd_addr      ( id_rd_addr ),
-   .idex_mem_read     ( ex_mem_r ),
-   .predicted_idex_pc ( ex_pc ),
-   .target_exmem_pc   ( mem_final_target ),
-   .cp0_intr          ( cp0_intr ),
-   .id_jump           ( id_jump ),
-   .exmem_eret        ( mem_eret ),
-   .exmem_syscall     ( mem_syscall ),
-   .cu_pc_src         ( cu_pc_src ),
-   .cu_pc_stall       ( cu_pc_stall ),
-   .cu_ifid_stall     ( cu_ifid_stall ),
-   .cu_idex_stall     ( cu_idex_stall ),
-   .cu_exmem_stall    ( cu_exmem_stall ),
-   .cu_ifid_flush     ( cu_ifid_flush ),
-   .cu_idex_flush     ( cu_idex_flush ),
-   .cu_exmem_flush    ( cu_exmem_flush ),
-   .cu_cp0_w_en       ( cu_cp0_w_en ),
-   .cu_exec_code      ( cu_exec_code ),
-   .cu_epc            ( cu_epc ),
-   .cu_vector         ( cu_vector ),
-   .bpu_write_en      ( bpu_w_en )
+    // Input
+    .id_jr             ( id_jr ),
+    .mem_stall         ( mem_stall ),
+    .mem_nop           ( mem_nop ),
+    .ifid_rs_addr      ( ifid_rs_addr ),
+    .real_rt_addr      ( id_rt_addr ),
+    .idex_rd_addr      ( id_rd_addr ),
+    .idex_mem_read     ( ex_mem_r ),
+    .predicted_idex_pc ( ex_pc ),
+    .target_exmem_pc   ( mem_final_target ),
+    .cp0_intr          ( cp0_intr ),
+    .id_jump           ( id_jump ),
+    .exmem_eret        ( mem_eret ),
+    .exmem_syscall     ( mem_syscall ),
+    // Output
+    .cu_pc_src         ( cu_pc_src ),
+    .cu_pc_stall       ( cu_pc_stall ),
+    .cu_ifid_stall     ( cu_ifid_stall ),
+    .cu_idex_stall     ( cu_idex_stall ),
+    .cu_exmem_stall    ( cu_exmem_stall ),
+    .cu_ifid_flush     ( cu_ifid_flush ),
+    .cu_idex_flush     ( cu_idex_flush ),
+    .cu_exmem_flush    ( cu_exmem_flush ),
+    .cu_cp0_w_en       ( cu_cp0_w_en ),
+    .cu_exec_code      ( cu_exec_code ),
+    .cu_epc            ( cu_epc ),
+    .cu_vector         ( cu_vector ),
+    .bpu_write_en      ( bpu_w_en )
 );
 
 ////////////////////////////////////////////////////////////////////////////////

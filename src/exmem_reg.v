@@ -25,6 +25,7 @@ module exmem_reg(
     input reset,
     input cu_stall,
     input cu_flush,
+    input ex_nop,
     input idex_mem_w,
     input idex_mem_r,
     input idex_reg_w,
@@ -47,6 +48,7 @@ module exmem_reg(
     input cp0_w_en_in,
     input syscall_in,
     input idex_eret,
+    output reg mem_nop,
     output reg [31:0] exmem_pc,
     output reg exmem_mem_w,
     output reg exmem_mem_r,
@@ -93,6 +95,7 @@ module exmem_reg(
             cp0_w_en_out    <= 0;
             syscall_out     <= 0;
             exmem_eret      <= 0;
+            mem_nop         <= 1;
         end
         else if (!cu_stall) begin
             exmem_pc        <= idex_pc;
@@ -116,6 +119,7 @@ module exmem_reg(
             cp0_w_en_out        <= cp0_w_en_in;
             syscall_out         <= syscall_in;
             exmem_eret      <= idex_eret;
+            mem_nop         <= ex_nop;
         end
     end
 endmodule

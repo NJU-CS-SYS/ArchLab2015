@@ -15,6 +15,7 @@ module ifid_reg(
     input [`PC_BUS] pc,
     input [`PC_BUS] pc_4,
     input [`DATA_BUS] instr,
+    output reg id_nop,
     output reg [`PC_BUS] ifid_pc,
     output reg [`PC_BUS] ifid_pc_4,
     output reg [`DATA_BUS] ifid_instr,
@@ -42,16 +43,19 @@ module ifid_reg(
             ifid_pc    <= `PC_WIDTH'd0;
             ifid_pc_4  <= `PC_WIDTH'd4;
             ifid_instr <= `PC_WIDTH'd0;
+            id_nop     <= 1'b1;
         end
         else if (cu_stall) begin
             ifid_pc    <= ifid_pc;
             ifid_pc_4  <= ifid_pc_4;
             ifid_instr <= ifid_instr;
+            id_nop     <= id_nop;
         end
         else begin
             ifid_pc    <= pc;
             ifid_pc_4  <= pc_4;
             ifid_instr <= instr;
+            id_nop     <= 1'b0;
         end
     end
 

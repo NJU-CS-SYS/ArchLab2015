@@ -25,6 +25,7 @@ module idex_reg(
     input reset,
     input cu_stall,
     input cu_flush,
+    input id_nop,
     input [4:0] id_rd_addr,
     input idex_mem_w_in,
     input idex_mem_r_in,
@@ -54,6 +55,7 @@ module idex_reg(
     input idex_eret_in,
     input id_movz,
     input id_movn,
+    output reg ex_nop,
     output reg idex_mem_w,
     output reg idex_mem_r,
     output reg idex_reg_w,
@@ -114,6 +116,7 @@ module idex_reg(
             idex_eret <= 1'd0;
             idex_movz <= 1'b0;
             idex_movn <= 1'b0;
+            ex_nop <= 1'b1;
         end
         else if(!cu_stall) begin
             idex_mem_w<= idex_mem_w_in;
@@ -144,6 +147,7 @@ module idex_reg(
             idex_eret<=idex_eret_in;
             idex_movz <= id_movz;
             idex_movn <= id_movn;
+            ex_nop <= id_nop;
         end
     end
 endmodule
