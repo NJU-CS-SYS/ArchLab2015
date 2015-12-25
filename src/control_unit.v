@@ -33,7 +33,7 @@ module control_unit(
     input id_jump,
     input exmem_eret,
     input exmem_syscall,
-    input mem_nop;
+    input mem_nop,
     //stall
     output reg [3 : 0]cu_pc_src,
     output reg cu_pc_stall,
