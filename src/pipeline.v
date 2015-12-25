@@ -521,6 +521,8 @@ barrel_shifter shifter (
     .Shift_out(shifter_out)
 );
 
+wire ex_reg_w_gened;  // The handled reg_w, often disenable for special cases
+
 reg_w_gen reg_w_gen (
     // Input
     .of(ex_overflow),
@@ -530,7 +532,7 @@ reg_w_gen reg_w_gen (
     .idex_reg_w(ex_reg_w),
     .idex_of_w_disen(ex_of_w_disen),
     // Output
-    .new_reg_w(mem_reg_w)
+    .new_reg_w(ex_reg_w_gened)
 );
 
 // Special load and store byte write enable
@@ -589,7 +591,7 @@ exmem_reg  inst_exmem_reg (
     .ex_nop             ( ex_nop ),
     .idex_mem_w         ( idex_mem_w ),
     .idex_mem_r         ( ex_mem_r ),
-    .idex_reg_w         ( ex_reg_w ),
+    .idex_reg_w         ( ex_reg_w_gened ),
     .idex_branch        ( ex_branch ),
     .idex_condition     ( ex_condition ),
     .addr_target        ( branch_addr ),
