@@ -101,7 +101,7 @@ always @(posedge clk) begin
             counter <= counter_next;
         end
         else begin
-            if(ram_ready) begin
+            if(ram_ready || (loading_ic && dc_hit)) begin
                 status <= status_next;
                 counter <= counter_next;
             end
