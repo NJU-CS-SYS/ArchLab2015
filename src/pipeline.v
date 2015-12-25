@@ -263,7 +263,7 @@ ifid_reg ifid (
     .reset          ( reset ),
     .cu_stall       ( cu_ifid_stall ),
     .cu_flush       ( cu_ifid_flush ),
-    .pc             ( pc_in ),
+    .pc             ( pc_out ),
     .pc_4           ( if_pc_4 ),
     .instr          ( ic_data_out ),
      // Output        
