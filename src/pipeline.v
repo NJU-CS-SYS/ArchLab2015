@@ -731,7 +731,7 @@ control_unit  inst_control_unit (
     .ex_nop            ( ex_nop ),
     .ifid_rs_addr      ( ifid_rs_addr ),
     .real_rt_addr      ( id_rt_addr ),
-    .idex_rd_addr      ( id_rd_addr ),
+    .idex_rd_addr      ( ex_rd_addr ),
     .idex_mem_read     ( ex_mem_r ),
     .predicted_idex_pc ( ex_pc ),
     .target_exmem_pc   ( mem_final_target ),
