@@ -41,6 +41,7 @@ output mem_stall,ram_en_out,ram_write_out;
 output [29:0] ram_addr_out;
 
 reg [2:0] status,counter;
+reg write_after_load;
 
 wire ic_enable, ic_cmp, ic_write, ic_data_sel, ic_valid_2ic;
 wire dc_enable, dc_cmp, dc_write, dc_data_sel, dc_valid_2dc;
@@ -77,7 +78,7 @@ cache_control cctrl (dc_read_in, dc_write_in, ic_offset, dc_offset, dc_byte_w_en
     ic_enable, ic_word_sel, ic_cmp, ic_write, ic_data_sel, ic_byte_w_en, ic_valid_2ic,/*to ic*/
     dc_enable, dc_word_sel, dc_cmp, dc_write, dc_data_sel, dc_byte_w_en, dc_valid_2dc,/*to dc*/
     ram_addr_sel, ram_en_out, ram_write_out,
-    status_next,counter_next
+    status_next, counter_next
 );
 
 assign ic_data2ic = ic_data_sel ? data_ram : dc_data_out; //0:load from dc
@@ -94,13 +95,18 @@ always @(posedge clk) begin
     if(rst) begin
         status <= `STAT_NORMAL;
         counter <= 3'd7;
+        write_after_load <= 0;
     end
     else begin
         if(status == `STAT_NORMAL) begin
             status <= status_next;
             counter <= counter_next;
+            write_after_load <= 0;
         end
         else begin
+            if(dc_write_in) begin
+                write_after_load <= 1;
+            end
             if(ram_ready || (loading_ic && dc_hit)) begin
                 status <= status_next;
                 counter <= counter_next;
@@ -109,7 +115,7 @@ always @(posedge clk) begin
     end
 end
 
-assign mem_stall = (status != `STAT_NORMAL) || (status_next != `STAT_NORMAL);
+assign mem_stall = (status != `STAT_NORMAL) || (status_next != `STAT_NORMAL) || write_after_load ;
 
 
 endmodule
