@@ -27,7 +27,7 @@ module extension(
         SIGN_EXT: imm_ext = { {`IMM_WIDTH{ifid_imm[`IMM_WIDTH - 1]}}, ifid_imm};
         UNSIGN_EXT: imm_ext = { {`IMM_WIDTH{1'b0}}, ifid_imm };
         LUI: imm_ext = { ifid_imm, `IMM_WIDTH'd0 };
-        CONST_4: imm_ext = `DATA_WIDTH'd4;
+        CONST_4: imm_ext = `DATA_WIDTH'd1;  // (ex_imm_ext << 2) == 4
         endcase
     end
 

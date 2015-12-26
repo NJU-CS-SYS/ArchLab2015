@@ -5,8 +5,7 @@
  * @author XuanBaoQiong
  */
 module decoder(
-    input   [31:0] ifid_instr,
-    output  reg idex_mem_w,
+    input   [31:0] ifid_instr, output  reg idex_mem_w,
     output  reg idex_mem_r,
     output  reg idex_reg_w,
     output  reg idex_branch,
@@ -631,7 +630,7 @@ module decoder(
         /* JAL */
         else if(ifid_instr[31:26] == 6'b000011) begin
             idex_movn = 0; idex_movz = 0;
-            idex_mem_w = 0; idex_mem_r = 0; idex_reg_w = 0;
+            idex_mem_w = 0; idex_mem_r = 0; idex_reg_w = 1;
             idex_branch = 0; idex_condition = 0;
             idex_of_w_disen = 0;
             idex_exres_sel = 2'b10;
