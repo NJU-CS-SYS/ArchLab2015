@@ -23,6 +23,7 @@
 module memwb_reg(
     input clk,
     input reset,
+    input mem_stall,
     input exmem_mem_r,
     input exmem_reg_w,
     input [3:0] reg_byte_w_en_in,
@@ -55,7 +56,7 @@ module memwb_reg(
             memwb_cp0_w_en      <= 0;
             aligned_rt_data_out <= 0;
         end
-        else begin
+        else if ( !mem_stall ) begin
             memwb_mem_r         <= exmem_mem_r;
             memwb_reg_w         <= exmem_reg_w;
             reg_byte_w_en_out   <= reg_byte_w_en_in;

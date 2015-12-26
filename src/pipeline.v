@@ -683,6 +683,7 @@ memwb_reg  inst_memwb_reg (
     // Global input
     .clk                 ( clk ),
     .reset               ( reset ),
+    .mem_stall           ( mem_stall ),
     // Input from mem
     .exmem_mem_r         ( mem_mem_r ),
     .exmem_reg_w         ( mem_reg_w ),
