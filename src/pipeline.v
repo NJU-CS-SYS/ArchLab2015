@@ -502,14 +502,14 @@ end
 
 alu alu (
     // Input
-    .A_in(operand_A_after_selection),
-    .B_in(operand_B_after_selection),
-    .Alu_op(ex_ALU_op),
+    .A(operand_A_after_selection),
+    .B(operand_B_after_selection),
+    .op(ex_ALU_op),
     // Output
-    .Less(ex_less),
-    .Overflow(ex_overflow),
-    .Zero(ex_zero),
-    .Alu_out(alu_out)
+    .LF_out(ex_less),
+    .OF_out(ex_overflow),
+    .ZF_out(ex_zero),
+    .alu_out(alu_out)
 );
 
 barrel_shifter shifter (

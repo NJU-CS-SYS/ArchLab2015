@@ -1,17 +1,17 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: NJU_CS_COD_2015
-// Engineer: Yueqi Chen(yueqichen.0x0@gmail.com)
+// Company: 
+// Engineer: 
 // 
-// Create Date: 2015/12/05 00:05:33
-// Design Name: adder
+// Create Date: 2015/09/19 17:15:43
+// Design Name: 
 // Module Name: adder
-// Project Name: pipeline cpu
-// Target Devices: xc7a100tcsg324-1
-// Tool Versions: 0.0
-// Description:  adder with carry 
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
 // 
-// Dependencies: none
+// Dependencies: 
 // 
 // Revision:
 // Revision 0.01 - File Created
@@ -21,26 +21,23 @@
 
 
 module adder(
-	input [31:0] A_in , B_in,
-	input Cin,
-	output reg [31:0] O_out,
-	output reg Zero , Carry , Overflow , Negative
+    input [31:0] A,
+    input [31:0] B,
+    input cin,
+    output ZF,
+    output CF,
+    output OF,
+    output NF,
+    output [31:0] S
 );
 
-	reg [31:0] b_in_not;
-	always@(*)
-	begin
-		if(Cin == 0)
-			b_in_not = B_in ^ 32'h00000000;
-		else 
-			b_in_not = B_in ^ 32'hffffffff;
+wire [32:0] M;
+assign M = {1'b0,A} + {1'b0,B} + cin;
+assign ZF = M[31:0] == 32'd0;
+assign CF = M[32];
+assign OF = A[31]==B[31] && A[31]!=M[31];
+assign NF = M[31];
+assign S = M[31:0];
 
-		{Carry ,O_out} = A_in + b_in_not + Cin;
-		if(O_out == 0)
-			Zero = 1;
-		else 
-			Zero = 0;
-		Overflow = ((~A_in[31])&(~b_in_not[31])&O_out[31]) | (A_in[31]&b_in_not[31]&(~O_out[31]));
-		Negative = O_out[31];
-	end
+
 endmodule

@@ -1,17 +1,17 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: NJU_CS_COD_2015
-// Engineer: Yueqi Chen (yueqichen.0x0@gmail.com)
+// Company: 
+// Engineer: 
 // 
-// Create Date: 2015/12/04 23:41:48
-// Design Name: alu
+// Create Date: 2015/09/19 16:46:19
+// Design Name: 
 // Module Name: alu
-// Project Name: pipeline cpu
-// Target Devices: xc7a100tcsg324-1
-// Tool Versions: 0.0
-// Description: alu
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
 // 
-// Dependencies: adder alu_controller
+// Dependencies: 
 // 
 // Revision:
 // Revision 0.01 - File Created
@@ -19,128 +19,75 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
+//This MIPS ALU is designed according to the given logic
 
 module alu(
-	input [31:0] A_in , B_in,
-	input [3:0] Alu_op,
-	output reg Less , Overflow,
-	output Zero,
-	output reg [31:0] Alu_out
+input [31:0] A,
+input [31:0] B,
+input [3:0] op,
+output [31:0] alu_out,
+output ZF_out,OF_out,LF_out
 );
-	reg [31:0] a_clz;
-	wire carry , overflow , negative;
-	wire [31:0] o_out;
-	wire [2:0] alu_ctr;
+wire [2:0] ctrl;
+// some logic operation outputs
+wire [31:0] and32 = A & B;
+wire [31:0] or32 = A | B;
+wire [31:0] xor32 = A ^ B;
+wire [31:0] nor32 = ~or32;
+wire [31:0] A_xor_op0 = A ^{32{op[0]}}; //for leading zeros
+wire [31:0] B_xor_op0 = B ^{32{op[0]}}; //for adder
+wire [31:0] se = op[0] ? {{16{B[15]}},B[15:0]}: {{24{B[7]}},B[7:0]} ; // sign extend
+wire [31:0] slt; // set less than
+wire [31:0] prefix0; //ALU's counting leading zeros output
+wire less_sel = !op[3] && op[2] && op[1] &&op[0]; //if comparing 2 uint,then Less flag is related to CF,orit's related to NF and OF
+wire [4:0] mediate_leadingz; //leading zeros module's output
 
-	reg [15:0] val16;
-	reg [7:0] val8;
-	reg [3:0] val4;
-	reg [1:0] val2;
 
-	integer i;
-	integer j;
+/*autodef*/
+wire                                    CF;
+wire                                    NF;
+wire                                    OF;
+wire [31:0]                             S;
+wire                                    ZF;
 
-	alu_controller controller1(
-		.Alu_op(Alu_op),
-		.Alu_ctr(alu_ctr)
-	);
 
-	adder adder1(
-		.A_in(A_in),
-		.B_in(B_in),
-		.Cin(Alu_op[0]),
-		.O_out(o_out),
-		.Zero(Zero),
-		.Carry(carry),
-		.Overflow(overflow),
-		.Negative(negative)
-	);
+//3 ctrl bits
+assign ctrl[2] = !op[3]&&!op[1] || !op[3]&&op[2]&&op[0] || op[3]&&op[1];
+assign ctrl[1] = !op[3]&&!op[2]&&!op[1] || op[3]&&!op[2]&&!op[0] ||
+    op[2]&&op[1]&&!op[0] || op[3]&&op[1];
+assign ctrl[0] = !op[2]&&!op[1] || !op[3]&&op[2]&&op[0] || op[3]&&op[2]&&op[1];
 
-	always@(*)
-	begin
-	   Less = 1'b0;
-	   Overflow = 1'b0;
-	   Alu_out = 32'h0;
-		if(alu_ctr == 3'b111)
-		begin
-			Alu_out = o_out;
-			if((Alu_op == 0) || (Alu_op == 1)) // addu subu
-				Overflow = 0;
-			else if((Alu_op == 14) || (Alu_op == 15))//add sub
-				Overflow = overflow;
-			Less = overflow^negative;
-		end
-		else if(alu_ctr == 3'b000)
-		begin
-			if(Alu_op[0] == 1) //clz
-				a_clz = A_in ^ 32'hffffffff;
-			else
-				a_clz = A_in;
-		       	Alu_out = 32'h0;
-			if(a_clz == 0)
-			Alu_out = 32;
-			else begin
-			Alu_out[4] = a_clz[31:16]== 16'd0;
-			val16 = Alu_out[4] ? a_clz[15:0]:a_clz[31:16];
-			Alu_out[3] = val16[15:8] == 8'd0;
-			val8 = Alu_out[3]? val16[7:0]:val16[15:8];
-		       	Alu_out[2] = val8[7:4] == 4'd0;
-			val4 = Alu_out[2]? val8[3:0]:val8[7:4];
-			Alu_out[1] = val4[3:2] == 2'd0;
-			val2 = Alu_out[1]? val4[1:0]:val4[3:2];
-			Alu_out[0] = val2[1] == 1'd0;
-			end	
-		end
+adder adder(/*autoinst*/
+    .A                          (A[31:0]                        ),
+    .B                          (B_xor_op0                        ),
+    .cin                        (op[0]                            ),
+    .ZF                         (ZF                             ),
+    .CF                         (CF                             ),
+    .OF                         (OF                             ),
+    .NF                         (NF                             ),
+    .S                          (S[31:0]                        )
+);
+leadingz leadingz(/*autoinst*/
+    .A                          (A_xor_op0[31:0]                        ),
+    .res                        (mediate_leadingz[4:0]                      )
+);
 
-		else if(alu_ctr == 3'b100)//and
-			Alu_out = A_in & A_in;
-		else if(alu_ctr == 3'b010)//or
-			Alu_out = A_in | A_in;
-		else if(alu_ctr == 3'b011)//nor
-			Alu_out = ~(A_in |A_in);
-		else if(alu_ctr == 3'b001)//xor
-			Alu_out = A_in ^ A_in;
 
-		else if(alu_ctr == 3'b101)
-		begin
-			if(Alu_op[1] == 0)//slt/slti
-				Less = overflow^negative;
-			else//sltu/sltiu
-				Less = ~carry;
-			if(Less == 0)
-				Alu_out = 0;
-			else
-				Alu_out = 32'h1;
-		end
-		else if(alu_ctr == 3'b110)
-		begin
-			if(Alu_op[0] == 0)//seb
-			begin
-				if(B_in[7] == 1)
-				begin
-					Alu_out[31:8] = 24'hffffff;
-					Alu_out[7:0] = B_in[7:0];
-				end
-				else
-				begin
-					Alu_out[31:8] = 24'h000000;
-					Alu_out[7:0] = B_in[7:0];
-				end
+assign LF_out = less_sel ? !CF : NF^OF;  
+assign ZF_out = ZF;
+assign OF_out = OF && op[3] && op[2] && op[1];//OF_out is valid during executing instruction 14 & 15
+assign prefix0[5:0] = A_xor_op0 == 32'd0 ? 6'b100000 : {1'b0,mediate_leadingz[4:0]} ;
+//if 32 bits of input are all 0s,then lower 6 bits of prefix0 are 6'b100000;
+assign prefix0[31:6] = 26'd0;
+assign slt = LF_out ? 32'd1 : 32'd0;
 
-			end
-			else//seh
-			begin
-				if(B_in[15] == 1)
-				begin
-					Alu_out[31:16] = 16'hffff;
-					Alu_out[15:0] = B_in[15:0];
-				end
-				else
-				begin
-					Alu_out[31:16] = 16'h0000;
-					Alu_out[15:0] = B_in[15:0];
-				end
-			end
-		end
-	end	
+assign alu_out = ctrl==3'b000 ? prefix0 :
+    (ctrl==3'b001 ? xor32 :
+    (ctrl==3'b010 ? or32 :
+    (ctrl==3'b011 ? nor32 :
+    (ctrl==3'b100 ? and32 :
+    (ctrl==3'b101 ? slt :
+    (ctrl==3'b110 ? se : S
+))))));
+
 endmodule
