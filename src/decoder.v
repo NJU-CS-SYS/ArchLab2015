@@ -560,7 +560,7 @@ module decoder(
             id_jump = 0;
         end
         /* BLEZ */
-        else if(ifid_instr[31:26] == 6'b010110) begin
+        else if(ifid_instr[31:26] == 6'b000110) begin
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 0; idex_mem_r = 0; idex_reg_w = 0;
             idex_branch = 1; idex_condition = 3'b101;
