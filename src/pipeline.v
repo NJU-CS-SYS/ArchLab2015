@@ -569,10 +569,12 @@ ForwardUnit FU (
     // Input from MEM
     .exmem_rd_addr ( mem_rd_addr ),
     .exmem_byte_en ( mem_reg_byte_w_en ),
+    .exmem_w_en    ( mem_reg_w ),
     // Input from WB
     .memwb_data    ( memwb_data ),
     .memwb_rd_addr ( wb_rd_addr ),
     .memwb_byte_en ( wb_reg_byte_w_en ),
+    .memwb_w_en    ( wb_reg_w ),
     // Output
     .input_A       ( input_A ),
     .input_B       ( input_B ),
