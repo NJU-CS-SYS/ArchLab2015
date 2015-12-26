@@ -50,6 +50,6 @@ always@(*) begin
     endcase
 end
 
-assign data_to_reg = shift_mid;
+assign data_to_reg = dout;
 
 endmodule
