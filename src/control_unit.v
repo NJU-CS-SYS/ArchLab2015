@@ -27,10 +27,12 @@ module control_unit(
     input [4 : 0] real_rt_addr,
     input [4 : 0] idex_rd_addr,
     input idex_mem_read,
-    input [31 :0] predicted_idex_pc,
-    input [31 : 0] target_exmem_pc,
+    input [31:0] predicted_idex_pc,
+    input [31:0] predicted_ifid_pc,  // Use when a load-use harzard insert a nop
+    input [31:0] target_exmem_pc,
     input cp0_intr,
     input id_jump,
+    input mem_jmp,
     input exmem_eret,
     input exmem_syscall,
     input mem_nop,
@@ -55,11 +57,11 @@ module control_unit(
 
 
 
-    wire load_use_hazard;
     wire branch_hazard;
+    wire load_use_hazard;
     assign load_use_hazard = idex_mem_read & (idex_rd_addr == ifid_rs_addr | idex_rd_addr == real_rt_addr);
-    assign branch_hazard = !(ex_nop || mem_nop) && (predicted_idex_pc != target_exmem_pc);
-
+    assign branch_hazard = (!(ex_nop || mem_nop) && (predicted_idex_pc != target_exmem_pc))  // EX or MEM is nop, don's check
+                           || (ex_nop && !mem_nop && !mem_jmp && (predicted_ifid_pc != target_exmem_pc));  // Check further
 
     always @(*) begin
         //initial

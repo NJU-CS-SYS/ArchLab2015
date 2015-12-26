@@ -26,6 +26,7 @@ module exmem_reg(
     input cu_stall,
     input cu_flush,
     input ex_nop,
+    input ex_jmp,
     input idex_mem_w,
     input idex_mem_r,
     input idex_reg_w,
@@ -49,6 +50,7 @@ module exmem_reg(
     input syscall_in,
     input idex_eret,
     output reg mem_nop,
+    output reg mem_jmp,
     output reg [31:0] exmem_pc,
     output reg exmem_mem_w,
     output reg exmem_mem_r,
@@ -96,6 +98,7 @@ module exmem_reg(
             syscall_out     <= 0;
             exmem_eret      <= 0;
             mem_nop         <= 1;
+            mem_jmp         <= 0;
         end
         else if (!cu_stall) begin
             exmem_pc        <= idex_pc;
@@ -120,6 +123,7 @@ module exmem_reg(
             syscall_out         <= syscall_in;
             exmem_eret      <= idex_eret;
             mem_nop         <= ex_nop;
+            mem_jmp         <= ex_jmp;
         end
     end
 endmodule

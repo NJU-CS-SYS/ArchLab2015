@@ -371,12 +371,14 @@ always @(*) begin
 end
 
 wire ex_nop;  // Indicate that the current instr in EX is nop
+wire ex_jmp;  // Transfer jmp to ex -> mem to indicate CU
 
 idex_reg idex_reg (
     // Input
     .clk(clk),
     .reset(reset),
     .id_nop(id_nop),
+    .id_jmp(id_jump),
     .cu_stall(cu_idex_stall),
     .cu_flush(cu_idex_flush),
     .id_rd_addr(id_rd_addr),
@@ -410,6 +412,7 @@ idex_reg idex_reg (
     .id_movn(idex_movn),
     // Output
     .ex_nop(ex_nop),
+    .ex_jmp(ex_jmp),
     .idex_mem_w(ex_mem_w),
     .idex_mem_r(ex_mem_r),
     .idex_reg_w(ex_reg_w),
@@ -579,6 +582,7 @@ ForwardUnit FU (
 
 
 wire mem_nop;  // Indicate that the current instr in MEM is a nop.
+wire mem_jmp;  // Transfer the jmp to mem to indicate CU
 
 exmem_reg  inst_exmem_reg (
     // Input from global
@@ -589,6 +593,7 @@ exmem_reg  inst_exmem_reg (
     .cu_flush           ( cu_exmem_flush ),
     // Input from EX
     .ex_nop             ( ex_nop ),
+    .ex_jmp             ( ex_jmp ),
     .idex_mem_w         ( ex_mem_w ),
     .idex_mem_r         ( ex_mem_r ),
     .idex_reg_w         ( ex_reg_w_gened ),
@@ -613,6 +618,7 @@ exmem_reg  inst_exmem_reg (
     .idex_eret          ( ex_eret ),
     // Output to MEM
     .mem_nop            ( mem_nop ),
+    .mem_jmp            ( mem_jmp ),
     .exmem_pc           ( mem_pc ),
     .exmem_pc_4         ( mem_pc_4 ),
     .exmem_mem_w        ( mem_mem_w ),
@@ -729,11 +735,13 @@ control_unit  inst_control_unit (
     .mem_stall         ( mem_stall ),
     .mem_nop           ( mem_nop ),
     .ex_nop            ( ex_nop ),
+    .mem_jmp           ( mem_jmp ),
     .ifid_rs_addr      ( ifid_rs_addr ),
     .real_rt_addr      ( id_rt_addr ),
     .idex_rd_addr      ( ex_rd_addr ),
     .idex_mem_read     ( ex_mem_r ),
     .predicted_idex_pc ( ex_pc ),
+    .predicted_ifid_pc ( ifid_pc ),
     .target_exmem_pc   ( mem_final_target ),
     .cp0_intr          ( cp0_intr ),
     .id_jump           ( id_jump ),
