@@ -215,12 +215,12 @@ module decoder(
             id_rd_addr_sel = 1;
             id_rt_addr_sel = 0;
             id_rt_data_sel = 1;
-            id_jump = 0;
             /* different */
             case(ifid_instr[2:0])
             // SYSCALL
             3'b100:
             begin
+                id_jump = 1;
                 idex_syscall = 1;
                 id_jr = 0;
                 idex_reg_w = 0;
@@ -230,7 +230,7 @@ module decoder(
             // JR
             3'b000:
             begin
-      
+                id_jump = 1;
                 idex_syscall = 0;
                 id_jr = 1;
                 idex_reg_w = 0;
@@ -240,7 +240,7 @@ module decoder(
             // MOVN
             3'b011:
             begin
-      
+                id_jump = 0;
                 idex_syscall = 0;
                 id_jr = 0;
                 idex_reg_w = 1;
@@ -250,6 +250,7 @@ module decoder(
             // MOVZ
             3'b010:
             begin
+                id_jump = 0;
                 idex_syscall = 0;
                 id_jr = 0;
                 idex_reg_w = 1;
