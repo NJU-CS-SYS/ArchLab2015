@@ -589,7 +589,7 @@ exmem_reg  inst_exmem_reg (
     .cu_flush           ( cu_exmem_flush ),
     // Input from EX
     .ex_nop             ( ex_nop ),
-    .idex_mem_w         ( idex_mem_w ),
+    .idex_mem_w         ( ex_mem_w ),
     .idex_mem_r         ( ex_mem_r ),
     .idex_reg_w         ( ex_reg_w_gened ),
     .idex_branch        ( ex_branch ),
