@@ -1,14 +1,9 @@
-void good() { while (1); }
-void bad() { while (1); }
+#include "trap.h"
 
 #define SWAP(x, y) do { \
     typeof(x) tmp = x;  \
     x = y;              \
     y = tmp;            \
-} while (0)
-
-#define ASSERT(x) do { \
-    if (!(x)) bad();   \
 } while (0)
 
 int main()
