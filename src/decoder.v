@@ -474,7 +474,7 @@ module decoder(
             3'b100: begin
                 idex_of_w_disen = 0;
                 idex_ALU_op = 4'b0100;
-                id_imm_ext = 1;
+                id_imm_ext = 0;
             end
             // ORI
             3'b101: begin
