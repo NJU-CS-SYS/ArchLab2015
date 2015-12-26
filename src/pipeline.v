@@ -334,7 +334,7 @@ end
 ////////////////////////////////////////////////////////////////////////////
 
 GPR gpr (
-    .clk(clk),
+    .clk(~clk),  // write in the wb cycle, not the next cycle
     .reset(reset),
     .write(wb_reg_w),
     .Rs_addr(ifid_rs_addr),
@@ -557,7 +557,7 @@ store_shifter  inst_store_shifter (
 
 // Forwarding Unit
 
-ForwardUnit inst_ForwardUnit (
+ForwardUnit FU (
     // Input from EX
     .rs_data       ( ex_op_A ),
     .rt_data       ( ex_op_B ),

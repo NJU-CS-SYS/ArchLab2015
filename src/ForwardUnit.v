@@ -45,14 +45,18 @@ module ForwardUnit #(parameter DATA_WIDTH = 32,parameter ADDR_WIDTH = 5)(
         if(memwb_byte_en[3] == 1'b1) input_B[31:24] = memwb_data[31:24];
         if(memwb_byte_en[2] == 1'b1) input_B[23:16] = memwb_data[23:16];
         if(memwb_byte_en[1] == 1'b1) input_B[15:8] = memwb_data[15:8];
-        if(memwb_byte_en[0] == 1'b1) input_B[7:0] = memwb_data[7:0];        
+        if(memwb_byte_en[0] == 1'b1) input_B[7:0] = memwb_data[7:0];
     end
     
+    // Detect and avoid $0
+    wire is_exmem_rd_zero = (exmem_rd_addr == 0);
+    wire is_memwb_rd_zero = (memwb_rd_addr == 0);
+
     //decide forward A_sel,occur together:Ex/Mem > Mem/Wb
     always @ (*) begin
-        if(exmem_rd_addr == rs_addr && exmem_byte_en == 4'b1111)
+        if(exmem_rd_addr == rs_addr && exmem_byte_en == 4'b1111 && !is_exmem_rd_zero)
             A_sel = 2'b01;
-        else if(memwb_rd_addr == rs_addr && memwb_byte_en != 4'b0000)
+        else if(memwb_rd_addr == rs_addr && memwb_byte_en != 4'b0000 && !is_memwb_rd_zero)
             A_sel = 2'b10;
         else
             A_sel = 2'b00;
@@ -60,9 +64,9 @@ module ForwardUnit #(parameter DATA_WIDTH = 32,parameter ADDR_WIDTH = 5)(
     
     //decide forward B_sel,occur together:Ex/Mem > Mem/Wb
     always @ (*) begin
-        if(exmem_rd_addr == rt_addr && exmem_byte_en == 4'b1111)
+        if(exmem_rd_addr == rt_addr && exmem_byte_en == 4'b1111 && !is_exmem_rd_zero)
             B_sel = 2'b01;
-        else if(memwb_rd_addr == rt_addr && memwb_byte_en != 4'b0000)
+        else if(memwb_rd_addr == rt_addr && memwb_byte_en != 4'b0000 && !is_memwb_rd_zero)
             B_sel = 2'b10;
         else
             B_sel = 2'b00;
