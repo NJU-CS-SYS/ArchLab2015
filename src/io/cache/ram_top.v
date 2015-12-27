@@ -21,7 +21,7 @@
 
 
 module ram_top(
-    input [11:0] ram_addr,
+    input [13:0] ram_addr,
     input [31:0] data_to_ram,
     input clk,
     input ram_en,
