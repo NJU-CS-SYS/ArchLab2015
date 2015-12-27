@@ -737,7 +737,8 @@ wire [`PC_BUS] cu_epc;
 
 control_unit  inst_control_unit (
     // Input
-    .id_jr             ( 1'b0 ),
+    .clk               ( clk ),
+    .reset             ( reset ),
     .mem_stall         ( mem_stall ),
     .mem_nop           ( mem_nop ),
     .ex_nop            ( ex_nop ),
@@ -749,6 +750,7 @@ control_unit  inst_control_unit (
     .predicted_idex_pc ( ex_pc ),
     .predicted_ifid_pc ( ifid_pc ),
     .target_exmem_pc   ( mem_final_target ),
+    .mem_pc            ( mem_pc ),
     .cp0_intr          ( cp0_intr ),
     .id_jump           ( id_jump ),
     .exmem_eret        ( mem_eret ),
