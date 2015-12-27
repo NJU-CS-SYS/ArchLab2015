@@ -54,7 +54,7 @@ module control_unit(
     output reg [4 : 0] cu_exec_code,
     output reg [31 : 0] cu_epc,
     output reg [31 :0] cu_vector,
-	output reg bpu_write_en
+    output reg bpu_write_en
 );
 
     // Classic load use.
@@ -155,8 +155,8 @@ module control_unit(
         // eret/ret handle
         if (exmem_eret) begin
             cu_ifid_flush = 1'b1;
-			cu_idex_flush = 1'b1;
-			cu_exmem_flush = 1'b1;
+            cu_idex_flush = 1'b1;
+            cu_exmem_flush = 1'b1;
             cu_pc_src = 4'b0011;
         end
 
