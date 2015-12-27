@@ -234,7 +234,7 @@ module decoder(
                 idex_branch = 1;
                 id_jump = 0;
                 idex_syscall = 0;
-                id_jr = 0;
+                id_jr = 1;
                 idex_reg_w = 0;
                 idex_movn = 0;
                 idex_movz = 0;

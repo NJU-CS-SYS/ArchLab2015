@@ -128,8 +128,9 @@ reg [4:0] shamt_after_sel;
 // Exec result candidates
 wire [`DATA_BUS] alu_out;
 wire [`DATA_BUS] shifter_out;
-//wire [`PC_BUS] branch_addr = (ex_pc_4 << 2) + ex_imm_ext;
-wire [`PC_BUS] branch_addr = ex_pc_4 + (ex_imm_ext<<2);
+
+wire ex_jr;  // JR indicator
+wire [`PC_BUS] branch_addr = (ex_jr) ? exec_result : ex_pc_4 + (ex_imm_ext<<2);
 
 // Forwarding selectors
 wire [1:0] A_sel;
@@ -379,6 +380,7 @@ idex_reg idex_reg (
     .reset(reset),
     .id_nop(id_nop),
     .id_jmp(id_jump),
+    .id_jr(id_jr),
     .cu_stall(cu_idex_stall),
     .cu_flush(cu_idex_flush),
     .id_rd_addr(id_rd_addr),
@@ -413,6 +415,7 @@ idex_reg idex_reg (
     // Output
     .ex_nop(ex_nop),
     .ex_jmp(ex_jmp),
+    .ex_jr(ex_jr),
     .idex_mem_w(ex_mem_w),
     .idex_mem_r(ex_mem_r),
     .idex_reg_w(ex_reg_w),
@@ -733,7 +736,7 @@ wire [`PC_BUS] cu_epc;
 
 control_unit  inst_control_unit (
     // Input
-    .id_jr             ( id_jr ),
+    .id_jr             ( 1'b0 ),
     .mem_stall         ( mem_stall ),
     .mem_nop           ( mem_nop ),
     .ex_nop            ( ex_nop ),
