@@ -202,7 +202,7 @@ module decoder(
         else if(ifid_instr[31:26] == 0 && ifid_instr[5:3] == 3'b001) begin
             /* same */
             idex_mem_w = 0; idex_mem_r = 0;
-            idex_branch = 0; idex_condition = 0;
+            idex_condition = 0;
             idex_of_w_disen = 0;
             idex_exres_sel = 0;
             idex_ALU_op = 0;
@@ -220,6 +220,7 @@ module decoder(
             // SYSCALL
             3'b100:
             begin
+                idex_branch = 0;
                 id_jump = 1;
                 idex_syscall = 1;
                 id_jr = 0;
@@ -230,9 +231,10 @@ module decoder(
             // JR
             3'b000:
             begin
-                id_jump = 1;
+                idex_branch = 1;
+                id_jump = 0;
                 idex_syscall = 0;
-                id_jr = 1;
+                id_jr = 0;
                 idex_reg_w = 0;
                 idex_movn = 0;
                 idex_movz = 0;
@@ -240,6 +242,7 @@ module decoder(
             // MOVN
             3'b011:
             begin
+                idex_branch = 0;
                 id_jump = 0;
                 idex_syscall = 0;
                 id_jr = 0;
@@ -250,6 +253,7 @@ module decoder(
             // MOVZ
             3'b010:
             begin
+                idex_branch = 0;
                 id_jump = 0;
                 idex_syscall = 0;
                 id_jr = 0;
@@ -259,6 +263,8 @@ module decoder(
             end
             default:
 			begin
+                idex_branch = 0;
+                id_jump = 0;
                 idex_syscall = 0;
                 id_jr = 0;
 				idex_reg_w = 0;
