@@ -21,23 +21,9 @@
  * 由于标签的位宽有限, 所以会有碰撞的情况出现, 在 MEM 段修正后 PC + 4 也可以存储到里面
  */
 
-// 标签位宽
-`define TAG_WIDTH 6
-// 地址线宽度
-`define PC_WIDTH 32
-// 预测表条目长度
-`define ENTRY_WIDTH 32
-// 预测表条目数
-`define NR_SLOT (2 ** `TAG_WIDTH)
+`include "common.vh"
 
-// 总线
-`define PC_BUS       (`PC_WIDTH - 1)  : 0
-`define VALID_PC_BUS (`PC_WIDTH - 3)  : 0
-`define VALID_SLICE  (`PC_WIDTH - 1)  : 2
-`define INDEX_BUS    (`NR_SLOT - 1)   : 0
-`define TAG_BUS      (`TAG_WIDTH - 1) : 0
-
-module bpu(
+module BPU (
     input clk,
     input reset,
     input bpu_w_en,                    // 写使能, 驱动 bpu 进行状态更新
@@ -71,7 +57,7 @@ always @(*) begin
        predicted_pc = { bpu_pc[predict_tag], 2'd0 };
    end
    else begin
-       predicted_pc = { valid_current_pc + 1, 2'd0 };
+       predicted_pc = current_pc;
    end
 end
 
@@ -103,9 +89,3 @@ always @(negedge clk or posedge reset) begin
 end
 
 endmodule
-
-`undef PC_BUS
-`undef VALID_PC_BUS
-`undef VALID_SLICE
-`undef INDEX_BUS
-`undef TAG_BUS

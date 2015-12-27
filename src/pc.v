@@ -5,8 +5,7 @@
  * @author whz
  */
 
-`define PC_WIDTH 32
-`define PC_BUS (`PC_WIDTH - 1):0
+`include "common.vh"
 
 module PC(
     input clk,
@@ -23,6 +22,3 @@ module PC(
     end
 
 endmodule
-
-`undef PC_WIDTH
-`undef PC_BUS

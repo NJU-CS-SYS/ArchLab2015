@@ -27,7 +27,7 @@ parameter DATA_WIDTH = 8;
 
 input clk;
 input rst;
-input write;
+input write;  // write enable
 input [DATA_WIDTH-1:0] data_in;
 input [ADDR_WIDTH-1:0] addr;
 output [DATA_WIDTH-1:0] data_out;

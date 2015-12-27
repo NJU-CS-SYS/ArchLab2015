@@ -19,7 +19,7 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-
+// Get the 4 bytes of a word parallelly
 module cache_mem_word(clk, rst, write, data_in, addr, data_out, byte_w_en);
 
 parameter ADDR_WIDTH = 8;

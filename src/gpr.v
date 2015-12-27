@@ -23,25 +23,26 @@ module GPR
     integer reg_cnt;
 
     initial begin
-        reg_cnt = 2**ADDR_WIDTH;
-        for (i = 0; i < reg_cnt; i = i + 1)
+        reg_cnt = 2**ADDR_WIDTH - 1;
+        for (i = 0; i <= reg_cnt; i = i + 1)
             register[i] = 0;
     end
 
     `define BYTE_SLICE(idx) (7 + idx * 8) : (idx * 8)
     always @(negedge clk or posedge reset) begin
         if (reset) begin
+            reg_cnt = 2**ADDR_WIDTH - 1;
             for (i = 0; i < reg_cnt; i = i + 1)
                 register[i] = 0;
         end
         else if (Rd_addr != 0 && write) begin
-            if (Rd_Byte_w_en[0] == 0)
+            if (Rd_Byte_w_en[0] == 1)
                 register[Rd_addr][`BYTE_SLICE(0)] <= Rd_in[`BYTE_SLICE(0)];
-            if (Rd_Byte_w_en[1] == 0)
+            if (Rd_Byte_w_en[1] == 1)
                 register[Rd_addr][`BYTE_SLICE(1)] <= Rd_in[`BYTE_SLICE(1)];
-            if (Rd_Byte_w_en[2] == 0)
+            if (Rd_Byte_w_en[2] == 1)
                 register[Rd_addr][`BYTE_SLICE(2)] <= Rd_in[`BYTE_SLICE(2)];
-            if (Rd_Byte_w_en[3] == 0)
+            if (Rd_Byte_w_en[3] == 1)
                 register[Rd_addr][`BYTE_SLICE(3)] <= Rd_in[`BYTE_SLICE(3)];
         end
     end
