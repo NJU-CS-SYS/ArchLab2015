@@ -41,7 +41,7 @@ always begin
     #5;
     clk = ~clk;
     if(clk && mem_pc != mem_pc_reg) begin
-        $display("pc : 0x%x, %d",mem_pc[31:0],mem_pc[31:0]);
+        $display("pc : 0x%x, %d",mem_pc[31:0],mem_pc[31:2]);
         mem_pc_reg <= mem_pc;
     end
 end
