@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 1ns
 //////////////////////////////////////////////////////////////////////////////////
 // Company: NJU_CS_COD_2015 
 // Engineer: Yuei Chen (yueqichenchen.0x0@gmail.com)
@@ -54,61 +54,156 @@ module test_cp0();
 	
 	initial begin
 		wb_cp0_w_en = 1'b1;
-		cu_cp0_w_en = 1'b0;//check write status
+		cu_cp0_w_en = 1'b0;
 		epc = 32'h12345678;
-		id_cp0_src_addr = 12;
+		id_cp0_src_addr = 9;		//MTC0 status
 		wb_cp0_dst_addr = 12;
-		ex_data = 32'h87654321;
+		ex_data = 32'h11223344;
 		cu_exec_code = 5'b01010;
+		interrupt = 8'h0;
+		clk = 1;
+		#1
+		clk = 0;
+		#1
+		wb_cp0_w_en = 1'b1;
+		cu_cp0_w_en = 1'b0;
+		epc = 32'h12345678;
+		id_cp0_src_addr = 9;		//MTC0 cause
+		wb_cp0_dst_addr = 13;
+		ex_data = 32'h22334455;
+		cu_exec_code = 5'b01010;
+		interrupt = 8'h0;
+		clk = 1;
+		#1
+		clk = 0;
+		#1
+		wb_cp0_w_en = 1'b1;
+		cu_cp0_w_en = 1'b0;
+		epc = 32'h12345678;
+		id_cp0_src_addr = 9;		//MTC0 epc
+		wb_cp0_dst_addr = 14;
+		ex_data = 32'h33445566;
+		cu_exec_code = 5'b01010;
+		interrupt = 8'h0;
+		clk = 1;
+		#1
+		clk = 0;
+		#1
+		wb_cp0_w_en = 1'b0;
+		cu_cp0_w_en = 1'b0;
+		epc = 32'h12345678;
+		id_cp0_src_addr = 12;		//MFC0 status
+		wb_cp0_dst_addr = 12;
+		ex_data = 32'h33445566;
+		cu_exec_code = 5'b01010;
+		interrupt = 8'h0;
+		clk = 1;
+		#1
+		if(cp0_data != 32'h11223344)
+			$stop;
+		clk = 0;
+		#1
+		wb_cp0_w_en = 1'b0;
+		cu_cp0_w_en = 1'b0;
+		epc = 32'h12345678;
+		id_cp0_src_addr = 13;		//MFC0 cause
+		wb_cp0_dst_addr = 12;
+		ex_data = 32'h33445566;
+		cu_exec_code = 5'b01010;
+		interrupt = 8'h0;
+		clk = 1;
+		#1
+		if(cp0_data != 32'h22330055)
+			$stop;
+		clk = 0;
+		#1
+		wb_cp0_w_en = 1'b0;
+		cu_cp0_w_en = 1'b0;
+		epc = 32'h12345678;
+		id_cp0_src_addr = 14;		//MFC0 epc
+		wb_cp0_dst_addr = 12;
+		ex_data = 32'h33445566;
+		cu_exec_code = 5'b01010;
+		interrupt = 8'h0;
+		clk = 1;
+		#1
+		if(cp0_data != 32'h33445566)
+			$stop;
+		clk = 0;
+		#1
+		wb_cp0_w_en = 1'b1;
+		cu_cp0_w_en = 1'b0;
+		epc = 32'h12345678;
+		id_cp0_src_addr = 14;		//MTC0 status
+		wb_cp0_dst_addr = 12;
+		ex_data = 32'hff01;
+		cu_exec_code = 5'b01010;
+		interrupt = 8'h01;
+		clk = 1;
+		#1
+		clk = 0;
+		#1
+		wb_cp0_w_en = 1'b0;
+		clk = 1;
+		#1
+		clk = 0;
+		#1
+		if(cp0_intr != 1'b1)
+			$stop;
+		#1
+		wb_cp0_w_en = 1'b0;
+		cu_cp0_w_en = 1'b1;
+		epc = 32'h12345678;
+		id_cp0_src_addr = 12;		//system call
+		wb_cp0_dst_addr = 12;
+		ex_data = 32'hff01;
+		cu_exec_code = 5'b00000;
+		interrupt = 8'h01;
 		clk = 1;
 		#1
 		clk = 0;
 		#1
 		wb_cp0_w_en = 1'b0;
 		cu_cp0_w_en = 1'b1;
-		epc = 32'h12345678;
-		id_cp0_src_addr = 14;//check read epc
+		epc = 32'hfedcba99;
+		id_cp0_src_addr = 12;		//system call while interrupt masked
 		wb_cp0_dst_addr = 12;
-		ex_data = 32'h87654321;//try to write status while system call is enabled
-		cu_exec_code = 5'b01010;//be written into cause
+		ex_data = 32'hff01;
+		cu_exec_code = 5'b00000;
+		interrupt = 8'h01;
 		clk = 1;
 		#1
 		clk = 0;
 		#1
-		clk = 1;
-		id_cp0_src_addr = 13;//check read cause
+		if(cp0_epc == 32'hfedcba99)
+			$stop;
 		#1
-		clk = 0;
-		#1
-		wb_cp0_w_en = 1'b1;//write epc while cu_cp0_w_en is enabled
-		wb_cp0_dst_addr = 14;
-		ex_data = 32'h87654321;
-		clk = 1;
-		#1
-		clk = 0;
-		#1
-		id_cp0_src_addr = 9;//read timer counter
+		wb_cp0_w_en = 1'b1;
+		cu_cp0_w_en = 1'b0;
+		epc = 32'hfedcba98;
+		id_cp0_src_addr = 14;		//MTC0 status
+		wb_cp0_dst_addr = 12;
+		ex_data = 32'hff01;
+		cu_exec_code = 5'b01010;
+		interrupt = 8'h01;
 		clk = 1;
 		#1
 		clk = 0;
 		#1
 		wb_cp0_w_en = 1'b1;
-		cu_cp0_w_en = 1'b0;
-		wb_cp0_dst_addr = 13;
-		ex_data = 32'b111000000;//generate a interrupt while interrupt is disabled
-		id_cp0_src_addr = 13;
-		clk = 1;
-		#1
-		clk = 0;
-		#1
-		cu_cp0_w_en = 1'b0;
-		wb_cp0_w_en = 1'b1;
-		ex_data = 32'h87654321;//try to write status while system call is enabled
+		cu_cp0_w_en = 1'b1;
+		epc = 32'hfedcba98;
+		id_cp0_src_addr = 14;		//system call while interrupt unmasked
 		wb_cp0_dst_addr = 12;
+		ex_data = 32'hff01;
+		cu_exec_code = 5'b00000;
+		interrupt = 8'h01;
 		clk = 1;
 		#1
 		clk = 0;
 		#1
+		if(cp0_epc != 32'hfedcba98)
+			$stop;
 		$stop;
 	end
 
