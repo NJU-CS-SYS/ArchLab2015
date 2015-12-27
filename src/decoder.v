@@ -259,6 +259,7 @@ module decoder(
             end
             default:
 			begin
+                id_jump = 0;
                 idex_syscall = 0;
                 id_jr = 0;
 				idex_reg_w = 0;
