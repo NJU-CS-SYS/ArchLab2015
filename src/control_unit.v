@@ -1,22 +1,22 @@
-`timescale 1ns / 1ps
+﻿`timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company:
-// Engineer:
-//
-// Create Date: 2015/12/07 20:52:29
+// Company: 
+// Engineer: 
+// 
+// Create Date: 2015/12/27 17:21:29
 // Design Name: 马浩杰
 // Module Name: control_unit
-// Project Name:
-// Target Devices:
-// Tool Versions:
-// Description:
-//
-// Dependencies:
-//
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
-//
+// 
 //////////////////////////////////////////////////////////////////////////////////
 
 
@@ -54,8 +54,8 @@ module control_unit(
     output reg [4 : 0] cu_exec_code,
     output reg [31 : 0] cu_epc,
     output reg [31 :0] cu_vector,
-    output reg bpu_write_en
-    );
+	output reg bpu_write_en
+);
 
     // Classic load use.
     wire load_use_hazard = idex_mem_read & (idex_rd_addr == ifid_rs_addr | idex_rd_addr == real_rt_addr);
@@ -117,10 +117,11 @@ module control_unit(
             cu_ifid_flush = 1'b1;
             cu_idex_flush = 1'b1;
             cu_exmem_flush = 1'b1;
-            if(~cp0_intr)
-            begin
+
+            if (~cp0_intr) begin 
                 cu_pc_src = 4;
             end
+
             bpu_write_en = 1'b1;
         end
 
@@ -135,7 +136,7 @@ module control_unit(
             cu_pc_src = 4'b0010;
             cu_cp0_w_en = 1'b1;
             cu_exec_code = 8;
-            cu_epc = predicted_idex_pc;  // Should be the same as target_exmem_pc
+            cu_epc = target_exmem_pc;
         end
 
         // cp0 handle
@@ -152,7 +153,10 @@ module control_unit(
         end
 
         // eret/ret handle
-        if (~branch_hazard & exmem_eret) begin
+        if (exmem_eret) begin
+            cu_ifid_flush = 1'b1;
+			cu_idex_flush = 1'b1;
+			cu_exmem_flush = 1'b1;
             cu_pc_src = 4'b0011;
         end
 
