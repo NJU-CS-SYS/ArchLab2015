@@ -9,7 +9,8 @@ module pipeline (
     // Just to simpilfy RTL generation,
     input clk,         // the global clock
     input reset,       // the global reset
-    input [7:0] intr   // 8 hardware interruption
+    input [7:0] intr,   // 8 hardware interruption
+    output [31:0] mem_pc_out
 );
 
 parameter DATA_WIDTH = 32;
@@ -805,5 +806,7 @@ cpu_interface inst_ci (
     .dc_data_out(mem_data),
     .mem_stall(mem_stall)
 );
+
+assign mem_pc_out = mem_pc;
 
 endmodule
