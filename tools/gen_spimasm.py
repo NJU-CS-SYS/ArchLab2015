@@ -1,7 +1,7 @@
-final = open("final.s",'w')
+final = open("spim.S",'w')
 print >>final,'.text'
 
-with open("./q.S")as f:
+with open("./tmp_disassembly.S") as f:
     for line in f:
         line2 = line.lstrip('\t')
         line2 = line2.lstrip(' ')

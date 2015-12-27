@@ -3,3 +3,5 @@
 !start.S
 *.d
 *.o
+ram_init_gen/
+!testcase/*.S
