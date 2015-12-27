@@ -55,8 +55,6 @@ module control_unit(
     output reg bpu_write_en
     );
 
-
-
     wire branch_hazard;
     wire load_use_hazard;
     assign load_use_hazard = idex_mem_read & (idex_rd_addr == ifid_rs_addr | idex_rd_addr == real_rt_addr);
