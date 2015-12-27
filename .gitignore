@@ -1,1 +1,5 @@
 *.txt
+*.S
+!start.S
+*.d
+*.o
