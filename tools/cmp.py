@@ -1,3 +1,9 @@
+import argparse
+parser = argparse.ArgumentParser(description = 'Example : python gen_spimlog.txt cpulog.txt')
+parser.add_argument("spimlog")
+parser.add_argument("cpulog")
+args = parser.parse_args()
+
 spim_pcs = []
 spim_block_len = []
 block_len = 0
@@ -8,7 +14,7 @@ cpu_pcs = []
 cpu_block_len = []
 cpuc = 0
 
-with open('spimlog.txt') as f:
+with open(arg.spimlog) as f:
     for line in f:
         if spimstart :
             if(len(line)<2):
@@ -27,7 +33,7 @@ for i in range(0,spimc-1) :
     else:
         block_len+=1
 
-with open('pc.txt') as f:
+with open(args.cpulog) as f:
     for line in f:
         num = line.split(',')[1]
         if(len(num) < 1):

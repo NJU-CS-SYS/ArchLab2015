@@ -36,14 +36,16 @@ qemu:
 	$(LD) $(LDFLAGS) -T qemu.ld $(OBJECTS) -o qemu.bin
 	$(OBJDUMP) -D qemu.bin > qemu.txt
 	qemu-mipsel-static -g 1234 qemu.bin &
-	gdb-multiarch qemu.bin -ex "set arch mips" -ex "set endian little" -ex "target remote :1234"
+	gdb-multiarch qemu.bin -ex "set arch mips" -ex "set endian little" -ex "target remote :1234" -ex "disp /i \$$pc"
 clean:
 	-rm -f boot *.bin *.d *.o *.txt 2> /dev/null
 
 TOOL_DIR = ../tools
 
 asm: $(CSRC)
-	@$(CC) $(SCFLAGS) $(CSRC) -o $(TOOL_DIR)/tmp_disassembly.S
-	cd $(TOOL_DIR) && python gen_spimasm.py
-	cd $(TOOL_DIR) && rm tmp_disassembly.*
+	@$(CC) $(SCFLAGS) $(CSRC) -o $(TOOL_DIR)/tmp_asm.S
+	cd $(TOOL_DIR) && python gen_spimasm.py tmp_asm.S spim.S
+	cd $(TOOL_DIR) && rm -f tmp_asm.* 2> /dev/null
+	rm -f tmp_asm.* 2> /dev/null
+	cd $(TOOL_DIR) && python cmp.py -h
 
