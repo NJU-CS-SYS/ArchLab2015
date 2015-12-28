@@ -1,5 +1,5 @@
 import argparse
-parser = argparse.ArgumentParser(description = 'Example : python gen_spimlog.txt cpulog.txt')
+parser = argparse.ArgumentParser(description = 'Example : python cmp.py gen_spimlog.txt cpulog.txt')
 parser.add_argument("spimlog")
 parser.add_argument("cpulog")
 args = parser.parse_args()

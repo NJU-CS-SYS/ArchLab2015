@@ -6,10 +6,10 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 OBJDUMP = $(CROSS_COMPILE)objdump
 
 
-CFLAGS = -MD -fno-pic -static -fno-strict-aliasing -fno-builtin  -fno-stack-protector -mno-check-zero-division -fno-delayed-branch -Wall -Werror -EL -march=mips32r2 -mno-llsc -mno-imadd -mno-mad -I../include -O2
-SCFLAGS = -MD -fno-pic -static -fno-strict-aliasing -fno-builtin  -fno-stack-protector -mno-check-zero-division -fno-delayed-branch -Wall -Werror -EL -march=mips32r2 -mno-llsc -mno-imadd -mno-mad -I../include -O2 -S
+CFLAGS = -MD -fno-pic -static -fno-strict-aliasing -fno-builtin  -fno-stack-protector -mno-check-zero-division -fno-delayed-branch -Wall -Werror -EL -march=mips32 -mno-llsc -mno-imadd -mno-mad -I../include -O2
+SCFLAGS = -MD -fno-pic -static -fno-strict-aliasing -fno-builtin  -fno-stack-protector -mno-check-zero-division -fno-delayed-branch -Wall -Werror -EL -march=mips32 -mno-llsc -mno-imadd -mno-mad -I../include -O2 -S
 CFLAGS += -g
-ASFLAGS = -MD -EL -mno-check-zero-division -mips32r2 -O2
+ASFLAGS = -MD -EL -mno-check-zero-division -mips32 -O2
 LDFLAGS = -EL
 
 
