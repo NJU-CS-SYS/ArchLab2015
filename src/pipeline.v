@@ -131,7 +131,7 @@ wire [`DATA_BUS] alu_out;
 wire [`DATA_BUS] shifter_out;
 
 wire ex_jr;  // JR indicator
-wire [`PC_BUS] branch_addr = (ex_jr) ? exec_result : ex_pc_4 + (ex_imm_ext<<2);
+wire [`PC_BUS] branch_addr = (ex_jr == 1) ? alu_out : ex_pc_4 + (ex_imm_ext<<2);
 
 // Forwarding selectors
 wire [1:0] A_sel;
@@ -504,6 +504,7 @@ always @(*) begin
     2'd1: exec_result = shifter_out;
     2'd2: exec_result = branch_addr;
     2'd3: exec_result = operand_A_after_forwarding;
+    default: exec_result = 32'dx;
     endcase
 end
 
