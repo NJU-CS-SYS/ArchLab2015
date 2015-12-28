@@ -26,7 +26,6 @@ int qsort(int A[], int m, int n)
 int main()
 {
     int a[5];
-    int idx = 0;
 
     a[0] = 3;
     a[1] = 4;
