@@ -5,13 +5,14 @@
 
 _reset:
   li $sp, 4096
-  jal main
-  jal good
+  nop
+  j main
+  j good
 
 _qemu:
   nop # Make address the same offset
-  jal main
-  jal good
+  j main
+  j good
 
 good:
 $L_GOOD:
