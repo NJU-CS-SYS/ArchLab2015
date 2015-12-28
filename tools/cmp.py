@@ -14,7 +14,7 @@ cpu_pcs = []
 cpu_block_len = []
 cpuc = 0
 
-with open(arg.spimlog) as f:
+with open(args.spimlog) as f:
     for line in f:
         if spimstart :
             if(len(line)<2):
