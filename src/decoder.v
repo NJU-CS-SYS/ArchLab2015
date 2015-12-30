@@ -44,6 +44,7 @@ module decoder(
     always@(*) begin
         /* NOP */
         if(ifid_instr == 0) begin
+			idex_div_mul = 0;
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 0; idex_mem_r = 0; idex_reg_w = 0;
             idex_branch = 0; idex_condition = 0;
@@ -63,7 +64,8 @@ module decoder(
         end
         /* ADD ADDU SUB SUBU AND OR XOR NOR SLT SLTU */
         else if(ifid_instr[31:26] == 0 && ifid_instr[5:4] == 2'b10) begin
-        /* same */
+            /* same */
+			idex_div_mul = 0;
             idex_movn = 0; idex_movz = 0;
             idex_branch = 0; idex_condition = 0;    // unused
             idex_load_sel = 0; idex_store_sel = 0;  // unused
@@ -140,6 +142,7 @@ module decoder(
         /* SLL SLLV SRA SRAV SRL SRLV */
         else if(ifid_instr[31:26] == 0 && ifid_instr[5:3] == 3'b000) begin
             /* same */
+			idex_div_mul = 0;
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 0; idex_mem_r = 0; idex_reg_w = 1;
             idex_branch = 0; idex_condition = 0; // unused
@@ -202,6 +205,7 @@ module decoder(
         /* SYSCALL JR MOVN MOVZ*/
         else if(ifid_instr[31:26] == 0 && ifid_instr[5:3] == 3'b001) begin
             /* same */
+			idex_div_mul = 0;
             idex_mem_w = 0; idex_mem_r = 0;
             idex_condition = 0;
             idex_of_w_disen = 0;
@@ -368,6 +372,7 @@ module decoder(
         /* BGEZ BLTZ */
         else if(ifid_instr[31:26] == 1) begin
             /* same */
+			idex_div_mul = 0;
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 0; idex_mem_r = 0; idex_reg_w = 0;
             idex_branch = 1;
@@ -398,6 +403,7 @@ module decoder(
         /* CLO CLZ*/
         else if(ifid_instr[31:26] == 6'b011100 && ifid_instr[5] == 1) begin
             /* same */
+			idex_div_mul = 0;
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 0; idex_mem_r = 0; idex_reg_w = 1;
             idex_branch = 0; idex_condition = 0;
@@ -450,6 +456,7 @@ module decoder(
         /* ERET MFC0 MTC0 */
         else if(ifid_instr[31:26] == 6'b010000) begin
             /* same */
+			idex_div_mul = 0;
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 0; idex_mem_r = 0;
             idex_branch = 0; idex_condition = 0;
@@ -498,6 +505,7 @@ module decoder(
         /* LB LBU LH LHU LW LWL LWR */
         else if(ifid_instr[31:29] == 3'b100) begin
             /* same */
+			idex_div_mul = 0;
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 0;
             idex_mem_r = 1;
@@ -534,6 +542,7 @@ module decoder(
         else if(ifid_instr[31:29] == 3'b101)
         begin
             /* same */
+			idex_div_mul = 0;
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 1; idex_mem_r = 0; idex_reg_w = 0;
             idex_branch = 0; idex_condition = 0;
@@ -566,6 +575,7 @@ module decoder(
         else if(ifid_instr[31:29] == 3'b001)
         begin
             /* same */
+			idex_div_mul = 0;
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 0; idex_mem_r = 0; idex_reg_w = 1;
             idex_branch = 0; idex_condition = 0;
@@ -638,6 +648,7 @@ module decoder(
         end
         /* BEQ */
         else if(ifid_instr[31:26] == 6'b000100 || ifid_instr[31:26] == 6'b010100) begin
+			idex_div_mul = 0;
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 0; idex_mem_r = 0; idex_reg_w = 0;
             idex_branch = 1; idex_condition = 3'b001;
@@ -661,6 +672,7 @@ module decoder(
         end
         /* BGTZ */
         else if(ifid_instr[31:26] == 6'b000111) begin
+			idex_div_mul = 0;
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 0; idex_mem_r = 0; idex_reg_w = 0;
             idex_branch = 1; idex_condition = 3'b100;
@@ -684,6 +696,7 @@ module decoder(
         end
         /* BLEZ */
         else if(ifid_instr[31:26] == 6'b000110) begin
+			idex_div_mul = 0;
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 0; idex_mem_r = 0; idex_reg_w = 0;
             idex_branch = 1; idex_condition = 3'b101;
@@ -707,6 +720,7 @@ module decoder(
         end
         /* BNE */
         else if(ifid_instr[31:26] == 6'b000101) begin
+			idex_div_mul = 0;
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 0; idex_mem_r = 0; idex_reg_w = 0;
             idex_branch = 1; idex_condition = 3'b010;
@@ -730,6 +744,7 @@ module decoder(
         end
         /* J */
         else if(ifid_instr[31:26] == 6'b000010) begin
+			idex_div_mul = 0;
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 0; idex_mem_r = 0; idex_reg_w = 0;
             idex_branch = 0; idex_condition = 0;
@@ -753,11 +768,12 @@ module decoder(
         end
         /* JAL */
         else if(ifid_instr[31:26] == 6'b000011) begin
+			idex_div_mul = 0;
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 0; idex_mem_r = 0; idex_reg_w = 1;
             idex_branch = 0; idex_condition = 0;
             idex_of_w_disen = 0;
-            idex_exres_sel = 2'b10;
+            idex_exres_sel = 3'b010;
             idex_ALU_op = 4'b0000;
             idex_shamt_sel = 0;
             idex_shift_op = 0;
@@ -775,6 +791,7 @@ module decoder(
             id_jump = 1;
         end
         else begin
+			idex_div_mul = 0;
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 0; idex_mem_r = 0; idex_reg_w = 0;
             idex_branch = 0; idex_condition = 0;
