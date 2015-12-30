@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
 /*
- * @decoder 译码器模块
+ * @decoder 译码器模�?
  * @author XuanBaoQiong
  */
 module decoder(
@@ -26,8 +26,8 @@ module decoder(
     output  reg id_jr,
     output  reg id_jump,
     output  reg [1:0] id_rd_addr_sel,
-    output  reg id_rt_addr_sel,
-    output  reg id_rt_data_sel,
+    output  reg id_rt_addr_sel, // 0:instr[rt], 1:5'b0
+    output  reg id_rt_data_sel, // 0:cp0_data, 1:Rt_data
     output  [4:0] id_cp0_src_addr,
     output  reg [2:0] idex_exres_sel,
     output  reg idex_movn,
@@ -285,7 +285,7 @@ module decoder(
 			 idex_branch = 0; idex_condition = 0; // unused
 			 idex_of_w_disen = 0;
 			 idex_exres_sel = 3'b100; // select the result of div/mul
-			 idex_alu_op = 0; // unused
+			 idex_ALU_op = 0; // unused
 			 idex_shamt_sel = 0; idex_shift_op = 0; // unused
 			 idex_cp0_w_en = 0;
 			 idex_load_sel = 0; idex_store_sel = 0;
@@ -294,7 +294,8 @@ module decoder(
 			 idex_movn = 0; idex_movz = 0;
 			 id_imm_ext = 0; // unused
 			 id_rd_addr_sel = 1; // MFHI MFLO write rd
-			 id_rt_addr_sel = 1;
+			 id_rt_addr_sel = 0;
+			 id_rt_data_sel = 1;
 			 id_jr = 0; id_jump = 0;
 			 /* different */
 			 case(ifid_instr[1:0])
@@ -337,8 +338,8 @@ module decoder(
 			idex_reg_w = 0;
 			idex_branch = 0; idex_condition = 0; // unused
 			idex_of_w_disen = 0;
-			idex_extes_sel = 3'b100; // select the result of mul/div
-			idex_alu_op = 0; // unused
+			idex_exres_sel = 3'b100; // select the result of mul/div
+			idex_ALU_op = 0; // unused
 			idex_shamt_sel = 0; idex_shift_op = 0; // unused
 			idex_cp0_w_en = 0;
 			idex_load_sel = 0; idex_store_sel = 0; // unused
@@ -348,7 +349,8 @@ module decoder(
 			idex_movz = 0;
 			id_imm_ext = 0; // unused
 			id_rd_addr_sel = 0; // unused
-			id_rt_data_sel = 0;
+			id_rt_addr_sel = 0;
+			id_rt_data_sel = 1;
 			id_jr = 0;
 			id_jump = 0;
 			/* different */
@@ -435,7 +437,7 @@ module decoder(
 			idex_branch = 0; idex_condition = 0;
 			idex_of_w_disen = 0;
 			idex_exres_sel = 3'b100;
-			idex_alu_op = 0;
+			idex_ALU_op = 0;
 			idex_shamt_sel = 0; idex_shift_op = 0;
 			idex_cp0_w_en = 0;
 			idex_load_sel = 0;
