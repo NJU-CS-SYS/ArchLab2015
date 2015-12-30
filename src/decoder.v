@@ -29,9 +29,10 @@ module decoder(
     output  reg id_rt_addr_sel,
     output  reg id_rt_data_sel,
     output  [4:0] id_cp0_src_addr,
-    output  reg [1:0] idex_exres_sel,
+    output  reg [2:0] idex_exres_sel,
     output  reg idex_movn,
-    output  reg idex_movz
+    output  reg idex_movz,
+	output  reg [3:0] idex_div_mul 
     );
 
     assign idex_shamt = ifid_instr[10:6];
@@ -273,6 +274,97 @@ module decoder(
             end
             endcase
         end
+		/* MFHI MFLO MTHI MTLO */
+		else if(ifid_instr[31:26] == 0 && ifid_instr[5:3] == 3'b010) begin
+			 /* same */
+			 idex_mem_w = 0; idex_mem_r = 0;
+			 idex_branch = 0; idex_condition = 0; // unused
+			 idex_of_w_disen = 0;
+			 idex_exres_sel = 3'b100; // select the result of div/mul
+			 idex_alu_op = 0; // unused
+			 idex_shamt_sel = 0; idex_shift_op = 0; // unused
+			 idex_cp0_w_en = 0;
+			 idex_load_sel = 0; idex_store_sel = 0;
+			 idex_B_sel = 0;
+			 idex_eret = 0; idex_syscall = 0;
+			 idex_movn = 0; idex_movz = 0;
+			 id_imm_ext = 0; // unused
+			 id_rd_addr_sel = 1; // MFHI MFLO write rd
+			 id_rt_addr_sel = 1;
+			 id_jr = 0; id_jump = 0;
+			 /* different */
+			 case(ifid_instr[1:0])
+				 // MFHI, rd <- hi
+				 2'b00:
+				 begin
+					 idex_reg_w = 1;
+					 idex_div_mul = 4'b0011;
+				 end
+				 // MFLO, rd <- lo
+				 2'b10:
+				 begin
+					 idex_reg_w = 1;
+					 idex_div_mul = 4'b0100;
+				 end
+				 // MTHI, rs -> hi
+				 2'b01:
+				 begin
+					 idex_reg_w = 0;
+					 idex_div_mul = 4'b0101;
+				 end
+				 // MTLO, rs -> lo
+				 2'b11:
+				 begin
+					 idex_reg_w = 0;
+					 idex_div_mul = 4'b0110;
+				 end 
+				 default:
+				 begin
+					 idex_reg_w = 0;
+					 idex_div_mul = 0;
+				 end
+			 endcase
+		end
+		/* DIV DIVU MULT MULTU */
+		else if(ifid_instr[31:26] == 0 && ifid_instr[5:3] == 3'b011) begin
+			/* same */
+			idex_mem_w = 0;
+			idex_mem_r = 0;
+			idex_reg_w = 0;
+			idex_branch = 0; idex_condition = 0; // unused
+			idex_of_w_disen = 0;
+			idex_extes_sel = 3'b100; // select the result of mul/div
+			idex_alu_op = 0; // unused
+			idex_shamt_sel = 0; idex_shift_op = 0; // unused
+			idex_cp0_w_en = 0;
+			idex_load_sel = 0; idex_store_sel = 0; // unused
+			idex_B_sel = 0;
+			idex_eret = 0; idex_syscall = 0;
+			idex_movn = 0;
+			idex_movz = 0;
+			id_imm_ext = 0; // unused
+			id_rd_addr_sel = 0; // unused
+			id_rt_data_sel = 0;
+			id_jr = 0;
+			id_jump = 0;
+			/* different */
+			case(ifid_instr[1:0])
+				// DIV
+				2'b10:
+					idex_div_mul = 4'b0001;
+				// DIVU
+				2'b11:
+					idex_div_mul = 4'b0010;
+				// MULT
+				2'b00:
+					idex_div_mul = 4'b1000;
+				// MULTU
+				2'b01:
+					idex_div_mul = 4'b1001;
+				default:
+					idex_div_mul = 4'b0000;
+			endcase
+		end
         /* BGEZ BLTZ */
         else if(ifid_instr[31:26] == 1) begin
             /* same */
@@ -303,8 +395,8 @@ module decoder(
             default:  idex_condition = 3'b000;
             endcase
         end
-        /* CLO CLZ */
-        else if(ifid_instr[31:26] == 6'b011100) begin
+        /* CLO CLZ*/
+        else if(ifid_instr[31:26] == 6'b011100 && ifid_instr[5] == 1) begin
             /* same */
             idex_movn = 0; idex_movz = 0;
             idex_mem_w = 0; idex_mem_r = 0; idex_reg_w = 1;
@@ -330,6 +422,31 @@ module decoder(
             default: idex_ALU_op = 4'b0010;
             endcase
         end
+		/* MUL, rd <- rs * rt */
+		else if(ifid_instr[31:26] == 6'b011100 && ifid_instr[5] == 0) begin
+			idex_mem_w = 0; idex_mem_r = 0;
+			idex_reg_w = 1;
+			idex_branch = 0; idex_condition = 0;
+			idex_of_w_disen = 0;
+			idex_exres_sel = 3'b100;
+			idex_alu_op = 0;
+			idex_shamt_sel = 0; idex_shift_op = 0;
+			idex_cp0_w_en = 0;
+			idex_load_sel = 0;
+			idex_store_sel = 0;
+			idex_B_sel = 0;
+			idex_eret = 0;
+			idex_syscall = 0;
+			idex_movn = 0;
+			idex_movz = 0;
+			idex_div_mul = 4'b0111;
+			id_imm_ext = 0;
+			id_rd_addr_sel = 1; 
+			id_rt_addr_sel = 0;
+			id_rt_data_sel = 1;
+			id_jr = 0;
+			id_jump = 0;
+		end
         /* ERET MFC0 MTC0 */
         else if(ifid_instr[31:26] == 6'b010000) begin
             /* same */
