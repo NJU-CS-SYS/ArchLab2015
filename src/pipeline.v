@@ -216,7 +216,7 @@ BPU bpu (
     .reset        ( reset ),
     .bpu_w_en     ( bpu_w_en ),
     .current_pc   ( if_pc_4 ),  // When reseted, ifid is flushed, and ifid_pc_4 is zero.
-    .tag_pc       ( mem_pc ),
+    .tag_pc       ( mem_pc_4 ),
     .next_pc      ( mem_final_target ),
     // Output
     .predicted_pc ( predicted_pc )
