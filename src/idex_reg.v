@@ -35,7 +35,7 @@ module idex_reg(
     input idex_branch_in,
     input [2:0] idex_condition_in,
     input idex_of_w_disen_in,
-    input [1:0] idex_exres_sel_in,
+    input [2:0] idex_exres_sel_in,
     input idex_B_sel_in,
     input [3:0] idex_ALU_op_in,
     input idex_shamt_sel_in,
@@ -57,6 +57,7 @@ module idex_reg(
     input idex_eret_in,
     input id_movz,
     input id_movn,
+    input [3:0]id_md_op,
     output reg ex_nop,
     output reg ex_jmp,
     output reg ex_jr,
@@ -66,7 +67,7 @@ module idex_reg(
     output reg idex_branch,
     output reg [2:0] idex_condition,
     output reg idex_of_w_disen,
-    output reg [1:0] idex_exres_sel,
+    output reg [2:0] idex_exres_sel,
     output reg idex_B_sel,
     output reg [3:0] idex_ALU_op,
     output reg idex_shamt_sel,
@@ -87,7 +88,8 @@ module idex_reg(
     output reg idex_movn,
     output reg idex_cp0_w_en,
     output reg idex_syscall,
-    output reg idex_eret
+    output reg idex_eret,
+    output reg [3:0] idex_md_op
     );
     
     always @(negedge clk or posedge reset) begin
@@ -98,7 +100,7 @@ module idex_reg(
             idex_branch <= 1'd0;
             idex_condition <= 3'd0;
             idex_of_w_disen <= 1'd0;
-            idex_exres_sel <= 2'd0;
+            idex_exres_sel <= 3'd0;
             idex_B_sel <= 1'd0;
             idex_ALU_op <= 4'd0;
             idex_shamt_sel <= 1'd0;
@@ -125,6 +127,7 @@ module idex_reg(
             ex_jr  <= 1'b0;
         end
         else if(!cu_stall) begin
+	    idex_md_op <= id_md_op;
             idex_mem_w<= idex_mem_w_in;
             idex_mem_r<= idex_mem_r_in;
             idex_reg_w<=idex_reg_w_in;
