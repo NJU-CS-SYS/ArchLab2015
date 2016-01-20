@@ -18,12 +18,12 @@ parameter DATA_WIDTH = 32;
 ////////////////////////////////////////////////////////////////////////////////
 //
 //
-//  Sinal declaration
+//  Signal declaration
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 wire [DATA_WIDTH - 1 : 0] predicted_pc;
-wire bpu_w_en;                           // Whether the PC in EX is expected
+wire bpu_w_en;                        // Whether the PC in EX is expected
 
 wire [DATA_WIDTH - 1 : 0] jmp;        // Absolute jump
 wire [DATA_WIDTH - 1 : 0] jr;         // Jump to $31
