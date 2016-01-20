@@ -66,56 +66,56 @@ initial begin
     rst = 0;
     dc_write = 1;
     dc_byte_w_en = 4'b1111;
-    dc_addr = 30'h00000040;
+    dc_addr = 30'h00000020;
     data_reg = 32'h00000040;
     #PERIOD;
     #278;
     dc_write = 0;
     dc_read = 1;
-    dc_addr = 30'h00000040;
+    dc_addr = 30'h00000020;
     ic_addr = 30'h00000011;
     
     #(PERIOD*16);
     dc_write = 1;
     dc_read = 0;
-    dc_addr = 30'h00000140;
-    data_reg = 32'h00000140;
+    dc_addr = 30'h00000820;
+    data_reg = 32'h00000820;
     #(PERIOD*40);
     dc_write = 0;
     dc_read = 1;
-    dc_addr = 30'h00000140;
+    dc_addr = 30'h00000820;
     
     #(PERIOD*16);
-    ic_addr = 30'h00000140;
+    ic_addr = 30'h00000010;
     dc_write = 1;
     dc_read = 0;
-    dc_addr = 30'h00000340;
-    data_reg = 32'h00000340;
+    dc_addr = 30'h00001020;
+    data_reg = 32'h00001020;
     #(PERIOD*40);
     dc_write = 0;
     dc_read = 1;
-    dc_addr = 30'h00000340;
+    dc_addr = 30'h00001020;
 
-    #(PERIOD*16);
+    #(PERIOD*56);
     dc_write = 0;
     dc_read = 1;
-    dc_addr = 30'h00000040;
+    dc_addr = 30'h00000020;
 
-    #(PERIOD*16);
+    #(PERIOD*56);
     dc_write = 0;
     dc_read = 1;
-    dc_addr = 30'h00000140;
+    dc_addr = 30'h00000820;
 
-    #(PERIOD*16);
+    #(PERIOD*56);
     dc_write = 0;
     dc_read = 1;
-    dc_addr = 30'h00000340;
+    dc_addr = 30'h00001020;
 
-    #(PERIOD*16);
-    ic_addr = 30'h00000140;
+    #(PERIOD*56);
+    ic_addr = 30'h00000012;
     dc_write = 1;
     dc_read = 0;
-    dc_addr = 30'h00000340;
+    dc_addr = 30'h00000020;
     data_reg = 32'h00000340;
 
 

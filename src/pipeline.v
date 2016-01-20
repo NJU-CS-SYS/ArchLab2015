@@ -71,9 +71,10 @@ wire [4:0] idex_cp0_dest_addr;
 wire id_rt_addr_sel;
 wire id_rt_data_sel;
 wire [`REG_ADDR_BUS] id_cp0_src_addr;
-wire [1:0] idex_exres_sel;
+wire [2:0] idex_exres_sel;
 wire idex_movn;
 wire idex_movz;
+wire [3:0] idex_div_mul;
 
 reg [`REG_ADDR_BUS] id_rt_addr;
 
@@ -95,7 +96,7 @@ wire ex_reg_w;
 wire ex_branch;
 wire [2:0] ex_condition;
 wire ex_of_w_disen;
-wire [1:0] ex_exres_sel;
+wire [2:0] ex_exres_sel;
 wire ex_B_sel;
 wire [3:0] ex_ALU_op;
 wire ex_shamt_sel;
@@ -197,6 +198,11 @@ wire [`DATA_BUS] memwb_data = (wb_mem_r) ? wb_mem_data : wb_ex_data;
 wire [`PC_BUS] mem_final_target;  // output from final_target to control unit
 
 wire [`DATA_BUS] mem_data;  // output from cpu_interface.data_out to load_shifter.mem_data
+
+wire [3:0] id_md_op;
+wire [3:0] ex_md_op;
+wire [31:0] muldiv_out;
+wire md_install;
 
 ////////////////////////////////////////////////////////////////////////////
 //
@@ -379,6 +385,7 @@ idex_reg idex_reg (
     // Input
     .clk(clk),
     .reset(reset),
+    .id_md_op(id_md_op),
     .id_nop(id_nop),
     .id_jmp(id_jump),
     .id_jr(id_jr),
@@ -414,6 +421,7 @@ idex_reg idex_reg (
     .id_movz(idex_movz),
     .id_movn(idex_movn),
     // Output
+    .idex_md_op(ex_md_op),
     .ex_nop(ex_nop),
     .ex_jmp(ex_jmp),
     .ex_jr(ex_jr),
@@ -500,10 +508,11 @@ end
 // Exec result selection
 always @(*) begin
     case (ex_exres_sel)
-    2'd0: exec_result = alu_out;
-    2'd1: exec_result = shifter_out;
-    2'd2: exec_result = branch_addr;
-    2'd3: exec_result = operand_A_after_forwarding;
+    3'd0: exec_result = alu_out;
+    3'd1: exec_result = shifter_out;
+    3'd2: exec_result = branch_addr;
+    3'd3: exec_result = operand_A_after_forwarding;
+    3'd4: exec_result = muldiv_out;
     default: exec_result = 32'dx;
     endcase
 end
@@ -527,6 +536,17 @@ barrel_shifter shifter (
     .Shift_op(ex_shift_op),
     // Output
     .Shift_out(shifter_out)
+);
+
+muldiv mul_div(
+	//input
+	.Md_op(ex_md_op),
+	.Rs_in(operand_A_after_selection),
+	.Rt_in(operand_B_after_selection),
+	.Clk(clk),
+	//output
+	.Res_out(muldiv_out),
+	.Md_install(md_install)
 );
 
 wire ex_reg_w_gened;  // The handled reg_w, often disenable for special cases
@@ -740,7 +760,7 @@ control_unit  inst_control_unit (
     // Input
     .clk               ( clk ),
     .reset             ( reset ),
-    .mem_stall         ( mem_stall ),
+    .mem_stall         ( mem_stall | md_install ),
     .mem_nop           ( mem_nop ),
     .ex_nop            ( ex_nop ),
     .mem_jmp           ( mem_jmp ),
