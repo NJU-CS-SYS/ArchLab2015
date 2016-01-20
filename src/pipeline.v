@@ -74,6 +74,7 @@ wire [`REG_ADDR_BUS] id_cp0_src_addr;
 wire [1:0] idex_exres_sel;
 wire idex_movn;
 wire idex_movz;
+wire [3:0] idex_div_mul;
 
 reg [`REG_ADDR_BUS] id_rt_addr;
 
