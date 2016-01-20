@@ -126,7 +126,6 @@ module idex_reg(
             ex_nop <= 1'b1;
             ex_jmp <= 1'b0;
             ex_jr  <= 1'b0;
-            idex_div_mul <= 4'b0;
         end
         else if(!cu_stall) begin
 	    idex_md_op <= id_md_op;
@@ -161,7 +160,6 @@ module idex_reg(
             ex_nop <= id_nop;
             ex_jmp <= id_jmp;
             ex_jr  <= id_jr;
-            idex_div_mul <= idex_div_mul_in;
         end
     end
 endmodule
