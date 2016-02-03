@@ -249,6 +249,8 @@ assign target = mem_final_target;
 //  PC register
 ////////////////////////////////////////////////////////////////////////////
 
+wire cu_pc_stall;
+
 PC PC (
     .clk    ( clk ),
     .reset  ( reset ),
@@ -268,6 +270,9 @@ assign if_pc_4 = (reset) ? 0 : pc_out + 4;  // Start from zero
 wire id_nop;  // Indicate that the current instr in ID is nop
               // The ifid does not have a input nop-indicator,
               // because PC is always right in the next cycle.
+
+wire cu_ifid_stall;
+wire cu_ifid_flush;
 
 ifid_reg ifid (
     // Input
@@ -296,37 +301,40 @@ ifid_reg ifid (
 //
 ////////////////////////////////////////////////////////////////////////////
 
+wire idex_of_w_disen;
+wire idex_cp0_w_en;
+
 decoder decoder(
     // Input
-    .ifid_instr(ifid_instr),
+    .ifid_instr         ( ifid_instr         ),
     // Output
-    .idex_mem_w(idex_mem_w),
-    .idex_mem_r(idex_mem_r),
-    .idex_reg_w(idex_reg_w),
-    .idex_branch(idex_branch),
-    .idex_condition(idex_condition),
-    .idex_B_sel(idex_B_sel),
-    .idex_ALU_op(idex_ALU_op),
-    .idex_shamt(idex_shamt),
-    .idex_shamt_sel(idex_shamt_sel),
-    .idex_shift_op(idex_shift_op),
-    .idex_load_sel(idex_load_sel),
-    .idex_store_sel(idex_store_sel),
-    .idex_of_w_disen(idex_of_w_disen),
-    .idex_cp0_dest_addr(idex_cp0_dest_addr),
-    .idex_cp0_w_en(idex_cp0_w_en),
-    .idex_syscall(idex_syscall),
-    .idex_eret(idex_eret),
-    .id_imm_ext(id_imm_ext),
-    .id_jr(id_jr),
-    .id_jump(id_jump),
-    .id_rd_addr_sel(id_rd_addr_sel),
-    .id_rt_addr_sel(id_rt_addr_sel),
-    .id_rt_data_sel(id_rt_data_sel),
-    .id_cp0_src_addr(id_cp0_src_addr),
-    .idex_exres_sel(idex_exres_sel),
-    .idex_movn(idex_movn),
-    .idex_movz(idex_movz)
+    .idex_mem_w         ( idex_mem_w         ) ,
+    .idex_mem_r         ( idex_mem_r         ) ,
+    .idex_reg_w         ( idex_reg_w         ) ,
+    .idex_branch        ( idex_branch        ) ,
+    .idex_condition     ( idex_condition     ) ,
+    .idex_B_sel         ( idex_B_sel         ) ,
+    .idex_ALU_op        ( idex_ALU_op        ) ,
+    .idex_shamt         ( idex_shamt         ) ,
+    .idex_shamt_sel     ( idex_shamt_sel     ) ,
+    .idex_shift_op      ( idex_shift_op      ) ,
+    .idex_load_sel      ( idex_load_sel      ) ,
+    .idex_store_sel     ( idex_store_sel     ) ,
+    .idex_of_w_disen    ( idex_of_w_disen    ) ,
+    .idex_cp0_dest_addr ( idex_cp0_dest_addr ) ,
+    .idex_cp0_w_en      ( idex_cp0_w_en      ) ,
+    .idex_syscall       ( idex_syscall       ) ,
+    .idex_eret          ( idex_eret          ) ,
+    .id_imm_ext         ( id_imm_ext         ) ,
+    .id_jr              ( id_jr              ) ,
+    .id_jump            ( id_jump            ) ,
+    .id_rd_addr_sel     ( id_rd_addr_sel     ) ,
+    .id_rt_addr_sel     ( id_rt_addr_sel     ) ,
+    .id_rt_data_sel     ( id_rt_data_sel     ) ,
+    .id_cp0_src_addr    ( id_cp0_src_addr    ) ,
+    .idex_exres_sel     ( idex_exres_sel     ) ,
+    .idex_movn          ( idex_movn          ) ,
+    .idex_movz          ( idex_movz          )
 );
 
 // $0 selector
@@ -380,6 +388,8 @@ end
 
 wire ex_nop;  // Indicate that the current instr in EX is nop
 wire ex_jmp;  // Transfer jmp to ex -> mem to indicate CU
+wire cu_idex_stall;
+wire cu_idex_flush;
 
 idex_reg idex_reg (
     // Input
@@ -608,6 +618,8 @@ ForwardUnit FU (
 );
 
 
+wire cu_exmem_stall;
+wire cu_exmem_flush;
 wire mem_nop;  // Indicate that the current instr in MEM is a nop.
 wire mem_jmp;  // Transfer the jmp to mem to indicate CU
 
@@ -710,6 +722,7 @@ load_shifter  inst_load_shifter (
 //  Output signals defined in the WB section.
 ////////////////////////////////////////////////////////////////////////////////
 
+wire mem_stall;
 wire [`DATA_BUS] wb_aligned_rt_data;
 
 memwb_reg  inst_memwb_reg (
@@ -752,6 +765,9 @@ assign wb_data_in = (wb_mem_r) ? wb_mem_data : wb_ex_data;
 //  Control Unit
 //
 ////////////////////////////////////////////////////////////////////////////////
+
+wire cp0_intr;
+wire cu_cp0_w_en;
 
 wire [4:0] cu_exec_code;
 wire [`PC_BUS] cu_epc;
