@@ -218,14 +218,14 @@ wire [`PC_BUS] if_pc_4;
 
 BPU bpu (
     // Input
-    .clk          ( clk ),
-    .reset        ( reset ),
-    .bpu_w_en     ( bpu_w_en ),
-    .current_pc   ( if_pc_4 ),  // When reseted, ifid is flushed, and ifid_pc_4 is zero.
-    .tag_pc       ( mem_pc_4 ),
+    .clk          ( clk              ),
+    .reset        ( reset            ),
+    .bpu_w_en     ( bpu_w_en         ),
+    .current_pc   ( if_pc_4          ),  // When reseted, ifid is flushed, and ifid_pc_4 is zero.
+    .tag_pc       ( mem_pc_4         ),
     .next_pc      ( mem_final_target ),
     // Output
-    .predicted_pc ( predicted_pc )
+    .predicted_pc ( predicted_pc     )
 );
 
 wire [3:0] cu_pc_src;  // Select pc source, get data from control unit.
@@ -252,11 +252,11 @@ assign target = mem_final_target;
 wire cu_pc_stall;
 
 PC PC (
-    .clk    ( clk ),
-    .reset  ( reset ),
+    .clk    ( clk         ),
+    .reset  ( reset       ),
     .stall  ( cu_pc_stall ),
-    .pc_in  ( pc_in ),
-    .pc_out ( pc_out )
+    .pc_in  ( pc_in       ),
+    .pc_out ( pc_out      )
 );
 
 ////////////////////////////////////////////////////////////////////////////
@@ -276,23 +276,23 @@ wire cu_ifid_flush;
 
 ifid_reg ifid (
     // Input
-    .clk            ( clk ),
-    .reset          ( reset ),
-    .cu_stall       ( cu_ifid_stall ),
-    .cu_flush       ( cu_ifid_flush ),
-    .pc             ( pc_out ),
-    .pc_4           ( if_pc_4 ),
-    .instr          ( ic_data_out ),
+    .clk            ( clk            ),
+    .reset          ( reset          ),
+    .cu_stall       ( cu_ifid_stall  ),
+    .cu_flush       ( cu_ifid_flush  ),
+    .pc             ( pc_out         ),
+    .pc_4           ( if_pc_4        ),
+    .instr          ( ic_data_out    ),
     // Output
-    .id_nop         ( id_nop ),
-    .ifid_pc        ( ifid_pc ),
-    .ifid_pc_4      ( ifid_pc_4 ),
-    .ifid_instr     ( ifid_instr ),
+    .id_nop         ( id_nop         ),
+    .ifid_pc        ( ifid_pc        ),
+    .ifid_pc_4      ( ifid_pc_4      ),
+    .ifid_instr     ( ifid_instr     ),
     .ifid_jump_addr ( ifid_jump_addr ),
-    .ifid_rs_addr   ( ifid_rs_addr ),
-    .ifid_rt_addr   ( ifid_rt_addr ),
-    .ifid_rd_addr   ( ifid_rd_addr ),
-    .ifid_imm       ( ifid_imm )
+    .ifid_rs_addr   ( ifid_rs_addr   ),
+    .ifid_rt_addr   ( ifid_rt_addr   ),
+    .ifid_rd_addr   ( ifid_rd_addr   ),
+    .ifid_imm       ( ifid_imm       )
 );
 
 ////////////////////////////////////////////////////////////////////////////
@@ -308,32 +308,32 @@ decoder decoder(
     // Input
     .ifid_instr         ( ifid_instr         ),
     // Output
-    .idex_mem_w         ( idex_mem_w         ) ,
-    .idex_mem_r         ( idex_mem_r         ) ,
-    .idex_reg_w         ( idex_reg_w         ) ,
-    .idex_branch        ( idex_branch        ) ,
-    .idex_condition     ( idex_condition     ) ,
-    .idex_B_sel         ( idex_B_sel         ) ,
-    .idex_ALU_op        ( idex_ALU_op        ) ,
-    .idex_shamt         ( idex_shamt         ) ,
-    .idex_shamt_sel     ( idex_shamt_sel     ) ,
-    .idex_shift_op      ( idex_shift_op      ) ,
-    .idex_load_sel      ( idex_load_sel      ) ,
-    .idex_store_sel     ( idex_store_sel     ) ,
-    .idex_of_w_disen    ( idex_of_w_disen    ) ,
-    .idex_cp0_dest_addr ( idex_cp0_dest_addr ) ,
-    .idex_cp0_w_en      ( idex_cp0_w_en      ) ,
-    .idex_syscall       ( idex_syscall       ) ,
-    .idex_eret          ( idex_eret          ) ,
-    .id_imm_ext         ( id_imm_ext         ) ,
-    .id_jr              ( id_jr              ) ,
-    .id_jump            ( id_jump            ) ,
-    .id_rd_addr_sel     ( id_rd_addr_sel     ) ,
-    .id_rt_addr_sel     ( id_rt_addr_sel     ) ,
-    .id_rt_data_sel     ( id_rt_data_sel     ) ,
-    .id_cp0_src_addr    ( id_cp0_src_addr    ) ,
-    .idex_exres_sel     ( idex_exres_sel     ) ,
-    .idex_movn          ( idex_movn          ) ,
+    .idex_mem_w         ( idex_mem_w         ),
+    .idex_mem_r         ( idex_mem_r         ),
+    .idex_reg_w         ( idex_reg_w         ),
+    .idex_branch        ( idex_branch        ),
+    .idex_condition     ( idex_condition     ),
+    .idex_B_sel         ( idex_B_sel         ),
+    .idex_ALU_op        ( idex_ALU_op        ),
+    .idex_shamt         ( idex_shamt         ),
+    .idex_shamt_sel     ( idex_shamt_sel     ),
+    .idex_shift_op      ( idex_shift_op      ),
+    .idex_load_sel      ( idex_load_sel      ),
+    .idex_store_sel     ( idex_store_sel     ),
+    .idex_of_w_disen    ( idex_of_w_disen    ),
+    .idex_cp0_dest_addr ( idex_cp0_dest_addr ),
+    .idex_cp0_w_en      ( idex_cp0_w_en      ),
+    .idex_syscall       ( idex_syscall       ),
+    .idex_eret          ( idex_eret          ),
+    .id_imm_ext         ( id_imm_ext         ),
+    .id_jr              ( id_jr              ),
+    .id_jump            ( id_jump            ),
+    .id_rd_addr_sel     ( id_rd_addr_sel     ),
+    .id_rt_addr_sel     ( id_rt_addr_sel     ),
+    .id_rt_data_sel     ( id_rt_data_sel     ),
+    .id_cp0_src_addr    ( id_cp0_src_addr    ),
+    .idex_exres_sel     ( idex_exres_sel     ),
+    .idex_movn          ( idex_movn          ),
     .idex_movz          ( idex_movz          )
 );
 
@@ -350,22 +350,22 @@ end
 ////////////////////////////////////////////////////////////////////////////
 
 GPR gpr (
-    .clk(~clk),  // write in the wb cycle, not the next cycle
-    .reset(reset),
-    .write(wb_reg_w),
-    .Rs_addr(ifid_rs_addr),
-    .Rt_addr(id_rt_addr),
-    .Rd_addr(wb_rd_addr),
-    .Rd_in(wb_data_in),
-    .Rd_Byte_w_en(wb_reg_byte_w_en),
-    .Rs_out(id_rs_out),
-    .Rt_out(id_rt_out)
+    .clk          ( ~clk             ), // write in the wb cycle, not the next cycle
+    .reset        ( reset            ),
+    .write        ( wb_reg_w         ),
+    .Rs_addr      ( ifid_rs_addr     ),
+    .Rt_addr      ( id_rt_addr       ),
+    .Rd_addr      ( wb_rd_addr       ),
+    .Rd_in        ( wb_data_in       ),
+    .Rd_Byte_w_en ( wb_reg_byte_w_en ),
+    .Rs_out       ( id_rs_out        ),
+    .Rt_out       ( id_rt_out        )
 );
 
 extension ext (
-    .ifid_imm(ifid_imm),
-    .id_imm_ext(id_imm_ext),
-    .imm_ext(imm_ext)
+    .ifid_imm   ( ifid_imm   ),
+    .id_imm_ext ( id_imm_ext ),
+    .imm_ext    ( imm_ext    )
 );
 
 // Rd addr selector
@@ -393,76 +393,76 @@ wire cu_idex_flush;
 
 idex_reg idex_reg (
     // Input
-    .clk(clk),
-    .reset(reset),
-    .id_md_op(id_md_op),
-    .id_nop(id_nop),
-    .id_jmp(id_jump),
-    .id_jr(id_jr),
-    .cu_stall(cu_idex_stall),
-    .cu_flush(cu_idex_flush),
-    .id_rd_addr(id_rd_addr),
-    .idex_mem_r_in(idex_mem_r),
-    .idex_mem_w_in(idex_mem_w),
-    .idex_reg_w_in(idex_reg_w),
-    .idex_branch_in(idex_branch),
-    .idex_condition_in(idex_condition),
-    .idex_of_w_disen_in(idex_of_w_disen),
-    .idex_exres_sel_in(idex_exres_sel),
-    .idex_B_sel_in(idex_B_sel),
-    .idex_ALU_op_in(idex_ALU_op),
-    .idex_shamt_sel_in(idex_shamt_sel),
-    .idex_shamt_in(idex_shamt),
-    .idex_shift_op_in(idex_shift_op),
-    .idex_imm_ext_in(imm_ext),
-    .idex_rd_addr_in(id_rd_addr),
-    .idex_pc_in(ifid_pc),
-    .idex_pc_4_in(ifid_pc_4),
-    .idex_load_sel_in(idex_load_sel),
-    .idex_store_sel_in(idex_store_sel),
-    .idex_op_A_in(id_gpr_rs),
-    .idex_op_B_in(id_gpr_rt),
-    .idex_rs_addr_in(ifid_rs_addr),
-    .idex_rt_addr_in(id_rt_addr),
-    .idex_cp0_dst_addr_in(ifid_rd_addr),
-    .idex_cp0_w_en_in(idex_cp0_w_en),
-    .idex_syscall_in(idex_syscall),
-    .idex_eret_in(idex_eret),
-    .id_movz(idex_movz),
-    .id_movn(idex_movn),
+    .clk                  ( clk             ),
+    .reset                ( reset           ),
+    .id_md_op             ( id_md_op        ),
+    .id_nop               ( id_nop          ),
+    .id_jmp               ( id_jump         ),
+    .id_jr                ( id_jr           ),
+    .cu_stall             ( cu_idex_stall   ),
+    .cu_flush             ( cu_idex_flush   ),
+    .id_rd_addr           ( id_rd_addr      ),
+    .idex_mem_r_in        ( idex_mem_r      ),
+    .idex_mem_w_in        ( idex_mem_w      ),
+    .idex_reg_w_in        ( idex_reg_w      ),
+    .idex_branch_in       ( idex_branch     ),
+    .idex_condition_in    ( idex_condition  ),
+    .idex_of_w_disen_in   ( idex_of_w_disen ),
+    .idex_exres_sel_in    ( idex_exres_sel  ),
+    .idex_B_sel_in        ( idex_B_sel      ),
+    .idex_ALU_op_in       ( idex_ALU_op     ),
+    .idex_shamt_sel_in    ( idex_shamt_sel  ),
+    .idex_shamt_in        ( idex_shamt      ),
+    .idex_shift_op_in     ( idex_shift_op   ),
+    .idex_imm_ext_in      ( imm_ext         ),
+    .idex_rd_addr_in      ( id_rd_addr      ),
+    .idex_pc_in           ( ifid_pc         ),
+    .idex_pc_4_in         ( ifid_pc_4       ),
+    .idex_load_sel_in     ( idex_load_sel   ),
+    .idex_store_sel_in    ( idex_store_sel  ),
+    .idex_op_A_in         ( id_gpr_rs       ),
+    .idex_op_B_in         ( id_gpr_rt       ),
+    .idex_rs_addr_in      ( ifid_rs_addr    ),
+    .idex_rt_addr_in      ( id_rt_addr      ),
+    .idex_cp0_dst_addr_in ( ifid_rd_addr    ),
+    .idex_cp0_w_en_in     ( idex_cp0_w_en   ),
+    .idex_syscall_in      ( idex_syscall    ),
+    .idex_eret_in         ( idex_eret       ),
+    .id_movz              ( idex_movz       ),
+    .id_movn              ( idex_movn       ),
     // Output
-    .idex_md_op(ex_md_op),
-    .ex_nop(ex_nop),
-    .ex_jmp(ex_jmp),
-    .ex_jr(ex_jr),
-    .idex_mem_w(ex_mem_w),
-    .idex_mem_r(ex_mem_r),
-    .idex_reg_w(ex_reg_w),
-    .idex_branch(ex_branch),
-    .idex_condition(ex_condition),
-    .idex_of_w_disen(ex_of_w_disen),
-    .idex_exres_sel(ex_exres_sel),
-    .idex_B_sel(ex_B_sel),
-    .idex_ALU_op(ex_ALU_op),
-    .idex_shamt_sel(ex_shamt_sel),
-    .idex_shamt(ex_shamt),
-    .idex_shift_op(ex_shift_op),
-    .idex_imm_ext(ex_imm_ext),
-    .idex_rd_addr(ex_rd_addr),
-    .idex_pc(ex_pc),
-    .idex_pc_4(ex_pc_4),
-    .idex_load_sel(ex_load_sel),
-    .idex_store_sel(ex_store_sel),
-    .idex_op_A(ex_op_A),
-    .idex_op_B(ex_op_B),
-    .idex_rs_addr(ex_rs_addr),
-    .idex_rt_addr(ex_rt_addr),
-    .idex_cp0_dst_addr(ex_cp0_dst_addr),
-    .idex_movz(ex_movz),
-    .idex_movn(ex_movn),
-    .idex_cp0_w_en(ex_cp0_w_en),
-    .idex_syscall(ex_syscall),
-    .idex_eret(ex_eret)
+    .idex_md_op           ( ex_md_op        ),
+    .ex_nop               ( ex_nop          ),
+    .ex_jmp               ( ex_jmp          ),
+    .ex_jr                ( ex_jr           ),
+    .idex_mem_w           ( ex_mem_w        ),
+    .idex_mem_r           ( ex_mem_r        ),
+    .idex_reg_w           ( ex_reg_w        ),
+    .idex_branch          ( ex_branch       ),
+    .idex_condition       ( ex_condition    ),
+    .idex_of_w_disen      ( ex_of_w_disen   ),
+    .idex_exres_sel       ( ex_exres_sel    ),
+    .idex_B_sel           ( ex_B_sel        ),
+    .idex_ALU_op          ( ex_ALU_op       ),
+    .idex_shamt_sel       ( ex_shamt_sel    ),
+    .idex_shamt           ( ex_shamt        ),
+    .idex_shift_op        ( ex_shift_op     ),
+    .idex_imm_ext         ( ex_imm_ext      ),
+    .idex_rd_addr         ( ex_rd_addr      ),
+    .idex_pc              ( ex_pc           ),
+    .idex_pc_4            ( ex_pc_4         ),
+    .idex_load_sel        ( ex_load_sel     ),
+    .idex_store_sel       ( ex_store_sel    ),
+    .idex_op_A            ( ex_op_A         ),
+    .idex_op_B            ( ex_op_B         ),
+    .idex_rs_addr         ( ex_rs_addr      ),
+    .idex_rt_addr         ( ex_rt_addr      ),
+    .idex_cp0_dst_addr    ( ex_cp0_dst_addr ),
+    .idex_movz            ( ex_movz         ),
+    .idex_movn            ( ex_movn         ),
+    .idex_cp0_w_en        ( ex_cp0_w_en     ),
+    .idex_syscall         ( ex_syscall      ),
+    .idex_eret            ( ex_eret         )
 );
 
 ////////////////////////////////////////////////////////////////////////////
@@ -529,92 +529,92 @@ end
 
 alu alu (
     // Input
-    .A(operand_A_after_selection),
-    .B(operand_B_after_selection),
-    .op(ex_ALU_op),
+    .A       ( operand_A_after_selection ),
+    .B       ( operand_B_after_selection ),
+    .op      ( ex_ALU_op                 ),
     // Output
-    .LF_out(ex_less),
-    .OF_out(ex_overflow),
-    .ZF_out(ex_zero),
-    .alu_out(alu_out)
+    .LF_out  ( ex_less                   ),
+    .OF_out  ( ex_overflow               ),
+    .ZF_out  ( ex_zero                   ),
+    .alu_out ( alu_out                   )
 );
 
 barrel_shifter shifter (
     // Input
-    .Shift_in(operand_B_after_forwarding),
-    .Shift_amount(shamt_after_sel),
-    .Shift_op(ex_shift_op),
+    .Shift_in     ( operand_B_after_forwarding ),
+    .Shift_amount ( shamt_after_sel            ),
+    .Shift_op     ( ex_shift_op                ),
     // Output
-    .Shift_out(shifter_out)
+    .Shift_out    ( shifter_out                )
 );
 
-muldiv mul_div(
+muldiv mul_div (
 	//input
-	.Md_op(ex_md_op),
-	.Rs_in(operand_A_after_selection),
-	.Rt_in(operand_B_after_selection),
-	.Clk(clk),
+	.Md_op      ( ex_md_op                  ),
+	.Rs_in      ( operand_A_after_selection ),
+	.Rt_in      ( operand_B_after_selection ),
+	.Clk        ( clk                       ),
 	//output
-	.Res_out(muldiv_out),
-	.Md_install(md_install)
+	.Res_out    ( muldiv_out                ),
+	.Md_install ( md_install                )
 );
 
 wire ex_reg_w_gened;  // The handled reg_w, often disenable for special cases
 
 reg_w_gen reg_w_gen (
     // Input
-    .of(ex_overflow),
-    .zf(ex_zero),
-    .idex_movz(ex_movz),
-    .idex_movnz(ex_movn),
-    .idex_reg_w(ex_reg_w),
-    .idex_of_w_disen(ex_of_w_disen),
+    .of              ( ex_overflow    ),
+    .zf              ( ex_zero        ),
+    .idex_movz       ( ex_movz        ),
+    .idex_movnz      ( ex_movn        ),
+    .idex_reg_w      ( ex_reg_w       ),
+    .idex_of_w_disen ( ex_of_w_disen  ),
     // Output
-    .new_reg_w(ex_reg_w_gened)
+    .new_reg_w       ( ex_reg_w_gened )
 );
 
 // Special load and store byte write enable
 load_b_w_e_gen inst_load_b_w_e_gen (
-    .addr(alu_out[1:0]),
-    .load_sel(ex_load_sel),
-    .b_w_en(ex_reg_byte_w_en)
+    .addr     ( alu_out[1:0]     ),
+    .load_sel ( ex_load_sel      ),
+    .b_w_en   ( ex_reg_byte_w_en )
 );
 
 store_b_w_e_gen  inst_store_b_w_e_gen (
-    .addr      ( alu_out[1:0] ),
-    .store_sel ( ex_store_sel ),
+    .addr      ( alu_out[1:0]     ),
+    .store_sel ( ex_store_sel     ),
     .b_w_en    ( ex_mem_byte_w_en )
 );
 
 store_shifter  inst_store_shifter (
-    .addr         ( alu_out[1:0] ),
-    .store_sel    ( ex_store_sel ),
+    .addr         ( alu_out[1:0]               ),
+    .store_sel    ( ex_store_sel               ),
     .rt_data      ( operand_B_after_forwarding ),
-    .real_rt_data ( ex_aligned_rt_data )
+    .real_rt_data ( ex_aligned_rt_data         )
 );
 
 // Forwarding Unit
 
 ForwardUnit FU (
     // Input from EX
-    .rs_data       ( ex_op_A ),
-    .rt_data       ( ex_op_B ),
-    .rs_addr       ( ex_rs_addr ),
-    .rt_addr       ( ex_rt_addr ),
+    .rs_data       ( ex_op_A           ),
+    .rt_data       ( ex_op_B           ),
+    .rs_addr       ( ex_rs_addr        ),
+    .rt_addr       ( ex_rt_addr        ),
     // Input from MEM
-    .exmem_rd_addr ( mem_rd_addr ),
+    .exmem_rd_addr ( mem_rd_addr       ),
     .exmem_byte_en ( mem_reg_byte_w_en ),
-    .exmem_w_en    ( mem_reg_w ),
+    .exmem_w_en    ( mem_reg_w         ),
     // Input from WB
-    .memwb_data    ( memwb_data ),
-    .memwb_rd_addr ( wb_rd_addr ),
-    .memwb_byte_en ( wb_reg_byte_w_en ),
-    .memwb_w_en    ( wb_reg_w ),
+    .memwb_data    ( memwb_data        ),
+    .memwb_rd_addr ( wb_rd_addr        ),
+    .memwb_byte_en ( wb_reg_byte_w_en  ),
+    .memwb_w_en    ( wb_reg_w          ),
     // Output
-    .input_A       ( input_A ),
-    .input_B       ( input_B ),
-    .A_sel         ( A_sel ),
-    .B_sel         ( B_sel )
+    .input_A       ( input_A           ),
+    .input_B       ( input_B           ),
+    .A_sel         ( A_sel             ),
+    .B_sel         ( B_sel             )
 );
 
 
@@ -625,60 +625,60 @@ wire mem_jmp;  // Transfer the jmp to mem to indicate CU
 
 exmem_reg  inst_exmem_reg (
     // Input from global
-    .clk                ( clk ),
-    .reset              ( reset ),
+    .clk                   ( clk                 ),
+    .reset                 ( reset               ),
     // Input from Control Unit
-    .cu_stall           ( cu_exmem_stall ),
-    .cu_flush           ( cu_exmem_flush ),
+    .cu_stall              ( cu_exmem_stall      ),
+    .cu_flush              ( cu_exmem_flush      ),
     // Input from EX
-    .ex_nop             ( ex_nop ),
-    .ex_jmp             ( ex_jmp ),
-    .idex_mem_w         ( ex_mem_w ),
-    .idex_mem_r         ( ex_mem_r ),
-    .idex_reg_w         ( ex_reg_w_gened ),
-    .idex_branch        ( ex_branch ),
-    .idex_condition     ( ex_condition ),
-    .addr_target        ( branch_addr ),
-    .alu_lf             ( ex_less ),
-    .alu_zf             ( ex_zero ),
-    .alu_of             ( ex_overflow ),
-    .ex_res             ( exec_result ),
-    .real_rd_addr       ( ex_rd_addr ),
-    .idex_load_sel      ( ex_load_sel ),
-    .idex_store_sel     ( ex_store_sel ),
-    .reg_byte_w_en_in   ( ex_reg_byte_w_en ),
-    .mem_byte_w_en_in   ( ex_mem_byte_w_en ),
-    .idex_pc            ( ex_pc ),
-    .idex_pc_4          ( ex_pc_4 ),
-    .aligned_rt_data    ( ex_aligned_rt_data ),
-    .idex_cp0_dst_addr  ( ex_cp0_dst_addr ),
-    .cp0_w_en_in        ( ex_cp0_w_en ),
-    .syscall_in         ( ex_syscall ),
-    .idex_eret          ( ex_eret ),
+    .ex_nop                ( ex_nop              ),
+    .ex_jmp                ( ex_jmp              ),
+    .idex_mem_w            ( ex_mem_w            ),
+    .idex_mem_r            ( ex_mem_r            ),
+    .idex_reg_w            ( ex_reg_w_gened      ),
+    .idex_branch           ( ex_branch           ),
+    .idex_condition        ( ex_condition        ),
+    .addr_target           ( branch_addr         ),
+    .alu_lf                ( ex_less             ),
+    .alu_zf                ( ex_zero             ),
+    .alu_of                ( ex_overflow         ),
+    .ex_res                ( exec_result         ),
+    .real_rd_addr          ( ex_rd_addr          ),
+    .idex_load_sel         ( ex_load_sel         ),
+    .idex_store_sel        ( ex_store_sel        ),
+    .reg_byte_w_en_in      ( ex_reg_byte_w_en    ),
+    .mem_byte_w_en_in      ( ex_mem_byte_w_en    ),
+    .idex_pc               ( ex_pc               ),
+    .idex_pc_4             ( ex_pc_4             ),
+    .aligned_rt_data       ( ex_aligned_rt_data  ),
+    .idex_cp0_dst_addr     ( ex_cp0_dst_addr     ),
+    .cp0_w_en_in           ( ex_cp0_w_en         ),
+    .syscall_in            ( ex_syscall          ),
+    .idex_eret             ( ex_eret             ),
     // Output to MEM
-    .mem_nop            ( mem_nop ),
-    .mem_jmp            ( mem_jmp ),
-    .exmem_pc           ( mem_pc ),
-    .exmem_pc_4         ( mem_pc_4 ),
-    .exmem_mem_w        ( mem_mem_w ),
-    .exmem_mem_r        ( mem_mem_r ),
-    .exmem_reg_w        ( mem_reg_w ),
-    .reg_byte_w_en_out  ( mem_reg_byte_w_en ),
-    .exmem_rd_addr      ( mem_rd_addr ),
-    .mem_byte_w_en_out  ( mem_mem_byte_w_en ),
-    .exmem_alu_res      ( mem_alu_res ),
+    .mem_nop               ( mem_nop             ),
+    .mem_jmp               ( mem_jmp             ),
+    .exmem_pc              ( mem_pc              ),
+    .exmem_pc_4            ( mem_pc_4            ),
+    .exmem_mem_w           ( mem_mem_w           ),
+    .exmem_mem_r           ( mem_mem_r           ),
+    .exmem_reg_w           ( mem_reg_w           ),
+    .reg_byte_w_en_out     ( mem_reg_byte_w_en   ),
+    .exmem_rd_addr         ( mem_rd_addr         ),
+    .mem_byte_w_en_out     ( mem_mem_byte_w_en   ),
+    .exmem_alu_res         ( mem_alu_res         ),
     .exmem_aligned_rt_data ( mem_aligned_rt_data ),
-    .exmem_branch       ( mem_branch ),
-    .exmem_condition    ( mem_condition ),
-    .exmem_target       ( mem_target ),
-    .exmem_lf           ( mem_lf ),
-    .exmem_zf           ( mem_zf ),
-    .exmem_load_sel     ( mem_load_sel ),
-    .exmem_store_sel    ( mem_store_sel ),
-    .exmem_cp0_dst_addr ( mem_cp0_dst_addr ),
-    .cp0_w_en_out       ( mem_cp0_w_en ),
-    .syscall_out        ( mem_syscall ),
-    .exmem_eret         ( mem_eret )
+    .exmem_branch          ( mem_branch          ),
+    .exmem_condition       ( mem_condition       ),
+    .exmem_target          ( mem_target          ),
+    .exmem_lf              ( mem_lf              ),
+    .exmem_zf              ( mem_zf              ),
+    .exmem_load_sel        ( mem_load_sel        ),
+    .exmem_store_sel       ( mem_store_sel       ),
+    .exmem_cp0_dst_addr    ( mem_cp0_dst_addr    ),
+    .cp0_w_en_out          ( mem_cp0_w_en        ),
+    .syscall_out           ( mem_syscall         ),
+    .exmem_eret            ( mem_eret            )
 );
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -697,12 +697,12 @@ exmem_reg  inst_exmem_reg (
 ////////////////////////////////////////////////////////////////////////////////
 
 final_target  inst_final_target (
-    .Exmem_branch    ( mem_branch ),
-    .Exmem_condition ( mem_condition ),
-    .Exmem_target    ( mem_target ),
-    .Exmem_pc_4      ( mem_pc_4 ),
-    .Exmem_lf        ( mem_lf ),
-    .Exmem_zf        ( mem_zf ),
+    .Exmem_branch    ( mem_branch       ),
+    .Exmem_condition ( mem_condition    ),
+    .Exmem_target    ( mem_target       ),
+    .Exmem_pc_4      ( mem_pc_4         ),
+    .Exmem_lf        ( mem_lf           ),
+    .Exmem_zf        ( mem_zf           ),
     .Final_target    ( mem_final_target )
 );
 
@@ -711,9 +711,9 @@ final_target  inst_final_target (
 ////////////////////////////////////////////////////////////////////////////////
 
 load_shifter  inst_load_shifter (
-   .addr        ( mem_alu_res[1:0] ),
-   .load_sel    ( mem_load_sel ),
-   .mem_data    ( mem_data ),
+   .addr        ( mem_alu_res[1:0]     ),
+   .load_sel    ( mem_load_sel         ),
+   .mem_data    ( mem_data             ),
    .data_to_reg ( mem_aligned_mem_data )
 );
 
@@ -727,29 +727,29 @@ wire [`DATA_BUS] wb_aligned_rt_data;
 
 memwb_reg  inst_memwb_reg (
     // Global input
-    .clk                 ( clk ),
-    .reset               ( reset ),
-    .mem_stall           ( mem_stall ),
+    .clk                 ( clk                  ),
+    .reset               ( reset                ),
+    .mem_stall           ( mem_stall            ),
     // Input from mem
-    .exmem_mem_r         ( mem_mem_r ),
-    .exmem_reg_w         ( mem_reg_w ),
-    .reg_byte_w_en_in    ( mem_reg_byte_w_en ),
-    .exmem_rd_addr       ( mem_rd_addr ),
+    .exmem_mem_r         ( mem_mem_r            ),
+    .exmem_reg_w         ( mem_reg_w            ),
+    .reg_byte_w_en_in    ( mem_reg_byte_w_en    ),
+    .exmem_rd_addr       ( mem_rd_addr          ),
     .mem_data            ( mem_aligned_mem_data ),
-    .ex_data             ( mem_alu_res ),
-    .exmem_cp0_dst_addr  ( mem_cp0_dst_addr ),
-    .exmem_cp0_w_en      ( mem_cp0_w_en ),
-    .aligned_rt_data_in  ( mem_aligned_rt_data ),
+    .ex_data             ( mem_alu_res          ),
+    .exmem_cp0_dst_addr  ( mem_cp0_dst_addr     ),
+    .exmem_cp0_w_en      ( mem_cp0_w_en         ),
+    .aligned_rt_data_in  ( mem_aligned_rt_data  ),
     // Output to wb
-    .memwb_mem_r         ( wb_mem_r ),
-    .memwb_reg_w         ( wb_reg_w ),
-    .reg_byte_w_en_out   ( wb_reg_byte_w_en ),
-    .memwb_rd_addr       ( wb_rd_addr ),
-    .memwb_memdata       ( wb_mem_data ),
-    .memwb_exdata        ( wb_ex_data ),
-    .memwb_cp0_dst_addr  ( wb_cp0_dst_addr ),
-    .memwb_cp0_w_en      ( wb_cp0_w_en ),
-    .aligned_rt_data_out ( wb_aligned_rt_data )
+    .memwb_mem_r         ( wb_mem_r             ),
+    .memwb_reg_w         ( wb_reg_w             ),
+    .reg_byte_w_en_out   ( wb_reg_byte_w_en     ),
+    .memwb_rd_addr       ( wb_rd_addr           ),
+    .memwb_memdata       ( wb_mem_data          ),
+    .memwb_exdata        ( wb_ex_data           ),
+    .memwb_cp0_dst_addr  ( wb_cp0_dst_addr      ),
+    .memwb_cp0_w_en      ( wb_cp0_w_en          ),
+    .aligned_rt_data_out ( wb_aligned_rt_data   )
 );
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -774,38 +774,38 @@ wire [`PC_BUS] cu_epc;
 
 control_unit  inst_control_unit (
     // Input
-    .clk               ( clk ),
-    .reset             ( reset ),
+    .clk               ( clk                    ),
+    .reset             ( reset                  ),
     .mem_stall         ( mem_stall | md_install ),
-    .mem_nop           ( mem_nop ),
-    .ex_nop            ( ex_nop ),
-    .mem_jmp           ( mem_jmp ),
-    .ifid_rs_addr      ( ifid_rs_addr ),
-    .real_rt_addr      ( id_rt_addr ),
-    .idex_rd_addr      ( ex_rd_addr ),
-    .idex_mem_read     ( ex_mem_r ),
-    .predicted_idex_pc ( ex_pc ),
-    .predicted_ifid_pc ( ifid_pc ),
-    .target_exmem_pc   ( mem_final_target ),
-    .mem_pc            ( mem_pc ),
-    .cp0_intr          ( cp0_intr ),
-    .id_jump           ( id_jump ),
-    .exmem_eret        ( mem_eret ),
-    .exmem_syscall     ( mem_syscall ),
+    .mem_nop           ( mem_nop                ),
+    .ex_nop            ( ex_nop                 ),
+    .mem_jmp           ( mem_jmp                ),
+    .ifid_rs_addr      ( ifid_rs_addr           ),
+    .real_rt_addr      ( id_rt_addr             ),
+    .idex_rd_addr      ( ex_rd_addr             ),
+    .idex_mem_read     ( ex_mem_r               ),
+    .predicted_idex_pc ( ex_pc                  ),
+    .predicted_ifid_pc ( ifid_pc                ),
+    .target_exmem_pc   ( mem_final_target       ),
+    .mem_pc            ( mem_pc                 ),
+    .cp0_intr          ( cp0_intr               ),
+    .id_jump           ( id_jump                ),
+    .exmem_eret        ( mem_eret               ),
+    .exmem_syscall     ( mem_syscall            ),
     // Output
-    .cu_pc_src         ( cu_pc_src ),
-    .cu_pc_stall       ( cu_pc_stall ),
-    .cu_ifid_stall     ( cu_ifid_stall ),
-    .cu_idex_stall     ( cu_idex_stall ),
-    .cu_exmem_stall    ( cu_exmem_stall ),
-    .cu_ifid_flush     ( cu_ifid_flush ),
-    .cu_idex_flush     ( cu_idex_flush ),
-    .cu_exmem_flush    ( cu_exmem_flush ),
-    .cu_cp0_w_en       ( cu_cp0_w_en ),
-    .cu_exec_code      ( cu_exec_code ),
-    .cu_epc            ( cu_epc ),
-    .cu_vector         ( cu_vector ),
-    .bpu_write_en      ( bpu_w_en )
+    .cu_pc_src         ( cu_pc_src              ),
+    .cu_pc_stall       ( cu_pc_stall            ),
+    .cu_ifid_stall     ( cu_ifid_stall          ),
+    .cu_idex_stall     ( cu_idex_stall          ),
+    .cu_exmem_stall    ( cu_exmem_stall         ),
+    .cu_ifid_flush     ( cu_ifid_flush          ),
+    .cu_idex_flush     ( cu_idex_flush          ),
+    .cu_exmem_flush    ( cu_exmem_flush         ),
+    .cu_cp0_w_en       ( cu_cp0_w_en            ),
+    .cu_exec_code      ( cu_exec_code           ),
+    .cu_epc            ( cu_epc                 ),
+    .cu_vector         ( cu_vector              ),
+    .bpu_write_en      ( bpu_w_en               )
 );
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -815,18 +815,18 @@ control_unit  inst_control_unit (
 ////////////////////////////////////////////////////////////////////////////////
 
 cp0 inst_cp0 (
-    .Wb_cp0_w_en     ( wb_cp0_w_en ),
-    .Cu_cp0_w_en     ( cu_cp0_w_en ),
-    .Epc             ( cu_epc ),
+    .Wb_cp0_w_en     ( wb_cp0_w_en     ),
+    .Cu_cp0_w_en     ( cu_cp0_w_en     ),
+    .Epc             ( cu_epc          ),
     .Id_cp0_src_addr ( id_cp0_src_addr ),
     .Wb_cp0_dst_addr ( wb_cp0_dst_addr ),
-    .Ex_data         ( wb_ex_data ),
-    .Cu_exec_code    ( cu_exec_code ),
-    .Interrupt       ( intr ),
-    .Clk             ( clk ),
-    .Cp0_data        ( cp0_data ),
-    .Cp0_epc         ( epc ),
-    .Cp0_intr        ( cp0_intr )
+    .Ex_data         ( wb_ex_data      ),
+    .Cu_exec_code    ( cu_exec_code    ),
+    .Interrupt       ( intr            ),
+    .Clk             ( clk             ),
+    .Cp0_data        ( cp0_data        ),
+    .Cp0_epc         ( epc             ),
+    .Cp0_intr        ( cp0_intr        )
 );
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -836,17 +836,17 @@ cp0 inst_cp0 (
 ////////////////////////////////////////////////////////////////////////////////
 
 cpu_interface inst_ci (
-    .ic_addr(pc_out[31:2]),
-    .dc_read_in(mem_mem_r),
-    .dc_write_in(mem_mem_w),
-    .dc_addr(mem_alu_res[31:2]), //????
-    .data_reg(mem_aligned_rt_data),
-    .dc_byte_w_en(mem_mem_byte_w_en),
-    .clk(clk),
-    .rst(reset),
-    .ic_data_out(ic_data_out),
-    .dc_data_out(mem_data),
-    .mem_stall(mem_stall)
+    .ic_addr      ( pc_out[31:2]        ),
+    .dc_read_in   ( mem_mem_r           ),
+    .dc_write_in  ( mem_mem_w           ),
+    .dc_addr      ( mem_alu_res[31:2]   ),
+    .data_reg     ( mem_aligned_rt_data ),
+    .dc_byte_w_en ( mem_mem_byte_w_en   ),
+    .clk          ( clk                 ),
+    .rst          ( reset               ),
+    .ic_data_out  ( ic_data_out         ),
+    .dc_data_out  ( mem_data            ),
+    .mem_stall    ( mem_stall           )
 );
 
 assign mem_pc_out = mem_pc;
