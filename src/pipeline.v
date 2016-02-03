@@ -467,7 +467,7 @@ always @(*) begin
     case (ex_movz || ex_movn)
     1'b0: operand_A_after_selection = operand_A_after_forwarding;
     1'b1: operand_A_after_selection = `DATA_WIDTH'd0;
-    endcase;
+    endcase
 end
 
 // If the instruction is branch or lui, this operand should be immediate.
