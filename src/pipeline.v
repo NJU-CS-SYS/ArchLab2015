@@ -74,7 +74,6 @@ wire [`REG_ADDR_BUS] id_cp0_src_addr;
 wire [2:0] idex_exres_sel;
 wire idex_movn;
 wire idex_movz;
-wire [3:0] idex_div_mul;
 
 reg [`REG_ADDR_BUS] id_rt_addr;
 
@@ -334,7 +333,8 @@ decoder decoder(
     .id_cp0_src_addr    ( id_cp0_src_addr    ),
     .idex_exres_sel     ( idex_exres_sel     ),
     .idex_movn          ( idex_movn          ),
-    .idex_movz          ( idex_movz          )
+    .idex_movz          ( idex_movz          ),
+    .idex_div_mul       ( id_md_op           )
 );
 
 // $0 selector
@@ -837,15 +837,15 @@ cp0 inst_cp0 (
 
 cpu_interface inst_ci (
     .ic_addr      ( pc_out[31:2]        ),
-    .dc_read_in   ( mem_mem_r           ),
-    .dc_write_in  ( mem_mem_w           ),
-    .dc_addr      ( mem_alu_res[31:2]   ),
+    .dmem_read_in   ( mem_mem_r           ),
+    .dmem_write_in  ( mem_mem_w           ),
+    .dmem_addr      ( mem_alu_res[31:2]   ),
     .data_reg     ( mem_aligned_rt_data ),
     .dc_byte_w_en ( mem_mem_byte_w_en   ),
     .clk          ( clk                 ),
     .rst          ( reset               ),
     .ic_data_out  ( ic_data_out         ),
-    .dc_data_out  ( mem_data            ),
+    .dmem_data_out  ( mem_data            ),
     .mem_stall    ( mem_stall           )
 );
 

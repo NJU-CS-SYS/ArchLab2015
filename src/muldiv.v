@@ -68,9 +68,9 @@ end
 always@(negedge Clk)
 begin
 	if(Md_op == 4'b0101)			//MTHI
-		Hi = Rs_in;
+		Hi <= Rs_in;
 	else if(Md_op == 4'b0110)		//MTLO
-		Lo = Rs_in;
+		Lo <= Rs_in;
 	else if(Md_op == 4'b0011)		//MFHI
 		Res_out <= Hi;	
 	else if(Md_op == 4'b0100)	//MFLO
