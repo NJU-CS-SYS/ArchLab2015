@@ -201,7 +201,7 @@ wire [`DATA_BUS] mem_data;  // output from cpu_interface.data_out to load_shifte
 wire [3:0] id_md_op;
 wire [3:0] ex_md_op;
 wire [31:0] muldiv_out;
-wire md_install;
+wire md_stall;
 
 ////////////////////////////////////////////////////////////////////////////
 //
@@ -556,7 +556,7 @@ muldiv mul_div (
 	.Clk        ( clk                       ),
 	//output
 	.Res_out    ( muldiv_out                ),
-	.Md_install ( md_install                )
+	.Md_stall ( md_stall                )
 );
 
 wire ex_reg_w_gened;  // The handled reg_w, often disenable for special cases
@@ -776,7 +776,7 @@ control_unit  inst_control_unit (
     // Input
     .clk               ( clk                    ),
     .reset             ( reset                  ),
-    .mem_stall         ( mem_stall | md_install ),
+    .mem_stall         ( mem_stall | md_stall ),
     .mem_nop           ( mem_nop                ),
     .ex_nop            ( ex_nop                 ),
     .mem_jmp           ( mem_jmp                ),

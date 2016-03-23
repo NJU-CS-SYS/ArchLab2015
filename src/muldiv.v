@@ -28,7 +28,7 @@ module muldiv
 	input [31:0] Rt_in,
 	input Clk,
 	output reg [31:0] Res_out,
-	output reg Md_install
+	output Md_stall
 );
 
 // Md_op = 0001	op = DIV
@@ -49,43 +49,70 @@ reg [31:0] result_hi;
 reg [31:0] quotinent , quotient_temp;
 reg [63:0] dividend_copy , divider_copy , diff;
 reg negative_output;
+reg multiplied, divided;
 
 wire [31:0] remainder = (!negative_output)? dividend_copy[31:0] : ~dividend_copy[31:0] + 1'b1;
 
 reg [5:0] cnt;
-wire ready = !cnt;
+wire multiplying = (Md_op == 4'b0111) || (Md_op == 4'b1000) || (Md_op == 4'b1001);
+wire dividing = (Md_op == 4'b0001) || (Md_op == 4'b0010);
+wire ready = !cnt || !(multiplying && !multiplied);
+
+assign Md_stall = (multiplying && !multiplied) || (dividing && !divided);
 
 initial begin
 	Res_out = 32'h0;
-	Md_install = 1'b0;
 	Hi = 32'h0;
 	Lo = 32'h0;
 	result_hi = 32'h0;
 	cnt = 0;
 	negative_output = 0;
+    multiplied = 1'b0;
+    divided = 1'b0;
 end
 
 always@(negedge Clk)
 begin
-	if(Md_op == 4'b0101)			//MTHI
+    if(Md_op == 4'b0101) begin			//MTHI
+        divided <= 0;
+        multiplied <= 0;
 		Hi <= Rs_in;
-	else if(Md_op == 4'b0110)		//MTLO
+    end
+    else if(Md_op == 4'b0110) begin		//MTLO
+        divided <= 0;
+        multiplied <= 0;
 		Lo <= Rs_in;
-	else if(Md_op == 4'b0011)		//MFHI
+    end
+    else if(Md_op == 4'b0011) begin		//MFHI
+        divided <= 0;
+        multiplied <= 0;
 		Res_out <= Hi;	
-	else if(Md_op == 4'b0100)	//MFLO
+    end
+    else if(Md_op == 4'b0100) begin	//MFLO
+        divided <= 0;
+        multiplied <= 0;
 		Res_out <= Lo;
-	else if(Md_op == 4'b0111)		//MUL
+    end
+    else if(Md_op == 4'b0111) begin		//MUL
+        divided <= 0;
+        multiplied <= 1;
 		{result_hi , Res_out} <= $signed(Rs_in)*$signed(Rt_in);
-	else if(Md_op == 4'b1000)	//MULT
+    end
+    else if(Md_op == 4'b1000) begin	//MULT
+        divided <= 0;
+        multiplied <= 1;
 		{Hi , Lo} <= $signed(Rs_in)*$signed(Rt_in);
-	else if(Md_op == 4'b1001)	//MULTU
+    end
+    else if(Md_op == 4'b1001) begin	//MULTU
+        divided <= 0;
+        multiplied <= 1;
 		{Hi , Lo} <= Rs_in * Rt_in;
+    end
 	else if(Md_op == 4'b0001 || Md_op == 4'b0010) 	//DIV & DIVU
 	begin
+        multiplied <= 0;
 		if(ready)		//initial some registers
 		begin
-			Md_install = 1'b1;
 			cnt = 6'd32;
 			quotinent = 0;
 			quotient_temp = 0;
@@ -107,12 +134,12 @@ begin
 			cnt = cnt - 1'b1;
 			Hi = remainder;
 			Lo = quotinent;
-			if(cnt == 0)
-				Md_install = 1'b0;
+            if(cnt == 1) divided <= 0;
 		end
 	end
-	else 
+    else begin
 		Res_out <= 32'h0;
+    end
 end
 
 endmodule
