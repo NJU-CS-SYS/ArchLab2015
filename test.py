@@ -28,7 +28,8 @@ def make(path, command):
 nr_argv = len(sys.argv)
 
 build_dir  = 'ram_init_gen'
-cfile_dir  = 'testcase'
+# cfile_dir  = 'testcase'
+cfile_dir  = ''
 cfile_name = 'main.c'  # Use the same name in build dir to avoid multi main
 
 # Build c file
