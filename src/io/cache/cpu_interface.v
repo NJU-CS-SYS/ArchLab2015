@@ -41,8 +41,8 @@ wire ram_rdy;
 wire ram_en;
 wire ram_write;
 wire [29:0] ram_addr;
-wire dc_read_in, dc_write_in;
-//wire 
+reg dc_read_in, dc_write_in;
+wire [31:0] data_from_dc_to_ram;
 
 always @ (*) begin
     dc_read_in = dmem_read_in;
@@ -70,7 +70,7 @@ cache_manage_unit u_cm_0(
     rst,
     ram_rdy,
     ic_data_out,
-    dc_data_out,
+    data_from_dc_to_ram,
     mem_stall,
     ram_en,
     ram_write,
@@ -79,7 +79,7 @@ cache_manage_unit u_cm_0(
 
 ram_top u_ram_0(
     ram_addr[13:0],
-    dc_data_out,
+    data_from_dc_to_ram,
     clk,
     ram_en,
     ram_write,
@@ -88,15 +88,6 @@ ram_top u_ram_0(
     data_from_ram
 );
 
-
-
-
-
-
-
-
-
-
-
+assign dmem_data_out = data_from_dc_to_ram;
 
 endmodule

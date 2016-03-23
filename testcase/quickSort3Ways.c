@@ -24,6 +24,12 @@ void quickSort3Ways(int arr[], int lowIndex, int highIndex) {
 	quickSort3Ways(arr, lowIndex, lt - 1);
 	quickSort3Ways(arr, gt + 1, highIndex);
 }
+
+volatile inline int goodtrap(){
+    while(1);
+    return 0;
+}
+
 //#include <stdio.h> 
 #include "trap.h"
 int main() {
@@ -47,8 +53,7 @@ int main() {
 			printf("arr[%d] != 1", j);
 		}*/
 	}
-	
-	return 0;
+    return goodtrap();
 }
 			
 
