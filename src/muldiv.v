@@ -27,7 +27,7 @@ module muldiv
 	input [31:0] Rs_in,
 	input [31:0] Rt_in,
 	input Clk,
-	output reg [31:0] Res_out,
+	output [31:0] Res_out,
 	output Md_stall
 );
 
@@ -50,18 +50,21 @@ reg [31:0] quotinent , quotient_temp;
 reg [63:0] dividend_copy , divider_copy , diff;
 reg negative_output;
 reg multiplied, divided;
+reg [31:0] calculated_res;
 
 wire [31:0] remainder = (!negative_output)? dividend_copy[31:0] : ~dividend_copy[31:0] + 1'b1;
 
 reg [5:0] cnt;
 wire multiplying = (Md_op == 4'b0111) || (Md_op == 4'b1000) || (Md_op == 4'b1001);
 wire dividing = (Md_op == 4'b0001) || (Md_op == 4'b0010);
-wire ready = !cnt || !(multiplying && !multiplied);
+wire ready = !cnt && !(multiplying && !multiplied);
+wire [31:0] wired_res = Md_op == 4'b0100 ? Lo : Hi;
+assign Res_out = dividing|multiplying ? calculated_res : wired_res;
 
 assign Md_stall = (multiplying && !multiplied) || (dividing && !divided);
 
 initial begin
-	Res_out = 32'h0;
+	calculated_res = 32'h0;
 	Hi = 32'h0;
 	Lo = 32'h0;
 	result_hi = 32'h0;
@@ -86,17 +89,15 @@ begin
     else if(Md_op == 4'b0011) begin		//MFHI
         divided <= 0;
         multiplied <= 0;
-		Res_out <= Hi;	
     end
     else if(Md_op == 4'b0100) begin	//MFLO
         divided <= 0;
         multiplied <= 0;
-		Res_out <= Lo;
     end
     else if(Md_op == 4'b0111) begin		//MUL
         divided <= 0;
         multiplied <= 1;
-		{result_hi , Res_out} <= $signed(Rs_in)*$signed(Rt_in);
+		{result_hi , calculated_res} <= $signed(Rs_in)*$signed(Rt_in);
     end
     else if(Md_op == 4'b1000) begin	//MULT
         divided <= 0;
@@ -134,11 +135,11 @@ begin
 			cnt = cnt - 1'b1;
 			Hi = remainder;
 			Lo = quotinent;
-            if(cnt == 1) divided <= 0;
+            if(cnt == 1) divided <= 1;
 		end
 	end
     else begin
-		Res_out <= 32'h0;
+        calculated_res <= 32'h0;
     end
 end
 
