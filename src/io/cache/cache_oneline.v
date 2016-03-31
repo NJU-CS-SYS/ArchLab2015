@@ -21,23 +21,6 @@
 
 
 module cache_oneline(
-    enable,
-    index,
-    word_sel,
-    cmp,
-    write,
-    tag_in,
-    data_in,
-    valid_in,
-    byte_w_en,
-    clk,
-    rst,
-    hit,
-    dirty,
-    tag_out,
-    data_out, 
-    data_wb,
-    valid_out
 );
 
 parameter OFFSET_WIDTH = 3;
@@ -46,58 +29,78 @@ parameter INDEX_WIDTH = 7;
 parameter CACHE_DEPTH = 1<<INDEX_WIDTH;
 parameter TAG_WIDTH = 30 - OFFSET_WIDTH - INDEX_WIDTH;
 
-input enable;
-input [INDEX_WIDTH-1:0] index;
-input [OFFSET_WIDTH-1:0] word_sel;
-input cmp;
-input write;
-input [TAG_WIDTH-1:0] tag_in;
-input [31:0] data_in;
-input valid_in;
-input [3:0] byte_w_en;
+// system:
 input clk;
 input rst;
+
+// control:
+input enable;
+input cmp;
+input write;
+input [3:0] byte_w_en;
+
+//data and cache match related
+input valid_in;
+input [TAG_WIDTH-1:0] tag_in;
+input [INDEX_WIDTH-1:0] index;
+input [OFFSET_WIDTH-1:0] word_sel;
+input [31:0] data_in;
+
 output hit;
 output dirty;
+
+output valid_out;
 output [TAG_WIDTH-1:0] tag_out;
 output [31:0] data_out;
+
 output [(32*(2**OFFSET_WIDTH)-1) : 0] data_wb;
-output valid_out;
+output [(32*(2**OFFSET_WIDTH)-1) : 0] data_block_in;
 
 assign go = enable & ~rst;
 assign match = (tag_in == tag_out);
 
-assign word0_w_en = go & write & (word_sel == 3'b000) & (match | ~cmp);
-assign word1_w_en = go & write & (word_sel == 3'b001) & (match | ~cmp);
-assign word2_w_en = go & write & (word_sel == 3'b010) & (match | ~cmp);
-assign word3_w_en = go & write & (word_sel == 3'b011) & (match | ~cmp);
-assign word4_w_en = go & write & (word_sel == 3'b100) & (match | ~cmp);
-assign word5_w_en = go & write & (word_sel == 3'b101) & (match | ~cmp);
-assign word6_w_en = go & write & (word_sel == 3'b110) & (match | ~cmp);
-assign word7_w_en = go & write & (word_sel == 3'b111) & (match | ~cmp);
+assign word0_w_en = go & write & (word_sel == 3'b000) & match;
+assign word1_w_en = go & write & (word_sel == 3'b001) & match;
+assign word2_w_en = go & write & (word_sel == 3'b010) & match;
+assign word3_w_en = go & write & (word_sel == 3'b011) & match;
+assign word4_w_en = go & write & (word_sel == 3'b100) & match;
+assign word5_w_en = go & write & (word_sel == 3'b101) & match;
+assign word6_w_en = go & write & (word_sel == 3'b110) & match;
+assign word7_w_en = go & write & (word_sel == 3'b111) & match;
 
 assign dirty_override = go & write & (match|~cmp);
 assign tag_override = go & write & ~cmp;
 assign valid_overide = go & write & ~cmp;
 assign dirty_in = cmp; //cmp & write will override dirty bit
 
-wire[31:0] word0;
-wire[31:0] word1;
-wire[31:0] word2;
-wire[31:0] word3;
-wire[31:0] word4;
-wire[31:0] word5;
-wire[31:0] word6;
-wire[31:0] word7;
+wire [31:0] word_from_word_0;
+wire [31:0] word_from_word_1;
+wire [31:0] word_from_word_2;
+wire [31:0] word_from_word_3;
+wire [31:0] word_from_word_4;
+wire [31:0] word_from_word_5;
+wire [31:0] word_from_word_6;
+wire [31:0] word_from_word_7;
 
-cache_mem_word #(INDEX_WIDTH) mem_word0(clk, rst, word0_w_en, data_in, index, word0, byte_w_en);
-cache_mem_word #(INDEX_WIDTH) mem_word1(clk, rst, word1_w_en, data_in, index, word1, byte_w_en);
-cache_mem_word #(INDEX_WIDTH) mem_word2(clk, rst, word2_w_en, data_in, index, word2, byte_w_en);
-cache_mem_word #(INDEX_WIDTH) mem_word3(clk, rst, word3_w_en, data_in, index, word3, byte_w_en);
-cache_mem_word #(INDEX_WIDTH) mem_word4(clk, rst, word4_w_en, data_in, index, word4, byte_w_en);
-cache_mem_word #(INDEX_WIDTH) mem_word5(clk, rst, word5_w_en, data_in, index, word5, byte_w_en);
-cache_mem_word #(INDEX_WIDTH) mem_word6(clk, rst, word6_w_en, data_in, index, word6, byte_w_en);
-cache_mem_word #(INDEX_WIDTH) mem_word7(clk, rst, word7_w_en, data_in, index, word7, byte_w_en);
+wire [31:0] word_to_word_0 = ~cmp ? data_block_in[1*32-1 : 0*32] : data_in;
+wire [31:0] word_to_word_1 = ~cmp ? data_block_in[2*32-1 : 1*32] : data_in;
+wire [31:0] word_to_word_2 = ~cmp ? data_block_in[3*32-1 : 2*32] : data_in;
+wire [31:0] word_to_word_3 = ~cmp ? data_block_in[4*32-1 : 3*32] : data_in;
+wire [31:0] word_to_word_4 = ~cmp ? data_block_in[5*32-1 : 4*32] : data_in;
+wire [31:0] word_to_word_5 = ~cmp ? data_block_in[6*32-1 : 5*32] : data_in;
+wire [31:0] word_to_word_6 = ~cmp ? data_block_in[7*32-1 : 6*32] : data_in;
+wire [31:0] word_to_word_7 = ~cmp ? data_block_in[8*32-1 : 7*32] : data_in;
+
+wire byte_w_en_to_word = cmp ? byte_w_en : 4'b1111;
+
+cache_mem_word #(INDEX_WIDTH) mem_word0(clk, rst, word0_w_en, word_to_word_0, index, word_from_word_0, byte_w_en);
+cache_mem_word #(INDEX_WIDTH) mem_word1(clk, rst, word1_w_en, word_to_word_1, index, word_from_word_1, byte_w_en);
+cache_mem_word #(INDEX_WIDTH) mem_word2(clk, rst, word2_w_en, word_to_word_2, index, word_from_word_2, byte_w_en);
+cache_mem_word #(INDEX_WIDTH) mem_word3(clk, rst, word3_w_en, word_to_word_3, index, word_from_word_3, byte_w_en);
+cache_mem_word #(INDEX_WIDTH) mem_word4(clk, rst, word4_w_en, word_to_word_4, index, word_from_word_4, byte_w_en);
+cache_mem_word #(INDEX_WIDTH) mem_word5(clk, rst, word5_w_en, word_to_word_5, index, word_from_word_5, byte_w_en);
+cache_mem_word #(INDEX_WIDTH) mem_word6(clk, rst, word6_w_en, word_to_word_6, index, word_from_word_6, byte_w_en);
+cache_mem_word #(INDEX_WIDTH) mem_word7(clk, rst, word7_w_en, word_to_word_7, index, word_from_word_7, byte_w_en);
 
 wire dirty_bit,valid_bit;
 
