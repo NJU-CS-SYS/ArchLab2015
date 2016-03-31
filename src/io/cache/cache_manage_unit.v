@@ -84,12 +84,44 @@ cache_control cctrl (dc_read_in, dc_write_in, ic_offset, dc_offset, dc_byte_w_en
 assign ic_data2ic = ic_data_sel ? data_ram : dc_data_out; //0:load from dc
 assign dc_data2dc = dc_data_sel ? data_ram : data_reg;
 
-cache_2ways ic(ic_enable, ic_index, ic_word_sel, ic_cmp, ic_write, ic_tag, ic_data2ic,
-    ic_valid_2ic, ic_byte_w_en, clk, rst, ic_hit, ic_dirty, ic_tag_out, ic_data_out, ic_valid);
-    
-cache_2ways dc(dc_enable, dc_index, dc_word_sel, dc_cmp, dc_write, dc_tag, dc_data2dc,
-    dc_valid_2dc, dc_byte_w_en, clk, rst, dc_hit, dc_dirty, dc_tag_out, dc_data_out, dc_valid);
-
+cache_2ways ic(/*autoinst*/
+    .enable                     (ic_enable),
+    .index                      (ic_index),
+    .word_sel                   (ic_word_sel),
+    .cmp                        (ic_cmp),
+    .write                      (ic_write),
+    .tag_in                     (ic_tag),
+    .data_in                    (ic_data2ic),
+    .valid_in                   (ic_valid_2ic),
+    .byte_w_en                  (ic_byte_w_en),
+    .clk                        (clk),
+    .rst                        (rst),
+    .hit                        (ic_hit),
+    .dirty                      (ic_dirty),
+    .tag_out                    (ic_tag_out),
+    .data_out                   (ic_data_out),
+    .data_wb                    (128'h0 ),
+    .valid_out                  (ic_valid)
+);
+cache_2ways dc(/*autoinst*/
+    .enable                     (dc_enable),
+    .index                      (dc_index),
+    .word_sel                   (dc_word_sel),
+    .cmp                        (dc_cmp),
+    .write                      (dc_write),
+    .tag_in                     (dc_tag),
+    .data_in                    (dc_data2dc),
+    .valid_in                   (dc_valid_2dc),
+    .byte_w_en                  (dc_byte_w_en),
+    .clk                        (clk),
+    .rst                        (rst),
+    .hit                        (dc_hit),
+    .dirty                      (dc_dirty),
+    .tag_out                    (dc_tag_out),
+    .data_out                   (dc_data_out),
+    .data_wb                    (dc_data_wb),
+    .valid_out                  (dc_valid)
+);
 
 always @(posedge clk) begin
     if(rst) begin

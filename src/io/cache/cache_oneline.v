@@ -20,8 +20,25 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module cache_oneline(enable, index, word_sel, cmp, write, tag_in, data_in,
-valid_in, byte_w_en, clk, rst, hit, dirty, tag_out, data_out, valid_out);
+module cache_oneline(
+    enable,
+    index,
+    word_sel,
+    cmp,
+    write,
+    tag_in,
+    data_in,
+    valid_in,
+    byte_w_en,
+    clk,
+    rst,
+    hit,
+    dirty,
+    tag_out,
+    data_out, 
+    data_wb,
+    valid_out
+);
 
 parameter OFFSET_WIDTH = 3;
 parameter BLOCK_SZIE = 1<<OFFSET_WIDTH;
@@ -44,6 +61,7 @@ output hit;
 output dirty;
 output [TAG_WIDTH-1:0] tag_out;
 output [31:0] data_out;
+output [(32*(2**OFFSET_WIDTH)-1) : 0] data_wb;
 output valid_out;
 
 assign go = enable & ~rst;
@@ -96,5 +114,8 @@ assign dirty = go & dirty_bit & (~write | ( cmp & ~match )); // ???
 assign valid_out = go & valid_bit & (~write | cmp);
 
 data_sel sel0(word_sel,word0,word1,word2,word3,word4,word5,word6,word7,data_out);
+
+assign data_wb = {word0, word1, word2, word3, 
+    word4, word5, word6, word7};
 
 endmodule

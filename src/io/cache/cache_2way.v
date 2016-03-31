@@ -22,8 +22,25 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module cache_2ways(enable, index, word_sel, cmp, write, tag_in, data_in,
-valid_in, byte_w_en, clk, rst, hit, dirty, tag_out, data_out, valid_out);
+module cache_2ways(
+    enable,
+    index,
+    word_sel,
+    cmp,
+    write,
+    tag_in,
+    data_in,
+    valid_in,
+    byte_w_en,
+    clk,
+    rst,
+    hit,
+    dirty,
+    tag_out,
+    data_out,
+    data_wb,
+    valid_out
+);
 
 parameter OFFSET_WIDTH = 3;
 parameter BLOCK_SIZE = 1<<OFFSET_WIDTH;
@@ -46,6 +63,7 @@ output hit;
 output dirty;
 output [TAG_WIDTH-1:0] tag_out;
 output [31:0] data_out;
+output [(32*(2**OFFSET_WIDTH)-1) : 0] data_wb;
 output valid_out;
 
 reg victimway_ff;
@@ -53,6 +71,8 @@ wire victimway,valid0,valid1,dirty0,dirty1;
 wire [31:0] data0,data1;
 wire [TAG_WIDTH-1:0] tag0,tag1;
 wire write0,write1;
+wire [(32*(2**OFFSET_WIDTH)-1) : 0] data_wb_1;
+wire [(32*(2**OFFSET_WIDTH)-1) : 0] data_wb_0;
 
 victimway_sel vs0(rst, enable, cmp, valid0,valid1,dirty0,dirty1,victimway_ff,victimway);
 
@@ -64,11 +84,47 @@ end
 //index, word_sel, cmp, tag_in, data_in, valid_in, byte_w_en, clk, rst
 //input different :
 
-cache_oneline #(OFFSET_WIDTH,BLOCK_SIZE,INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) c0(enable0, index,word_sel,
-    cmp, write0, tag_in, data_in, valid_in, byte_w_en, clk, rst, hit0, dirty0, tag0, data0, valid0);
+cache_oneline 
+#(OFFSET_WIDTH,BLOCK_SIZE,INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) c0(
+    enable0,
+    index,
+    word_sel,
+    cmp,
+    write0,
+    tag_in,
+    data_in,
+    valid_in,
+    byte_w_en,
+    clk,
+    rst,
+    hit0,
+    dirty0,
+    tag0,
+    data_wb_0,
+    data0,
+    valid0
+);
 
-cache_oneline #(OFFSET_WIDTH,BLOCK_SIZE,INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) c1(enable1, index, word_sel,
-    cmp, write1, tag_in, data_in, valid_in, byte_w_en, clk, rst, hit1, dirty1, tag1, data1, valid1);
+cache_oneline 
+#(OFFSET_WIDTH,BLOCK_SIZE,INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) c1(
+    enable1,
+    index,
+    word_sel,
+    cmp,
+    write1,
+    tag_in,
+    data_in,
+    valid_in,
+    byte_w_en,
+    clk,
+    rst,
+    hit1,
+    dirty1,
+    tag1,
+    data_wb_1,
+    data1,
+    valid1
+);
 
 // bug ?????????????????
 assign enable0 = cmp ? enable : ~victimway;
@@ -80,7 +136,9 @@ assign write1 = write &(cmp ? (valid1 & hit1) : victimway_ff);
 
 assign hit = (valid1 & hit1) | (valid0 & hit0);
 assign dirty = dirty0 & dirty1;
-assign data_out = cmp ? ((hit0 & valid0) ? data0 : data1) : (victimway_ff ? data1 : data0);
+//assign data_out = cmp ? ((hit0 & valid0) ? data0 : data1) : (victimway_ff ? data1 : data0);
+assign data_out = ((hit0 & valid0) ? data0 : data1);
+assign data_wb = victimway_ff ? data_wb_1 : data_wb_0;
 assign valid_out = valid0 | valid1;
 //if !cmp, then tag_out is used for write back, and it should be the victimway's tag
 //assign tag_out = cmp ? ((hit0&valid0) ? tag0 : tag1) : tag_in;
