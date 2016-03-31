@@ -93,20 +93,43 @@ wire [31:0] word_to_word_7 = ~cmp ? data_block_in[8*32-1 : 7*32] : data_in;
 
 wire byte_w_en_to_word = cmp ? byte_w_en : 4'b1111;
 
-cache_mem_word #(INDEX_WIDTH) mem_word0(clk, rst, word0_w_en, word_to_word_0, index, word_from_word_0, byte_w_en);
-cache_mem_word #(INDEX_WIDTH) mem_word1(clk, rst, word1_w_en, word_to_word_1, index, word_from_word_1, byte_w_en);
-cache_mem_word #(INDEX_WIDTH) mem_word2(clk, rst, word2_w_en, word_to_word_2, index, word_from_word_2, byte_w_en);
-cache_mem_word #(INDEX_WIDTH) mem_word3(clk, rst, word3_w_en, word_to_word_3, index, word_from_word_3, byte_w_en);
-cache_mem_word #(INDEX_WIDTH) mem_word4(clk, rst, word4_w_en, word_to_word_4, index, word_from_word_4, byte_w_en);
-cache_mem_word #(INDEX_WIDTH) mem_word5(clk, rst, word5_w_en, word_to_word_5, index, word_from_word_5, byte_w_en);
-cache_mem_word #(INDEX_WIDTH) mem_word6(clk, rst, word6_w_en, word_to_word_6, index, word_from_word_6, byte_w_en);
-cache_mem_word #(INDEX_WIDTH) mem_word7(clk, rst, word7_w_en, word_to_word_7, index, word_from_word_7, byte_w_en);
+cache_mem_word #(INDEX_WIDTH) mem_word0(clk, rst, word0_w_en, word_to_word_0, index, word_from_word_0, byte_w_en_to_word);
+cache_mem_word #(INDEX_WIDTH) mem_word1(clk, rst, word1_w_en, word_to_word_1, index, word_from_word_1, byte_w_en_to_word);
+cache_mem_word #(INDEX_WIDTH) mem_word2(clk, rst, word2_w_en, word_to_word_2, index, word_from_word_2, byte_w_en_to_word);
+cache_mem_word #(INDEX_WIDTH) mem_word3(clk, rst, word3_w_en, word_to_word_3, index, word_from_word_3, byte_w_en_to_word);
+cache_mem_word #(INDEX_WIDTH) mem_word4(clk, rst, word4_w_en, word_to_word_4, index, word_from_word_4, byte_w_en_to_word);
+cache_mem_word #(INDEX_WIDTH) mem_word5(clk, rst, word5_w_en, word_to_word_5, index, word_from_word_5, byte_w_en_to_word);
+cache_mem_word #(INDEX_WIDTH) mem_word6(clk, rst, word6_w_en, word_to_word_6, index, word_from_word_6, byte_w_en_to_word);
+cache_mem_word #(INDEX_WIDTH) mem_word7(clk, rst, word7_w_en, word_to_word_7, index, word_from_word_7, byte_w_en_to_word);
 
 wire dirty_bit,valid_bit;
 
-cache_mem #(INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) mem_tag(clk, rst, tag_override, tag_in, index, tag_out);
-cache_mem #(INDEX_WIDTH,CACHE_DEPTH,1) mem_dirty(clk, rst, dirty_override, dirty_in, index, dirty_bit);
-cache_mem #(INDEX_WIDTH,CACHE_DEPTH,1) mem_valid(clk, rst, valid_overide, valid_in, index, valid_bit);
+cache_mem #(INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) mem_tag(/*autoinst*/
+    .clk                        (clk                            ),
+    .rst                        (rst                            ),
+    .write                      (tag_override                   ),
+    .data_in                    (tag_in                         ),
+    .addr                       (index                          ),
+    .data_out                   (tag_out                        )
+);
+
+cache_mem #(INDEX_WIDTH,CACHE_DEPTH,1) mem_dirty(/*autoinst*/
+    .clk                        (clk                            ),
+    .rst                        (rst                            ),
+    .write                      (dirty_overrid                  ),
+    .data_in                    (dirty_in                       ),
+    .addr                       (index                          ),
+    .data_out                   (dirty_bit                      )
+);
+
+cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,1) (/*autoinst*/
+    .clk                        (clk                            ),
+    .rst                        (rst                            ),
+    .write                      (valid_overide                  ),
+    .data_in                    (valid_in                       ),
+    .addr                       (index                          ),  
+    .data_out                   (valid_bit                      )
+);
 
 assign hit = go & match;
 assign dirty = go & dirty_bit & (~write | ( cmp & ~match )); // ???
@@ -118,7 +141,6 @@ assign valid_out = go & valid_bit & (~write | cmp);
 
 data_sel sel0(word_sel,word0,word1,word2,word3,word4,word5,word6,word7,data_out);
 
-assign data_wb = {word0, word1, word2, word3, 
-    word4, word5, word6, word7};
+assign data_wb = {word0, word1, word2, word3, word4, word5, word6, word7};
 
 endmodule
