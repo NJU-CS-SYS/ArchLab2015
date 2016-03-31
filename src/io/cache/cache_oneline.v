@@ -20,7 +20,14 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module cache_oneline(
+module cache_oneline(/*autoarg*/
+    //Inputs
+    clk, rst, enable, cmp, write, byte_w_en, 
+    valid_in, tag_in, index, word_sel, data_in, 
+
+    //Outputs
+    hit, dirty, valid_out, tag_out, data_out, 
+    data_wb, data_block_in
 );
 
 parameter OFFSET_WIDTH = 3;
@@ -39,12 +46,13 @@ input cmp;
 input write;
 input [3:0] byte_w_en;
 
-//data and cache match related
+// data and cache match related
 input valid_in;
 input [TAG_WIDTH-1:0] tag_in;
 input [INDEX_WIDTH-1:0] index;
 input [OFFSET_WIDTH-1:0] word_sel;
 input [31:0] data_in;
+input [(32*(2**OFFSET_WIDTH)-1) : 0] data_block_in;
 
 output hit;
 output dirty;
@@ -52,9 +60,7 @@ output dirty;
 output valid_out;
 output [TAG_WIDTH-1:0] tag_out;
 output [31:0] data_out;
-
 output [(32*(2**OFFSET_WIDTH)-1) : 0] data_wb;
-output [(32*(2**OFFSET_WIDTH)-1) : 0] data_block_in;
 
 assign go = enable & ~rst;
 assign match = (tag_in == tag_out);
