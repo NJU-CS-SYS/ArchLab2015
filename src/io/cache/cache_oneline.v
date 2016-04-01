@@ -64,14 +64,14 @@ output [(32*(2**OFFSET_WIDTH)-1) : 0] data_wb;
 assign go = enable & ~rst;
 assign match = (tag_in == tag_out);
 
-assign word0_w_en = go & write & (word_sel == 3'b000) & (match) | ~cmp;
-assign word1_w_en = go & write & (word_sel == 3'b001) & (match) | ~cmp;
-assign word2_w_en = go & write & (word_sel == 3'b010) & (match) | ~cmp;
-assign word3_w_en = go & write & (word_sel == 3'b011) & (match) | ~cmp;
-assign word4_w_en = go & write & (word_sel == 3'b100) & (match) | ~cmp;
-assign word5_w_en = go & write & (word_sel == 3'b101) & (match) | ~cmp;
-assign word6_w_en = go & write & (word_sel == 3'b110) & (match) | ~cmp;
-assign word7_w_en = go & write & (word_sel == 3'b111) & (match) | ~cmp;
+assign word0_w_en = go & write & ((word_sel == 3'b000) & (match) | ~cmp);
+assign word1_w_en = go & write & ((word_sel == 3'b001) & (match) | ~cmp);
+assign word2_w_en = go & write & ((word_sel == 3'b010) & (match) | ~cmp);
+assign word3_w_en = go & write & ((word_sel == 3'b011) & (match) | ~cmp);
+assign word4_w_en = go & write & ((word_sel == 3'b100) & (match) | ~cmp);
+assign word5_w_en = go & write & ((word_sel == 3'b101) & (match) | ~cmp);
+assign word6_w_en = go & write & ((word_sel == 3'b110) & (match) | ~cmp);
+assign word7_w_en = go & write & ((word_sel == 3'b111) & (match) | ~cmp);
 
 assign dirty_override = go & write & (match|~cmp);
 assign tag_override = go & write & ~cmp;
