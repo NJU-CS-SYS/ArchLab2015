@@ -62,7 +62,7 @@ reg [2:0] status,counter;
 reg write_after_load;
 
 wire ic_enable, ic_cmp, ic_write, ic_data_sel, ic_valid_2ic;
-wire dc_enable, dc_cmp, dc_write, dc_data_sel, dc_valid_2dc;
+wire dc_enable, dc_cmp, dc_write, dc_valid_2dc;
 wire [OFFSET_WIDTH-1:0] ic_word_sel, dc_word_sel;
 wire [2:0] status_next, counter_next;
 wire [3:0] ic_byte_w_en, dc_byte_w_en;
@@ -104,14 +104,13 @@ cache_control cctrl (
     data_sel_to_ic, byte_w_en_to_ic, valid_to_ic,/*to ic*/
 
     enable_to_dc, word_sel_to_ic, cmp_to_dc, write_to_dc,
-    dc_data_sel, dc_byte_w_en, dc_valid_2dc,/*to dc*/
+    dc_byte_w_en, dc_valid_2dc,/*to dc*/
 
     ram_addr_sel, ram_en_out, ram_write_out,
     status_next, counter_next
 );
 
 assign ic_data2ic = ic_data_sel ? data_ram : dc_data_out; //0:load from dc
-assign dc_data2dc = dc_data_sel ? data_ram : data_reg;
 
 cache_2ways ic(/*autoinst*/
     .clk                        (clk),
