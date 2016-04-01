@@ -74,7 +74,8 @@ initial begin
     dc_read = 1;
     dc_addr = 30'h00000020;
     ic_addr = 30'h00000011;
-    
+    //expect 40 for dc_data here
+
     #(PERIOD*16);
     dc_write = 1;
     dc_read = 0;
@@ -84,6 +85,7 @@ initial begin
     dc_write = 0;
     dc_read = 1;
     dc_addr = 30'h00000820;
+    //expect 820 
     
     #(PERIOD*16);
     ic_addr = 30'h00000010;
@@ -95,21 +97,25 @@ initial begin
     dc_write = 0;
     dc_read = 1;
     dc_addr = 30'h00001020;
+    //expect 1020
 
     #(PERIOD*56);
     dc_write = 0;
     dc_read = 1;
     dc_addr = 30'h00000020;
+    //expect 40
 
     #(PERIOD*56);
     dc_write = 0;
     dc_read = 1;
     dc_addr = 30'h00000820;
+    //expect 820 
 
     #(PERIOD*56);
     dc_write = 0;
     dc_read = 1;
     dc_addr = 30'h00001020;
+    //expect 1020
 
     #(PERIOD*56);
     ic_addr = 30'h00000012;
@@ -117,6 +123,7 @@ initial begin
     dc_read = 0;
     dc_addr = 30'h00000020;
     data_reg = 32'h00000340;
+    //expect 40 for dc_data here
 
 
 
