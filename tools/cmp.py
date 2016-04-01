@@ -54,6 +54,7 @@ for i in range(0,cpuc-2):
         block_len += 1
 
 i = 0
+print 'spim', 'cpu'
 for num in spim_block_len:
     print num,
     print cpu_block_len[i]
