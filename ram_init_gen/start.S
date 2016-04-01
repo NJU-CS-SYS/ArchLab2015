@@ -3,7 +3,7 @@
 
 _reset:
   li $sp, 4096
-  jal main
+  j main
 $L_GOOD:
   j $L_GOOD
 
