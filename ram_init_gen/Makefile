@@ -6,7 +6,8 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 OBJDUMP = $(CROSS_COMPILE)objdump
 
 
-CFLAGS = -MD -fno-pic -static -fno-strict-aliasing -fno-builtin  -fno-stack-protector -mno-check-zero-division -fno-delayed-branch -Wall -Werror -EL -march=mips32 -mno-llsc -mno-imadd -mno-mad -I../include -O0 -Wno-unused-function
+CFLAGS = -MD -fno-pic -static -fno-strict-aliasing -fno-builtin  -fno-stack-protector -mno-check-zero-division -fno-delayed-branch -Wall -Werror -EL -march=mips32 -mno-llsc -mno-imadd -mno-mad -Wno-unused-function
+CFLAGS += -I. -O1
 SCFLAGS = -MD -fno-pic -static -fno-strict-aliasing -fno-builtin  -fno-stack-protector -mno-check-zero-division -fno-delayed-branch -Wall -Werror -EL -march=mips32 -mno-llsc -mno-imadd -mno-mad -I../include -O2 -S -Wno-unused-function
 CFLAGS += -g
 ASFLAGS = -MD -EL -mno-check-zero-division -mips32 -O2

@@ -840,7 +840,7 @@ cpu_interface inst_ci (
     .dmem_read_in   ( mem_mem_r           ),
     .dmem_write_in  ( mem_mem_w           ),
     .dmem_addr      ( mem_alu_res[31:2]   ),
-    .data_reg     ( mem_aligned_rt_data ),
+    .data_from_reg     ( mem_aligned_rt_data ),
     .dc_byte_w_en ( mem_mem_byte_w_en   ),
     .clk          ( clk                 ),
     .rst          ( reset               ),
