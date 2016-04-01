@@ -105,7 +105,7 @@ always @(*) begin
             ram_addr_sel_reg = 2'b00;
             ram_write_out = 0;
 
-            if(counter_in == 3'd7) begin
+            if(counter_in ==  COUNT_FINISH) begin
                 status_next_reg = `STAT_NORMAL;
                 counter_next_reg = 3'd7;
             end
@@ -141,7 +141,7 @@ always @(*) begin
             ram_en_out = 1;
             ram_write_out = 0;
 
-            if(counter_in == 3'd7) begin
+            if(counter_in == COUNT_FINISH) begin
                 status_next_reg = `STAT_NORMAL;
                 counter_next_reg = 3'd7;
             end
@@ -176,7 +176,7 @@ always @(*) begin
             ram_en_out = 1;
             ram_write_out = 1;
 
-            if(counter_in == 3'd7) begin
+            if(counter_in == COUNT_FINISH) begin
                 status_next_reg = `STAT_DC_MISS;
                 counter_next_reg = 3'd0;
             end
@@ -216,7 +216,7 @@ always @(*) begin
             ram_addr_sel_reg = 2'b00;
             ram_write_out = 0;
 
-            if(counter_in == 3'd7) begin
+            if(counter_in == COUNT_FINISH) begin
                 status_next_reg = `STAT_DC_MISS;
                 counter_next_reg = 3'd0;
             end
@@ -251,7 +251,7 @@ always @(*) begin
             ram_en_out = 1;
             ram_write_out = 1;
 
-            if(counter_in == 3'd7) begin
+            if(counter_in == COUNT_FINISH) begin
                 status_next_reg = `STAT_DOUBLE_MISS;
                 counter_next_reg = 3'd0;
             end
