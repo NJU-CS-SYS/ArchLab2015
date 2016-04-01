@@ -20,10 +20,15 @@
 //////////////////////////////////////////////////////////////////////////////////
 `include "status.vh"
 
-module cache_manage_unit(ic_addr, data_ram, dc_read_in, dc_write_in, dc_addr, data_reg,
-    dc_byte_w_en_in, clk, rst,ram_ready,
-    ic_data_out, dc_data_out, mem_stall,
-    ram_en_out,ram_write_out,ram_addr_out
+module cache_manage_unit(/*autoarg*/
+    //Inputs
+    rst, dc_read_in, dc_write_in, dc_byte_w_en_in, 
+    ic_addr, dc_addr, data_from_reg, clk, 
+    ram_ready, data_from_ram, 
+
+    //Outputs
+    mem_stall, dc_data_out, ic_data_out, 
+    ram_en_out, ram_write_out, ram_addr_out
 );
 parameter OFFSET_WIDTH = 3;
 parameter BLOCK_SIZE = 1<<OFFSET_WIDTH;
@@ -31,13 +36,25 @@ parameter INDEX_WIDTH = 6;
 parameter CACHE_DEPTH = 1<<INDEX_WIDTH;
 parameter TAG_WIDTH = 30 - OFFSET_WIDTH - INDEX_WIDTH;
 
-input [29:0] ic_addr,dc_addr;
-input [31:0] data_ram,data_reg;//data_from_ram, data_from_reg
-input dc_write_in,dc_read_in,clk,rst;
-input ram_ready;
+//from cpu
+input rst;
+input dc_read_in;
+input dc_write_in;
 input [3:0] dc_byte_w_en_in;
-output [31:0] dc_data_out,ic_data_out;
-output mem_stall,ram_en_out,ram_write_out;
+input [29:0] ic_addr;
+input [29:0] dc_addr;
+input [31:0] data_from_reg;
+//from ram
+input clk;
+input ram_ready;        //inform control unit to do next action
+input [(32*(2**OFFSET_WIDTH)-1) : 0] data_from_ram;
+//to cpu
+output mem_stall;
+output [31:0] dc_data_out;
+output [31:0] ic_data_out;
+//to ram
+output ram_en_out;
+output ram_write_out;
 output [29:0] ram_addr_out;
 
 reg [2:0] status,counter;
