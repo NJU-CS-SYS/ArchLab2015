@@ -61,7 +61,7 @@ output [(32*(2**OFFSET_WIDTH)-1) : 0] dc_data_wb;
 reg [2:0] status,counter;
 reg write_after_load;
 
-wire ic_enable, ic_cmp, ic_write, ic_data_sel, ic_valid_2ic;
+wire enable_to_ic, cmp_to_ic, write_to_ic, ic_valid_2ic;
 wire dc_enable, dc_cmp, dc_write, dc_valid_2dc;
 wire [OFFSET_WIDTH-1:0] ic_word_sel, dc_word_sel;
 wire [2:0] status_next, counter_next;
@@ -90,18 +90,18 @@ assign ram_addr_dc = {dc_tag,dc_index,counter};
 assign ram_addr_dc_wb = {dc_tag_out,dc_index,counter};//write back
 assign ram_addr_out = ram_addr_sel[1] ? ram_addr_dc_wb : (ram_addr_sel[0] ? ram_addr_dc : ram_addr_ic);
 
-wire hit_from_ic, valid_from_ic; //ic_dirty is useless
-wire hit_from_dc, valid_from_dc, dirty_from_dc; // 6 output of i&d cache
+wire hit_from_ic, valid_from_ic;
+wire hit_from_dc, valid_from_dc, dirty_from_dc; // 5 outputs of i&d cache
 
 
 cache_control cctrl (
     dc_read_in, dc_write_in, ic_offset, dc_offset, dc_byte_w_en_in, 
     hit_from_ic, valid_from_ic,/*ic's output*/
-    hit_from_ic, dirty_from_dc, valid_from_dc,/*dc's output*/
+    hit_from_dc, dirty_from_dc, valid_from_dc,/*dc's output*/
     status, counter,/*status*/
 
     enable_to_ic, word_sel_to_ic, cmp_to_ic, write_to_ic,
-    data_sel_to_ic, byte_w_en_to_ic, valid_to_ic,/*to ic*/
+    byte_w_en_to_ic, valid_to_ic,/*to ic*/
 
     enable_to_dc, word_sel_to_ic, cmp_to_dc, write_to_dc,
     dc_byte_w_en, dc_valid_2dc,/*to dc*/
@@ -109,8 +109,6 @@ cache_control cctrl (
     ram_addr_sel, ram_en_out, ram_write_out,
     status_next, counter_next
 );
-
-assign ic_data2ic = ic_data_sel ? data_ram : dc_data_out; //0:load from dc
 
 cache_2ways ic(/*autoinst*/
     .clk                        (clk),

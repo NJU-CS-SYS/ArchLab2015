@@ -26,8 +26,13 @@ module cache_control(
     ic_hit_in, ic_valid_in, /*ic's output*/
     dc_hit_in, dc_dirty_in, dc_valid_in,/*dc's output*/
     status_in, counter_in, /*status info*/
-    ic_enable_out, ic_word_sel_out, ic_cmp_out, ic_write_out, ic_data_sel, ic_byte_w_en, ic_valid_out,
-    dc_enable_out, dc_word_sel_out, dc_cmp_out, dc_write_out, dc_byte_w_en, dc_valid_out,
+
+    ic_enable_out, ic_word_sel_out, ic_cmp_out,
+    ic_write_out, ic_byte_w_en, ic_valid_out,
+
+    dc_enable_out, dc_word_sel_out, dc_cmp_out,
+    dc_write_out, dc_byte_w_en, dc_valid_out,
+
     ram_addr_sel, ram_en_out, ram_write_out,
     status_next, counter_next
 );
@@ -36,7 +41,7 @@ input [2:0] status_in,counter_in;
 input [2:0] ic_word_sel_in, dc_word_sel_in;
 input [3:0] dc_byte_w_en_in;
 
-output ic_enable_out, ic_cmp_out, ic_write_out, ic_data_sel, ic_valid_out,
+output ic_enable_out, ic_cmp_out, ic_write_out, ic_valid_out,
     dc_enable_out, dc_cmp_out, dc_write_out, dc_valid_out,
     ram_en_out, ram_write_out;
 output [1:0] ram_addr_sel;
@@ -44,7 +49,7 @@ output [2:0] status_next,counter_next;
 output [2:0] ic_word_sel_out, dc_word_sel_out;
 output [3:0] ic_byte_w_en, dc_byte_w_en;
 
-reg ic_enable_reg, ic_cmp_reg, ic_write_reg, ic_data_sel_reg, ic_valid_reg,
+reg ic_enable_reg, ic_cmp_reg, ic_write_reg, ic_valid_reg,
     dc_enable_reg, dc_cmp_reg, dc_write_reg, dc_valid_reg,
     ram_en_out, ram_write_out;
 reg [1:0] ram_addr_sel_reg;
@@ -54,7 +59,6 @@ reg [3:0] ic_byte_w_en_reg, dc_byte_w_en_reg;
 assign ic_enable_out = ic_enable_reg;
 assign ic_cmp_out = ic_cmp_reg;
 assign ic_write_out = ic_write_reg;
-assign ic_data_sel = ic_data_sel_reg;
 assign ic_valid_out = ic_valid_reg;
 
 assign dc_enable_out = dc_enable_reg;
@@ -80,11 +84,9 @@ always @(*) begin
             ic_cmp_reg = 0;
             ic_write_reg = 1;
             if(dc_hit_in&&dc_valid_in)begin
-                ic_data_sel_reg = 0;//from dc
                 ram_en_out = 0;
             end
             else begin
-                ic_data_sel_reg = 1;//from ram
                 ram_en_out = 1;
             end
             ic_valid_reg = 1;
@@ -124,7 +126,6 @@ always @(*) begin
             ic_enable_reg = 0;
             ic_cmp_reg = 0;
             ic_write_reg = 0;
-            ic_data_sel_reg = 1;
             ic_valid_reg = 0;
             ic_word_sel_reg = counter_in;
             ic_byte_w_en_reg = 4'b1111;
@@ -160,7 +161,6 @@ always @(*) begin
             ic_enable_reg = 0;
             ic_cmp_reg = 0;
             ic_write_reg = 0;
-            ic_data_sel_reg = 1;
             ic_valid_reg = 0;
             ic_word_sel_reg = counter_in;
             ic_byte_w_en_reg = 4'b1111;
@@ -197,11 +197,9 @@ always @(*) begin
             ic_cmp_reg = 0;
             ic_write_reg = 1;
             if(dc_hit_in&&dc_valid_in)begin
-                ic_data_sel_reg = 0;//from dc
                 ram_en_out = 0;
             end
             else begin
-                ic_data_sel_reg = 1;//from ram
                 ram_en_out = 1;
             end
             ic_valid_reg = 1;
@@ -238,7 +236,6 @@ always @(*) begin
             ic_enable_reg = 0;
             ic_cmp_reg = 0;
             ic_write_reg = 0;
-            ic_data_sel_reg = 1;
             ic_valid_reg = 0;
             ic_word_sel_reg = counter_in;
             ic_byte_w_en_reg = 4'b1111;
@@ -274,7 +271,6 @@ always @(*) begin
             ic_enable_reg = 1;
             ic_cmp_reg = 1;
             ic_write_reg = 0;
-            ic_data_sel_reg = 1;
             ic_valid_reg = ic_valid_in;
             ic_word_sel_reg = ic_word_sel_in;
             ic_byte_w_en_reg = 4'b0000;
