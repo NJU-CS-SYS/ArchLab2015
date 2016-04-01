@@ -22,24 +22,15 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module cache_2ways(
-    enable,
-    index,
-    word_sel,
-    cmp,
-    write,
-    tag_in,
-    data_in,
-    valid_in,
-    byte_w_en,
-    clk,
-    rst,
-    hit,
-    dirty,
-    tag_out,
-    data_out,
-    data_wb,
-    valid_out
+module cache_2ways(/*autoarg*/
+    //Inputs
+    clk, rst, enable, cmp, write, byte_w_en, 
+    valid_in, tag_in, index, word_sel, data_in, 
+    data_block_in, 
+
+    //Outputs
+    hit, dirty, valid_out, tag_out, data_out, 
+    data_wb
 );
 
 parameter OFFSET_WIDTH = 3;
@@ -80,7 +71,6 @@ assign match = (tag_in == tag_out);
 reg victimway_ff;
 wire victimway;
 
-victimway_sel vs0(rst, enable, cmp, valid0,valid1,dirty0,dirty1,victimway_ff,victimway);
 
 always @ (posedge clk) begin
     victimway_ff <= victimway;
@@ -108,6 +98,18 @@ wire [(32*(2**OFFSET_WIDTH)-1) : 0] data_block_to_line_1 = data_block_in;
 //input to both oneline cache :
 //index, word_sel, cmp, tag_in, data_in, valid_in, byte_w_en, clk, rst
 
+victimway_sel vs0(/*autoinst*/
+    .rst                        (rst                            ),
+    .enable                     (enable                         ),
+    .cmp                        (cmp                            ),
+    .line0_valid                (valid_from_line_0                    ),
+    .line1_valid                (valid_from_line_1                    ),
+    .line0_dirty                (dirty_from_line_0                    ),
+    .line1_dirty                (dirty_from_line_1                    ),
+    .prev                       (victimway_ff                           ),
+    .victim                     (victimway                         )
+);
+
 cache_oneline #(OFFSET_WIDTH,BLOCK_SIZE,INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) c0(/*autoinst*/
     .clk                        (clk                                        ),
     .rst                        (rst                                        ),
@@ -115,39 +117,43 @@ cache_oneline #(OFFSET_WIDTH,BLOCK_SIZE,INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) c0(/*
     .cmp                        (cmp                                        ),
     .write                      (write_to_line_0                            ),
     .byte_w_en                  (byte_w_en                                  ),
+
     .valid_in                   (valid_in                                   ),
     .tag_in                     (tag_in                                     ),
     .index                      (index                                      ), 
     .word_sel                   (word_sel                                   ), 
     .data_in                    (data_in                                    ),
     .data_block_in              (data_block_to_line_0                       ),
+
     .hit                        (hit_from_line_0                            ),
     .dirty                      (dirty_from_line_0                          ),
     .valid_out                  (valid_from_line_0                          ),
     .tag_out                    (tag_from_line_0                            ),
     .data_out                   (data_word_from_line_0                      ),
-    .data_wb                    (data_block_from_line_0                     ),
+    .data_wb                    (data_block_from_line_0                     )
 );
 
 cache_oneline #(OFFSET_WIDTH,BLOCK_SIZE,INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) c1(/*autoinst*/
     .clk                        (clk                                        ),
     .rst                        (rst                                        ),
-    .enable                     (enable_to_line_0                           ),
+    .enable                     (enable_to_line_1                           ),
     .cmp                        (cmp                                        ),
     .write                      (write_to_line_1                            ),
     .byte_w_en                  (byte_w_en                                  ),
+
     .valid_in                   (valid_in                                   ),
     .tag_in                     (tag_in                                     ),
     .index                      (index                                      ), 
     .word_sel                   (word_sel                                   ), 
     .data_in                    (data_in                                    ),
     .data_block_in              (data_block_to_line_1                       ),
+
     .hit                        (hit_from_line_1                            ),
     .dirty                      (dirty_from_line_1                          ),
     .valid_out                  (valid_from_line_1                          ),
     .tag_out                    (tag_from_line_1                            ),
     .data_out                   (data_word_from_line_1                      ),
-    .data_wb                    (data_block_from_line_1                     ),
+    .data_wb                    (data_block_from_line_1                     )
 );
 
 
