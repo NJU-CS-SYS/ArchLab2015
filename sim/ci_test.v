@@ -69,7 +69,8 @@ initial begin
     dc_addr = 30'h00000020;
     data_reg = 32'h00000040;
     #PERIOD;
-    #278;
+    #PERIOD;
+    #198;
     dc_write = 0;
     dc_read = 1;
     dc_addr = 30'h00000020;
