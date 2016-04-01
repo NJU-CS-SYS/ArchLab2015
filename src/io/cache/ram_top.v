@@ -33,6 +33,7 @@ module ram_top(
 );
 
 reg last_is_disen;
+reg write_disable;
 reg [10:0] last_addr;
 reg [1:0] last_op; // 11 for None, 00 for read, 01 for write
 reg [31:0] count;
@@ -48,7 +49,7 @@ xilinx_single_port_ram_no_change u_bram_0(
     .addra({{ram_addr[10:0]}, {count[2:0]}} ),
     .dina(data_to_bram),
     .clka(clk),
-    .wea(ram_write),
+    .wea(ram_write & !write_disable),
     .ena(ram_en),
     .rsta(1'b0),
     .regcea(1'b1),
@@ -57,29 +58,33 @@ xilinx_single_port_ram_no_change u_bram_0(
 
 
 always @(*) begin
-    if(count == 32'd0) begin
+    write_disable = 2;
+    if(count[3:0] == 4'd0) begin
         data_to_bram = data_to_ram[(0 + 1)*32 - 1 : 32*0];
     end
-    else if(count == 32'd1) begin
+    else if(count[3:0] == 4'd1) begin
         data_to_bram = data_to_ram[(1 + 1)*32 - 1 : 32*1];
     end
-    else if(count == 32'd2) begin
+    else if(count[3:0] == 4'd2) begin
         data_to_bram = data_to_ram[(2 + 1)*32 - 1 : 32*2];
     end
-    else if(count == 32'd3) begin
+    else if(count[3:0] == 4'd3) begin
         data_to_bram = data_to_ram[(3 + 1)*32 - 1 : 32*3];
     end
-    else if(count == 32'd4) begin
+    else if(count[3:0] == 4'd4) begin
         data_to_bram = data_to_ram[(4 + 1)*32 - 1 : 32*4];
     end
-    else if(count == 32'd5) begin
+    else if(count[3:0] == 4'd5) begin
         data_to_bram = data_to_ram[(5 + 1)*32 - 1 : 32*5];
     end
-    else if(count == 32'd6) begin
+    else if(count[3:0] == 4'd6) begin
         data_to_bram = data_to_ram[(6 + 1)*32 - 1 : 32*6];
     end
-    else begin
+    else if(count[3:0] == 4'd7) begin
         data_to_bram = data_to_ram[(7 + 1)*32 - 1 : 32*7];
+    end
+    else begin
+        write_disable = 1;
     end
 end
 
@@ -101,45 +106,47 @@ always @ (posedge clk) begin
                 count <= 32'd0;
             end
             if(~last_is_disen) begin
-                count <= count + 1;
+                if(count < 32'd8) begin
+                    count <= count + 1;
+                end
                 if(~ram_write) begin
-                    if(count == 32'd0) begin
+                    if(count[3:0] == 4'd1) begin
                         buffer[(0 + 1)*32 - 1 : 32*0] = data_from_bram;
                     end
-                    else if(count == 32'd1) begin
+                    else if(count[3:0] == 4'd2) begin
                         buffer[(1 + 1)*32 - 1 : 32*1] = data_from_bram;
                     end
-                    else if(count == 32'd2) begin
+                    else if(count[3:0] == 4'd3) begin
                         buffer[(2 + 1)*32 - 1 : 32*2] = data_from_bram;
                     end
-                    else if(count == 32'd3) begin
+                    else if(count[3:0] == 4'd4) begin
                         buffer[(3 + 1)*32 - 1 : 32*3] = data_from_bram;
                     end
-                    else if(count == 32'd4) begin
+                    else if(count[3:0] == 4'd5) begin
                         buffer[(4 + 1)*32 - 1 : 32*4] = data_from_bram;
                     end
-                    else if(count == 32'd5) begin
+                    else if(count[3:0] == 4'd6) begin
                         buffer[(5 + 1)*32 - 1 : 32*5] = data_from_bram;
                     end
-                    else if(count == 32'd6) begin
+                    else if(count[3:0] == 4'd7) begin
                         buffer[(6 + 1)*32 - 1 : 32*6] = data_from_bram;
                     end
-                    else begin
+                    else if(count[3:0] == 4'd8) begin
                         buffer[(7 + 1)*32 - 1 : 32*7] = data_from_bram;
                     end
                 end
             end
 
-            if(~last_is_disen && count == 32'd7) begin
-                count <= 32'd0;
+            if(~last_is_disen && count == 32'd8) begin
+                count <= 32'd9;
                 last_addr <= ram_addr;
                 last_op <= cur_op;
-                last_is_disen  <= 1;
+                //last_is_disen  <= 1;
             end
         end
     end
 end
-assign ram_rdy = cur_op == last_op;
+assign ram_rdy = cur_op == last_op && last_addr == ram_addr;
 assign block_out = buffer;
 
 endmodule
