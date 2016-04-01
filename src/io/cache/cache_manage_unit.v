@@ -62,26 +62,41 @@ output [(32*(2**OFFSET_WIDTH)-1) : 0] dc_data_wb;
 reg [2:0] status,counter;
 reg write_after_load;
 
-wire enable_to_ic, cmp_to_ic, write_to_ic, ic_valid_2ic;
-wire dc_enable, dc_cmp, dc_write, dc_valid_2dc;
-wire [OFFSET_WIDTH-1:0] ic_word_sel, dc_word_sel;
 wire [2:0] status_next, counter_next;
 wire [3:0] byte_w_en_to_ic, byte_w_en_to_dc;
+
+wire loading_ic = status ==`STAT_IC_MISS || status == `STAT_DOUBLE_MISS;
+// for simple coherence
+
+wire enable_to_ic, cmp_to_ic, write_to_ic, valid_to_ic;
+wire enable_to_dc, cmp_to_dc, write_to_dc, valid_to_dc;
+
+wire [OFFSET_WIDTH-1:0] ic_word_sel, dc_word_sel;
+
 wire [31:0] word_to_ic;
 wire [31:0] word_from_ic;
 wire [31:0] word_to_dc;
 wire [31:0] word_from_dc;
-wire [29:0] ram_addr_ic, ram_addr_dc ,ram_addr_dc_wb;
-wire [1:0] ram_addr_sel;
+
 wire [(32*(2**OFFSET_WIDTH)-1) : 0] block_to_ic;
 wire [(32*(2**OFFSET_WIDTH)-1) : 0] block_to_dc;
 wire [(32*(2**OFFSET_WIDTH)-1) : 0] block_from_dc;
 
-wire [OFFSET_WIDTH-1:0] ic_offset, dc_offset;
-wire [INDEX_WIDTH-1:0] index_to_ic, index_to_dc;
-wire [TAG_WIDTH-1:0] tag_to_ic, tag_to_dc, tag_from_ic, tag_from_dc;// tag from & to cache
-wire loading_ic = status ==`STAT_IC_MISS || status == `STAT_DOUBLE_MISS;
-// for simple coherence
+wire [OFFSET_WIDTH-1:0] ic_offset;
+wire [OFFSET_WIDTH-1:0] dc_offset;
+
+wire [INDEX_WIDTH-1:0] index_to_ic;
+wire [INDEX_WIDTH-1:0] index_to_dc;
+
+wire [TAG_WIDTH-1:0] tag_to_ic;
+wire [TAG_WIDTH-1:0] tag_to_dc;
+wire [TAG_WIDTH-1:0] tag_from_ic;
+wire [TAG_WIDTH-1:0] tag_from_dc;// tag from & to cache
+
+wire [29:0] ram_addr_dc;
+wire [29:0] ram_addr_dc_wb;
+wire [1:0] ram_addr_sel;
+wire [29:0] ram_addr_ic;
 
 assign tag_to_ic = ic_addr[29:29-TAG_WIDTH+1];
 assign tag_to_dc = (~loading_ic) ? dc_addr[29:29-TAG_WIDTH+1] : tag_to_ic;
@@ -92,9 +107,11 @@ assign index_to_ic = ic_addr[29-TAG_WIDTH:OFFSET_WIDTH];
 assign index_to_dc = (~loading_ic) ? dc_addr[29-TAG_WIDTH:OFFSET_WIDTH] : index_to_ic;
 assign ic_offset = ic_addr[OFFSET_WIDTH-1:0];
 assign dc_offset =  dc_addr[OFFSET_WIDTH-1:0];
+
 assign ram_addr_ic = {tag_to_ic, index_to_ic, counter};
 assign ram_addr_dc = {tag_to_dc, index_to_dc, counter};
 assign ram_addr_dc_wb = {tag_from_dc ,index_to_dc ,counter};//write back
+
 assign ram_addr_out = ram_addr_sel[1] ?
     ram_addr_dc_wb :
     (ram_addr_sel[0] ? ram_addr_dc : ram_addr_ic);
@@ -134,7 +151,7 @@ cache_2ways ic(/*autoinst*/
     .rst                        (rst),
     .enable                     (enable_to_ic),
     .cmp                        (cmp_to_ic),
-    .write                      (write_to_dc),
+    .write                      (write_to_ic),
     .byte_w_en                  (byte_w_en_to_ic),
     .valid_in                   (valid_to_ic),
     .tag_in                     (tag_to_ic),
@@ -195,7 +212,10 @@ always @(posedge clk) begin
     end
 end
 
-assign mem_stall = (status != `STAT_NORMAL) || (status_next != `STAT_NORMAL) || write_after_load ;
+assign mem_stall = 
+    (status != `STAT_NORMAL) ||
+    (status_next != `STAT_NORMAL) ||
+    write_after_load ;
 
 
 endmodule
