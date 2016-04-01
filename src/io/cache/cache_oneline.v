@@ -173,7 +173,7 @@ cache_mem_word #(INDEX_WIDTH) mem_word7(
 
 wire dirty_bit,valid_bit;
 
-cache_mem #(INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) mem_tag(/*autoinst*/
+cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) mem_tag(/*autoinst*/
     .clk                        (clk                            ),
     .rst                        (rst                            ),
     .write                      (tag_override                   ),
@@ -182,7 +182,7 @@ cache_mem #(INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) mem_tag(/*autoinst*/
     .data_out                   (tag_out                        )
 );
 
-cache_mem #(INDEX_WIDTH,CACHE_DEPTH,1) mem_dirty(/*autoinst*/
+cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,1) mem_dirty(/*autoinst*/
     .clk                        (clk                            ),
     .rst                        (rst                            ),
     .write                      (dirty_override                 ),
@@ -210,7 +210,15 @@ assign valid_out = go & valid_bit & (~write | cmp);
 
 data_sel sel0(word_sel,word_from_word_0,word_from_word_1,word_from_word_2,word_from_word_3,word_from_word_4,word_from_word_5,word_from_word_6,word_from_word_7,data_out);
 
-assign data_wb = {word_from_word_0, word_from_word_1, word_from_word_2, word_from_word_3,
-    word_from_word_4, word_from_word_5, word_from_word_6, word_from_word_7};
+assign data_wb = {
+    word_from_word_7,
+    word_from_word_6,
+    word_from_word_5,
+    word_from_word_4,
+    word_from_word_3,
+    word_from_word_2,
+    word_from_word_1,
+    word_from_word_0
+};
 
 endmodule

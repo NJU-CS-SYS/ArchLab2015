@@ -165,7 +165,7 @@ assign write_to_line_0 = write &(cmp ? (valid_from_line_0 & hit_from_line_0) : ~
 assign write_to_line_1 = write &(cmp ? (valid_from_line_1 & hit_from_line_1) : victimway_ff);
 
 assign hit = (valid_from_line_1 & hit_from_line_1) | (valid_from_line_0 & hit_from_line_0);
-assign dirty = dirty_from_line_0 & dirty_from_line_0;
+assign dirty = dirty_from_line_0 & dirty_from_line_1;
 //assign data_out = cmp ? ((hit0 & valid0) ? data0 : data1) : (victimway_ff ? data1 : data0);
 
 assign data_out = (hit_from_line_0 & valid_from_line_0) ? data_word_from_line_0 : data_word_from_line_1;
