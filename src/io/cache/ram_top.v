@@ -58,7 +58,7 @@ xilinx_single_port_ram_no_change u_bram_0(
 
 
 always @(*) begin
-    write_disable = 2;
+    write_disable = 0;
     if(count[3:0] == 4'd0) begin
         data_to_bram = data_to_ram[(0 + 1)*32 - 1 : 32*0];
     end
@@ -85,6 +85,7 @@ always @(*) begin
     end
     else begin
         write_disable = 1;
+        data_to_bram = data_to_ram[(7 + 1)*32 - 1 : 32*7];
     end
 end
 
