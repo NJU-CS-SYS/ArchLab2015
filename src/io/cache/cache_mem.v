@@ -10,7 +10,7 @@
 // Target Devices: 
 // Tool Versions: 
 // Description: 
-// 
+//   直接映射存储，最小读写粒度。
 // Dependencies: 
 // 
 // Revision:
@@ -38,13 +38,6 @@ reg [ADDR_WIDTH-1+1:0] i;
 assign data_out = (write | rst) ? 32'b0 : mem[addr];
 
 always @(posedge clk) begin
-    /* this is dangerous
-    if(rst) begin
-        for(i=0;i<MEM_DEPTH;i=i+1) begin
-            mem[i] <= 0;
-        end
-    end
-    */
     if(!rst && write) begin
         mem[addr] <= data_in;
     end
