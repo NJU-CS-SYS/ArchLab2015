@@ -41,5 +41,6 @@ int main()
     ASSERT(a[3] == 3);
     ASSERT(a[4] == 4);
 
+    good();
     return 0;
 }

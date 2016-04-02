@@ -16,11 +16,15 @@
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
+//
+// when we flush cache, only valid bit are supposed to be invalidated,
+// in the previous implemetation, I zeroed all the cache mem, which might 
+// cause high temperature after implementation
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module cache_mem(clk, rst, write, data_in, addr, data_out);
+module cache_vmem(clk, rst, write, data_in, addr, data_out);
 parameter ADDR_WIDTH = 8;
 parameter MEM_DEPTH = 1<<ADDR_WIDTH;
 parameter DATA_WIDTH = 8;
@@ -38,13 +42,11 @@ reg [ADDR_WIDTH-1+1:0] i;
 assign data_out = (write | rst) ? 32'b0 : mem[addr];
 
 always @(posedge clk) begin
-    /* this is dangerous
     if(rst) begin
         for(i=0;i<MEM_DEPTH;i=i+1) begin
             mem[i] <= 0;
         end
     end
-    */
     if(!rst && write) begin
         mem[addr] <= data_in;
     end

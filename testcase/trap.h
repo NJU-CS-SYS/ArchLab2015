@@ -10,6 +10,7 @@
     if (!(x)) bad();   \
 } while (0)
 
+
 static void good() { puts("HIT GOOD TRAP"); exit(0); }
 static void bad()  { puts("HIT BAD TRAP"); exit(-1); }
 
