@@ -10,7 +10,7 @@
 // Target Devices: 
 // Tool Versions: 
 // Description: 
-// 
+//   此模块维护 cache 的字数据，并定义了字内的读写粒度（1 字 = 4 字节）
 // Dependencies: 
 // 
 // Revision:
@@ -40,6 +40,7 @@ cache_mem #(ADDR_WIDTH,MEM_DEPTH,8) byte1(clk,rst,write&&byte_w_en[1],data_in[15
 cache_mem #(ADDR_WIDTH,MEM_DEPTH,8) byte2(clk,rst,write&&byte_w_en[2],data_in[23:16],addr,byte_out[2]);
 cache_mem #(ADDR_WIDTH,MEM_DEPTH,8) byte3(clk,rst,write&&byte_w_en[3],data_in[31:24],addr,byte_out[3]);
 
+// The root of little endian !?
 assign data_out = {byte_out[3],byte_out[2],byte_out[1],byte_out[0]};
 
 endmodule

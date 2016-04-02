@@ -32,14 +32,16 @@ module ram_top(
     output [255:0] block_out
 );
 
-reg last_is_disen;
+reg last_is_disen;  // during the last cycle, ram is disenabled (OMG, used to wait bram for one cycle.
 reg write_disable;
 reg [10:0] last_addr;
 reg [1:0] last_op; // 11 for None, 00 for read, 01 for write
-reg [31:0] count;
+
+reg [31:0] count;  // block byte index
+
 reg [255:0] buffer;
-reg [31:0] data_to_bram;
-wire [31:0] data_from_bram;
+reg [31:0] data_to_bram;     // Transfer data from cache block to bram byte by byte.
+wire [31:0] data_from_bram;  // Transfer data from bram to cache block byte by byte.
 
 wire [1:0] cur_op;
 assign cur_op[1] = ram_en ? 0 : 1;
@@ -57,6 +59,7 @@ xilinx_single_port_ram_no_change u_bram_0(
 );
 
 
+// data_to_bram = data_to_ram[(counter + 1) * 32 - 1 -= 32];
 always @(*) begin
     write_disable = 0;
     if(count[3:0] == 4'd0) begin
@@ -91,10 +94,10 @@ end
 
 always @ (posedge clk) begin
     if(rst) begin
-        last_is_disen <= 1;
+        last_is_disen <= 1;  // start in waiting
         count <= 32'd0;
     end
-    else begin 
+    else begin
         if(~ram_en) begin
             last_is_disen <= 1;
             count <= 32'd0;
@@ -102,6 +105,8 @@ always @ (posedge clk) begin
         else begin
             if(last_is_disen) begin
                 last_is_disen <= 0;
+                // next cycle, flip the value, do nothing.
+                // but wait, only rst and ram_en can reset last_is_disen to 1, so...
             end
             if(last_is_disen | ~ram_rdy) begin
                 count <= 32'd0;
@@ -147,6 +152,7 @@ always @ (posedge clk) begin
         end
     end
 end
+
 assign ram_rdy = cur_op == last_op && last_addr == ram_addr;
 assign block_out = buffer;
 

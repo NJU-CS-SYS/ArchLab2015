@@ -10,7 +10,7 @@
 // Target Devices: 
 // Tool Versions: 
 // Description: 
-// 
+//   决定要被替换的路。
 // Dependencies: 
 // 
 // Revision:
@@ -33,10 +33,12 @@ input line1_dirty;
 input prev;
 output victim;
 
-reg v;
+// TODO reg output victim
+reg v;  // victim
 
 assign go = ~rst & enable & cmp;
 
+// 组合逻辑
 always @(rst or prev or go or line0_valid or line0_dirty or line1_valid or line1_dirty) begin
     if(!go) begin
         if(rst) begin
@@ -52,12 +54,12 @@ always @(rst or prev or go or line0_valid or line0_dirty or line1_valid or line1
         end
         else begin
             if(line0_valid && line1_valid)begin // both valid
-                if(!line0_dirty && !line1_dirty) begin //no dirty
+                if(!line0_dirty && !line1_dirty) begin // both no dirty
                     v = 0;
                 end
                 else begin
                     if(line0_dirty && line1_dirty)begin //both dirty
-                        v = ~prev;
+                        v = ~prev;  // ramdom here
                     end
                     else begin
                         if(line0_dirty)begin // line 0 dirty
