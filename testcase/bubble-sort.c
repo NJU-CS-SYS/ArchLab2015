@@ -1,6 +1,6 @@
 #include"./trap.h"
 
-#define N 10
+#define N 100
 int main() {
     int a[N];
     int i = 0;
