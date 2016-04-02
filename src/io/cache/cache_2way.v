@@ -178,7 +178,7 @@ assign valid_out = valid_from_line_0 | valid_from_line_1;
 //if !cmp, then tag_out is used for write back, and it should be the victimway's tag
 //assign tag_out = cmp ? ((hit0&valid0) ? tag0 : tag1) : tag_in;
 assign tag_out = cmp ? 
-    ((hit_from_line_0&valid_from_line_0) ?tag_from_line_0 : tag_from_line_0) :
+    ((hit_from_line_0&valid_from_line_0) ? tag_from_line_0 : tag_from_line_1) :
     (victimway_ff ? tag_from_line_1 : tag_from_line_0);
 
 endmodule
