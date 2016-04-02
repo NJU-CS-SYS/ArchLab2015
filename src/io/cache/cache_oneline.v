@@ -10,7 +10,7 @@
 // Target Devices: 
 // Tool Versions: 
 // Description: 
-// 
+//   直接映射 cache, 在这一层决定了 data block 的大小
 // Dependencies: 
 // 
 // Revision:
@@ -61,9 +61,13 @@ output [TAG_WIDTH-1:0] tag_out;
 output [31:0] data_out;
 output [(32*(2**OFFSET_WIDTH)-1) : 0] data_wb;
 
+// actual enable
 assign go = enable & ~rst;
+
+// 标签匹配
 assign match = (tag_in == tag_out);
 
+// 块内字写使能，cmp 无效时无视 word_sel 和 match 将其有效。
 assign word0_w_en = go & write & ((word_sel == 3'b000) & (match) | ~cmp);
 assign word1_w_en = go & write & ((word_sel == 3'b001) & (match) | ~cmp);
 assign word2_w_en = go & write & ((word_sel == 3'b010) & (match) | ~cmp);
@@ -73,9 +77,18 @@ assign word5_w_en = go & write & ((word_sel == 3'b101) & (match) | ~cmp);
 assign word6_w_en = go & write & ((word_sel == 3'b110) & (match) | ~cmp);
 assign word7_w_en = go & write & ((word_sel == 3'b111) & (match) | ~cmp);
 
+// dirty bit write enable
 assign dirty_override = go & write & (match|~cmp);
-assign tag_override = go & write & ~cmp;
+
+// valid bit write enable
 assign valid_overide = go & write & ~cmp;
+
+// tag write enable
+assign tag_override = go & write & ~cmp;
+
+// 读访问时，虽然 cmp 为 1，但是 dirty_override 为 0, 所以不会产生影响。
+// 写访问时，将 dirty bit 修改成 1.
+// 载入时，cmp 为 0，但是 dirty_override 为 1, 所以 dirty bit 按照期望修改成 0.
 assign dirty_in = cmp; //cmp & write will override dirty bit
 
 wire [31:0] word_from_word_0;
@@ -87,6 +100,7 @@ wire [31:0] word_from_word_5;
 wire [31:0] word_from_word_6;
 wire [31:0] word_from_word_7;
 
+// 二路选择：整块 or CPU 数据
 wire [31:0] word_to_word_0 = ~cmp ? data_block_in[1*32-1 : 0*32] : data_in;
 wire [31:0] word_to_word_1 = ~cmp ? data_block_in[2*32-1 : 1*32] : data_in;
 wire [31:0] word_to_word_2 = ~cmp ? data_block_in[3*32-1 : 2*32] : data_in;
@@ -96,7 +110,11 @@ wire [31:0] word_to_word_5 = ~cmp ? data_block_in[6*32-1 : 5*32] : data_in;
 wire [31:0] word_to_word_6 = ~cmp ? data_block_in[7*32-1 : 6*32] : data_in;
 wire [31:0] word_to_word_7 = ~cmp ? data_block_in[8*32-1 : 7*32] : data_in;
 
+// 选择写访问的字节写使能，还是载入时的全写。
 wire [3:0] byte_w_en_to_word = cmp ? byte_w_en : 4'b1111;
+
+// 下面的实例化，每个都是一个无标签的直接映射 cache line，但是每行只存储一个字。
+// 实例化 8 个，就有了每行 8 个字的 data block.
 
 cache_mem_word #(INDEX_WIDTH) mem_word0(
     clk,
@@ -107,6 +125,7 @@ cache_mem_word #(INDEX_WIDTH) mem_word0(
     word_from_word_0,
     byte_w_en_to_word
 );
+
 cache_mem_word #(INDEX_WIDTH) mem_word1(
     clk,
     rst,
@@ -116,6 +135,7 @@ cache_mem_word #(INDEX_WIDTH) mem_word1(
     word_from_word_1,
     byte_w_en_to_word
 );
+
 cache_mem_word #(INDEX_WIDTH) mem_word2(
     clk,
     rst,
@@ -125,6 +145,7 @@ cache_mem_word #(INDEX_WIDTH) mem_word2(
     word_from_word_2,
     byte_w_en_to_word
 );
+
 cache_mem_word #(INDEX_WIDTH) mem_word3(
     clk,
     rst,
@@ -134,6 +155,7 @@ cache_mem_word #(INDEX_WIDTH) mem_word3(
     word_from_word_3,
     byte_w_en_to_word
 );
+
 cache_mem_word #(INDEX_WIDTH) mem_word4(
     clk,
     rst,
@@ -143,6 +165,7 @@ cache_mem_word #(INDEX_WIDTH) mem_word4(
     word_from_word_4,
     byte_w_en_to_word
 );
+
 cache_mem_word #(INDEX_WIDTH) mem_word5(
     clk,
     rst,
@@ -152,6 +175,7 @@ cache_mem_word #(INDEX_WIDTH) mem_word5(
     word_from_word_5,
     byte_w_en_to_word
 );
+
 cache_mem_word #(INDEX_WIDTH) mem_word6(
     clk,
     rst,
@@ -161,6 +185,7 @@ cache_mem_word #(INDEX_WIDTH) mem_word6(
     word_from_word_6,
     byte_w_en_to_word
 );
+
 cache_mem_word #(INDEX_WIDTH) mem_word7(
     clk,
     rst,
@@ -171,7 +196,6 @@ cache_mem_word #(INDEX_WIDTH) mem_word7(
     byte_w_en_to_word
 );
 
-wire dirty_bit,valid_bit;
 
 cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) mem_tag(/*autoinst*/
     .clk                        (clk                            ),
@@ -182,6 +206,8 @@ cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) mem_tag(/*autoinst*/
     .data_out                   (tag_out                        )
 );
 
+wire dirty_bit;
+
 cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,1) mem_dirty(/*autoinst*/
     .clk                        (clk                            ),
     .rst                        (rst                            ),
@@ -190,6 +216,8 @@ cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,1) mem_dirty(/*autoinst*/
     .addr                       (index                          ),
     .data_out                   (dirty_bit                      )
 );
+
+wire valid_bit;
 
 cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,1) mem_valid(/*autoinst*/
     .clk                        (clk                            ),
@@ -201,11 +229,16 @@ cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,1) mem_valid(/*autoinst*/
 );
 
 assign hit = go & match;
-assign dirty = go & dirty_bit & (~write | ( cmp & ~match )); // ???
-/*
-*read : whether this line has been written;
-*write & cmp : not matched  <- why ??
-*/
+
+// Read:  expose the dirty bit
+// Write: expose the dirty bit if not matched
+// Load:  not expose the dirty bit
+// 写入的场合，不需要外界知道脏位信息，而且其也正被更新。
+// 其他场合，暴露脏位信息，用于决定 victimway
+assign dirty = go & dirty_bit & (~write | ( cmp & ~match ));
+
+// Read & Write:  expose the valid bit
+// Load: not expose the valid bit, because updating ?
 assign valid_out = go & valid_bit & (~write | cmp);
 
 data_sel sel0(word_sel,word_from_word_0,word_from_word_1,word_from_word_2,word_from_word_3,word_from_word_4,word_from_word_5,word_from_word_6,word_from_word_7,data_out);
