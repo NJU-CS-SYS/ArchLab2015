@@ -21,7 +21,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module victimway_sel(rst, enable, cmp, line0_valid, line1_valid, line0_dirty, line1_dirty, prev, victim);
+module victimway_sel(rst, enable, cmp, line0_valid, line1_valid, line0_dirty, line1_dirty, prev, v);
 
 input rst;
 input enable;
@@ -31,10 +31,9 @@ input line1_valid;
 input line0_dirty;
 input line1_dirty;
 input prev;
-output victim;
+output reg v;
 
-// TODO reg output victim
-reg v;  // victim
+// DONE reg output victim
 
 assign go = ~rst & enable & cmp;
 
@@ -82,7 +81,5 @@ always @(rst or prev or go or line0_valid or line0_dirty or line1_valid or line1
         end
     end
 end
-
-assign victim = v;
 
 endmodule

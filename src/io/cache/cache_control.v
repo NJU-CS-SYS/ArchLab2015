@@ -27,55 +27,47 @@ module cache_control(
     dc_hit_in, dc_dirty_in, dc_valid_in,/*dc's output*/
     status_in, counter_in, /*status info*/
 
-    ic_enable_out, ic_word_sel_out, ic_cmp_out,
-    ic_write_out, ic_byte_w_en, ic_valid_out,
+    ic_enable_reg, ic_word_sel_reg, ic_cmp_reg,
+    ic_write_reg, ic_byte_w_en_reg, ic_valid_reg,
 
-    dc_enable_out, dc_word_sel_out, dc_cmp_out,
-    dc_write_out, dc_byte_w_en, dc_valid_out,
+    dc_enable_reg, dc_word_sel_reg, dc_cmp_reg,
+    dc_write_reg, dc_byte_w_en_reg, dc_valid_reg,
 
-    ram_addr_sel, ram_en_out, ram_write_out,
-    status_next, counter_next
+    ram_addr_sel_reg, ram_en_out, ram_write_out,
+    status_next_reg, counter_next_reg
 );
-input dc_read_in, dc_write_in, ic_hit_in, ic_valid_in, dc_hit_in, dc_dirty_in, dc_valid_in;
-input [2:0] status_in,counter_in;
-input [2:0] ic_word_sel_in, dc_word_sel_in;
+input dc_read_in;
+input dc_write_in;
+input ic_hit_in;
+input ic_valid_in;
+input dc_hit_in;
+input dc_dirty_in;
+input dc_valid_in;
+input [2:0] status_in;
+input [2:0] counter_in;
+input [2:0] ic_word_sel_in;
+input [2:0] dc_word_sel_in;
 input [3:0] dc_byte_w_en_in;
 
-output reg ic_enable_reg, ic_cmp_reg, ic_write_reg, ic_valid_reg,
-    dc_enable_reg, dc_cmp_reg, dc_write_reg, dc_valid_reg,
-    ram_en_out, ram_write_out;
-output [1:0] ram_addr_sel;
-output [2:0] status_next,counter_next;
-output [2:0] ic_word_sel_out, dc_word_sel_out;
-output [3:0] ic_byte_w_en, dc_byte_w_en;
+output reg ic_enable_reg;
+output reg ic_cmp_reg;
+output reg ic_write_reg;
+output reg ic_valid_reg;
+output reg dc_enable_reg;
+output reg dc_cmp_reg;
+output reg dc_write_reg;
+output reg dc_valid_reg;
+output reg ram_en_out;
+output reg ram_write_out;
+output reg [1:0] ram_addr_sel_reg;
+output reg [2:0] status_next_reg;
+output reg [2:0] counter_next_reg;
+output reg [2:0] ic_word_sel_reg;
+output reg [2:0] dc_word_sel_reg;
+output reg [3:0] ic_byte_w_en_reg;
+output reg [3:0] dc_byte_w_en_reg;
 
-// TODO 直接在 output 上加 reg 修饰，减少代码行数
-/*
-reg ic_enable_reg, ic_cmp_reg, ic_write_reg, ic_valid_reg,
-    dc_enable_reg, dc_cmp_reg, dc_write_reg, dc_valid_reg,
-    ram_en_out, ram_write_out;
-*/
-reg [1:0] ram_addr_sel_reg;
-reg [2:0] ic_word_sel_reg, dc_word_sel_reg, status_next_reg, counter_next_reg;
-reg [3:0] ic_byte_w_en_reg, dc_byte_w_en_reg;
-
-assign ic_enable_out = ic_enable_reg;
-assign ic_cmp_out = ic_cmp_reg;
-assign ic_write_out = ic_write_reg;
-assign ic_valid_out = ic_valid_reg;
-
-assign dc_enable_out = dc_enable_reg;
-assign dc_cmp_out = dc_cmp_reg;
-assign dc_write_out = dc_write_reg;
-assign dc_valid_out = dc_valid_reg;
-
-assign ic_word_sel_out = ic_word_sel_reg;
-assign dc_word_sel_out = dc_word_sel_reg;
-assign status_next = status_next_reg;
-assign counter_next = counter_next_reg;
-assign ic_byte_w_en = ic_byte_w_en_reg;
-assign dc_byte_w_en = dc_byte_w_en_reg;
-assign ram_addr_sel = ram_addr_sel_reg;
+// DONE 直接在 output 上加 reg 修饰，减少代码行数
 
 
 // 下面的 always 块是一个根据当前周期 cache 状态的 switch-case 语句
@@ -119,7 +111,7 @@ always @(*) begin
             end
 
             // 设定对 ram 的访问行为，使用 ram_addr_ic, 只读
-            ram_addr_sel_reg = 2'b00;  // TODO 常量符号化
+            ram_addr_sel_reg = 2'b00;  // RJ 常量符号化
                                         // zyy: 高位表示是否写回，低位表示是ic
                                         // 或是dc，对我来说是有语义的
                                         // 看cache_manage_unit ,Line: 127 
@@ -358,7 +350,7 @@ always @(*) begin
                 end
                 else begin //dc hit & ic hit
                     status_next_reg = `STAT_NORMAL;
-                    counter_next_reg = 3'b111;  // TODO 为什么是 7
+                    counter_next_reg = 3'b111;  // RJ 为什么是 7
                                                 // zyy: 这个值无所谓的，以前的
                                                 // 旧值是7，我就留着了
                 end
