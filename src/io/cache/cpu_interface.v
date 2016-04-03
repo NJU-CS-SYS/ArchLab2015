@@ -60,27 +60,27 @@ always @ (*) begin
     */
 end
 
-cache_manage_unit u_cm_0(
-    rst,
-    dc_read_in,
-    dc_write_in,
-    dc_byte_w_en,
-    ic_addr,
-    dmem_addr,
-    data_from_reg,
+cache_manage_unit u_cm_0 (
+    .clk             ( clk                  ),
+    .rst             ( rst                  ),
+    .dc_read_in      ( dc_read_in           ),
+    .dc_write_in     ( dc_write_in          ),
+    .dc_byte_w_en_in ( dc_byte_w_en         ),
+    .ic_addr         ( ic_addr              ),
+    .dc_addr         ( dmem_addr            ),
+    .data_from_reg   ( data_from_reg        ),
 
-    clk,
-    ram_rdy,
-    block_from_ram,
+    .ram_ready       ( ram_rdy              ),
+    .block_from_ram  ( block_from_ram       ),
 
-    mem_stall,
-    dmem_data_out,
-    ic_data_out,
+    .mem_stall       ( mem_stall            ),
+    .dc_data_out     ( dmem_data_out        ),
+    .ic_data_out     ( ic_data_out          ),
 
-    ram_en,
-    ram_write,
-    ram_addr,
-    block_from_dc_to_ram
+    .ram_en_out      ( ram_en               ),
+    .ram_write_out   ( ram_write            ),
+    .ram_addr_out    ( ram_addr             ),
+    .dc_data_wb      ( block_from_dc_to_ram )
 );
 
 ram_top u_ram_0(
