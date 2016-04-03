@@ -68,6 +68,8 @@ output [(32*(2**OFFSET_WIDTH)-1) : 0] data_wb;
 // TODO The following are dead code.
 // go acts as the actual enable
 // TODO 不在这里比较标签了，在网上也没有比较，如果不在 oneline 里看到比较的化……
+// zyy: IN fact, this module is copied from cache_oneline, and only neccessary
+// modifications have been done.
 assign go = enable & ~rst;
 assign match = (tag_in == tag_out);
 
@@ -165,7 +167,10 @@ cache_oneline #(OFFSET_WIDTH,BLOCK_SIZE,INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) c1(/*
 // 如果 cmp 有效，那么两路 cache 的有效性与 enable 保持一致，
 // 即同时有效或者无效，适用于正常访问时对两路进行标签验证的场景。
 // cmp 无效时，一般是载入块，这时候需要一路有效，用以下的 victimway 的写法保证路的使用是互斥的。
-// bug ???????????????? TODO 为什么是 victimway 而不是 victimway_ff
+// TODO 为什么是 victimway 而不是 victimway_ff
+// zyy: if cmp is inactive, victimway is equal to victimway_ff 
+// the signal 'go' in victimway_sel depend on cmp;
+// In fact, it is redundancy...Victimway_ff should be removed.
 assign enable_to_line_0 = cmp ? enable : ~victimway;
 assign enable_to_line_1 = cmp ? enable : victimway;
 
@@ -191,6 +196,7 @@ assign data_out = (hit_from_line_0 & valid_from_line_0) ? data_word_from_line_0 
 
 // 写回数据
 // TODO 在 cmp 有效的场合，为什么需要返回有效的块数据？
+// zyy: redundancy is always ugly, but usually safer...
 assign data_wb = cmp ? 
     ((hit_from_line_0 & valid_from_line_0) ? data_block_from_line_0 : data_word_from_line_1) 
     : (victimway_ff ? data_block_from_line_1 : data_block_from_line_0);

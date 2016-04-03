@@ -41,8 +41,8 @@ input [2:0] status_in,counter_in;
 input [2:0] ic_word_sel_in, dc_word_sel_in;
 input [3:0] dc_byte_w_en_in;
 
-output ic_enable_out, ic_cmp_out, ic_write_out, ic_valid_out,
-    dc_enable_out, dc_cmp_out, dc_write_out, dc_valid_out,
+output reg ic_enable_reg, ic_cmp_reg, ic_write_reg, ic_valid_reg,
+    dc_enable_reg, dc_cmp_reg, dc_write_reg, dc_valid_reg,
     ram_en_out, ram_write_out;
 output [1:0] ram_addr_sel;
 output [2:0] status_next,counter_next;
@@ -50,9 +50,11 @@ output [2:0] ic_word_sel_out, dc_word_sel_out;
 output [3:0] ic_byte_w_en, dc_byte_w_en;
 
 // TODO 直接在 output 上加 reg 修饰，减少代码行数
+/*
 reg ic_enable_reg, ic_cmp_reg, ic_write_reg, ic_valid_reg,
     dc_enable_reg, dc_cmp_reg, dc_write_reg, dc_valid_reg,
     ram_en_out, ram_write_out;
+*/
 reg [1:0] ram_addr_sel_reg;
 reg [2:0] ic_word_sel_reg, dc_word_sel_reg, status_next_reg, counter_next_reg;
 reg [3:0] ic_byte_w_en_reg, dc_byte_w_en_reg;
@@ -98,14 +100,6 @@ always @(*) begin
             ic_valid_reg = 1;
             ic_word_sel_reg = counter_in;
 
-            // TODO 可以放后面吗？
-            if(dc_hit_in && dc_valid_in)begin
-                ram_en_out = 0;
-            end
-            else begin
-                ram_en_out = 1;
-            end
-
             //for data coherrence
             dc_enable_reg = 1;
             dc_cmp_reg = 1;
@@ -114,10 +108,21 @@ always @(*) begin
 
             //dc_word_sel_reg = dc_word_sel_in;
             dc_word_sel_reg = counter_in;//it is meaningful while loading from dc
-            dc_byte_w_en_reg = dc_byte_w_en_in;  // TODO 反正写使能关了，字节写使能也无效吧
+            dc_byte_w_en_reg = 4'b0000;  // DONE 反正写使能关了，字节写使能也无效吧
+
+            // DONE 可以放后面吗？
+            if(dc_hit_in && dc_valid_in)begin
+                ram_en_out = 0;
+            end
+            else begin
+                ram_en_out = 1;
+            end
 
             // 设定对 ram 的访问行为，使用 ram_addr_ic, 只读
             ram_addr_sel_reg = 2'b00;  // TODO 常量符号化
+                                        // zyy: 高位表示是否写回，低位表示是ic
+                                        // 或是dc，对我来说是有语义的
+                                        // 看cache_manage_unit ,Line: 127 
             ram_write_out = 0;
 
             if(counter_in ==  `COUNT_FINISH) begin
@@ -144,7 +149,8 @@ always @(*) begin
             ic_write_reg = 0;
             ic_valid_reg = 0;
             ic_word_sel_reg = counter_in;
-            ic_byte_w_en_reg = 4'b1111;  // TODO 无效掉？
+            ic_byte_w_en_reg = 4'b0000;  // DONE 无效掉？
+                                        // zyy: ...
 
             // 写 D-cache
             dc_enable_reg = 1;
@@ -182,7 +188,7 @@ always @(*) begin
             ic_write_reg = 0;
             ic_valid_reg = 0;
             ic_word_sel_reg = counter_in;
-            ic_byte_w_en_reg = 4'b1111;  // TODO 无效掉？
+            ic_byte_w_en_reg = 4'b0000;  // DONE 无效掉？
 
             // 读 D-cache
             dc_enable_reg = 1;
@@ -223,14 +229,6 @@ always @(*) begin
             ic_valid_reg = 1;
             ic_word_sel_reg = counter_in;
 
-            // TODO 放后面？
-            if (dc_hit_in && dc_valid_in) begin
-                ram_en_out = 0;
-            end
-            else begin
-                ram_en_out = 1;
-            end
-
             // 读 D-cache
             dc_enable_reg = 1;
             dc_cmp_reg = 1;
@@ -243,10 +241,18 @@ always @(*) begin
             ram_addr_sel_reg = 2'b00;  // ram_addr_ic
             ram_write_out = 0;
 
+            // DONE 放后面？
+            if (dc_hit_in && dc_valid_in) begin
+                ram_en_out = 0;
+            end
+            else begin
+                ram_en_out = 1;
+            end
             if(counter_in == `COUNT_FINISH) begin
                 status_next_reg = `STAT_DC_MISS;
                 counter_next_reg = 3'd0;
             end
+
             else begin
                 status_next_reg = `STAT_DOUBLE_MISS;
                 if(counter_in == 3'd0) counter_next_reg = 3'd1;
@@ -264,7 +270,7 @@ always @(*) begin
             ic_enable_reg = 0;
             ic_cmp_reg = 0;
             ic_write_reg = 0;
-            ic_byte_w_en_reg = 4'b1111;  // TODO 无效化？
+            ic_byte_w_en_reg = 4'b0000;  // DONE 无效化？
             ic_valid_reg = 0;
             ic_word_sel_reg = counter_in;
 
@@ -353,6 +359,8 @@ always @(*) begin
                 else begin //dc hit & ic hit
                     status_next_reg = `STAT_NORMAL;
                     counter_next_reg = 3'b111;  // TODO 为什么是 7
+                                                // zyy: 这个值无所谓的，以前的
+                                                // 旧值是7，我就留着了
                 end
             end
         end
