@@ -58,7 +58,7 @@ output hit;
 output dirty;
 output valid_out;
 output [TAG_WIDTH-1:0] tag_out;
-output [31:0] data_out;
+output reg [31:0] data_out;
 output [(32*(2**OFFSET_WIDTH)-1) : 0] data_wb;
 
 // actual enable
@@ -66,16 +66,6 @@ assign go = enable & ~rst;
 
 // 标签匹配
 assign match = (tag_in == tag_out);
-
-// 块内字写使能，cmp 无效时无视 word_sel 和 match 将其有效。
-assign word0_w_en = go & write & ((word_sel == 3'b000) & (match) | ~cmp);
-assign word1_w_en = go & write & ((word_sel == 3'b001) & (match) | ~cmp);
-assign word2_w_en = go & write & ((word_sel == 3'b010) & (match) | ~cmp);
-assign word3_w_en = go & write & ((word_sel == 3'b011) & (match) | ~cmp);
-assign word4_w_en = go & write & ((word_sel == 3'b100) & (match) | ~cmp);
-assign word5_w_en = go & write & ((word_sel == 3'b101) & (match) | ~cmp);
-assign word6_w_en = go & write & ((word_sel == 3'b110) & (match) | ~cmp);
-assign word7_w_en = go & write & ((word_sel == 3'b111) & (match) | ~cmp);
 
 // dirty bit write enable
 assign dirty_override = go & write & (match|~cmp);
@@ -91,111 +81,62 @@ assign tag_override = go & write & ~cmp;
 // 载入时，cmp 为 0，但是 dirty_override 为 1, 所以 dirty bit 按照期望修改成 0.
 assign dirty_in = cmp; //cmp & write will override dirty bit
 
-wire [31:0] word_from_word_0;
-wire [31:0] word_from_word_1;
-wire [31:0] word_from_word_2;
-wire [31:0] word_from_word_3;
-wire [31:0] word_from_word_4;
-wire [31:0] word_from_word_5;
-wire [31:0] word_from_word_6;
-wire [31:0] word_from_word_7;
-
-// 二路选择：整块 or CPU 数据
-wire [31:0] word_to_word_0 = ~cmp ? data_block_in[1*32-1 : 0*32] : data_in;
-wire [31:0] word_to_word_1 = ~cmp ? data_block_in[2*32-1 : 1*32] : data_in;
-wire [31:0] word_to_word_2 = ~cmp ? data_block_in[3*32-1 : 2*32] : data_in;
-wire [31:0] word_to_word_3 = ~cmp ? data_block_in[4*32-1 : 3*32] : data_in;
-wire [31:0] word_to_word_4 = ~cmp ? data_block_in[5*32-1 : 4*32] : data_in;
-wire [31:0] word_to_word_5 = ~cmp ? data_block_in[6*32-1 : 5*32] : data_in;
-wire [31:0] word_to_word_6 = ~cmp ? data_block_in[7*32-1 : 6*32] : data_in;
-wire [31:0] word_to_word_7 = ~cmp ? data_block_in[8*32-1 : 7*32] : data_in;
-
 // 选择写访问的字节写使能，还是载入时的全写。
 wire [3:0] byte_w_en_to_word = cmp ? byte_w_en : 4'b1111;
 
-// 下面的实例化，每个都是一个无标签的直接映射 cache line，但是每行只存储一个字。
-// 实例化 8 个，就有了每行 8 个字的 data block.
+wire word_wen[7:0];
+wire [31:0] word_in[7:0];
+wire [31:0] word_out[7:0];
 
-cache_mem_word #(INDEX_WIDTH) mem_word0(
-    clk,
-    rst,
-    word0_w_en,
-    word_to_word_0,
-    index,
-    word_from_word_0,
-    byte_w_en_to_word
-);
+genvar word_index;
 
-cache_mem_word #(INDEX_WIDTH) mem_word1(
-    clk,
-    rst,
-    word1_w_en,
-    word_to_word_1,
-    index,
-    word_from_word_1,
-    byte_w_en_to_word
-);
+generate
+    for (word_index = 0; word_index < 8; word_index = word_index + 1)
+    begin: cache_word
+        assign word_wen[word_index] = go & write & ((word_sel == word_index) & (match) | ~cmp);
+        assign word_in[word_index]  = cmp ? data_in : data_block_in[word_index * 32 +: 32];
 
-cache_mem_word #(INDEX_WIDTH) mem_word2(
-    clk,
-    rst,
-    word2_w_en,
-    word_to_word_2,
-    index,
-    word_from_word_2,
-    byte_w_en_to_word
-);
+        cache_mem_word #(INDEX_WIDTH) word_instance (
+            clk,
+            rst,
+            word_wen[word_index],
+            word_in[word_index],
+            index,
+            word_out[word_index],
+            byte_w_en_to_word
+        );
 
-cache_mem_word #(INDEX_WIDTH) mem_word3(
-    clk,
-    rst,
-    word3_w_en,
-    word_to_word_3,
-    index,
-    word_from_word_3,
-    byte_w_en_to_word
-);
+        assign data_wb[word_index * 32 +: 32] = word_out[word_index];
+    end
+endgenerate
 
-cache_mem_word #(INDEX_WIDTH) mem_word4(
-    clk,
-    rst,
-    word4_w_en,
-    word_to_word_4,
-    index,
-    word_from_word_4,
-    byte_w_en_to_word
-);
-
-cache_mem_word #(INDEX_WIDTH) mem_word5(
-    clk,
-    rst,
-    word5_w_en,
-    word_to_word_5,
-    index,
-    word_from_word_5,
-    byte_w_en_to_word
-);
-
-cache_mem_word #(INDEX_WIDTH) mem_word6(
-    clk,
-    rst,
-    word6_w_en,
-    word_to_word_6,
-    index,
-    word_from_word_6,
-    byte_w_en_to_word
-);
-
-cache_mem_word #(INDEX_WIDTH) mem_word7(
-    clk,
-    rst,
-    word7_w_en,
-    word_to_word_7,
-    index,
-    word_from_word_7,
-    byte_w_en_to_word
-);
-
+// As word_sel is not a one-hot selector, the configurable multiplexer using a for loop referred at
+// http://stackoverflow.com/questions/19875899/how-to-define-a-parameterized-multiplexer-using-systemverilog
+// is generated with overhead somewhat. So we prefer a switch statement in always block, anyway,
+// reduce the lines of code is the primary task.
+always @ (*) begin
+    case (word_sel)
+    0: data_out = word_out[0];
+    1: data_out = word_out[1];
+    2: data_out = word_out[2];
+    3: data_out = word_out[3];
+    4: data_out = word_out[4];
+    5: data_out = word_out[5];
+    6: data_out = word_out[6];
+    7: data_out = word_out[7];
+    endcase
+end
+/*
+integer i;
+always @ (*) begin
+    data_out = 32'dz;
+    for (i = 0; i < 8; i = i + 1) begin
+        if (i == word_sel) begin
+            data_out = word_out[i];
+        end
+    end
+end
+*/
 
 cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) mem_tag(/*autoinst*/
     .clk                        (clk                            ),
@@ -240,18 +181,5 @@ assign dirty = go & dirty_bit & (~write | ( cmp & ~match ));
 // Read & Write:  expose the valid bit
 // Load: not expose the valid bit, because updating ?
 assign valid_out = go & valid_bit & (~write | cmp);
-
-data_sel sel0(word_sel,word_from_word_0,word_from_word_1,word_from_word_2,word_from_word_3,word_from_word_4,word_from_word_5,word_from_word_6,word_from_word_7,data_out);
-
-assign data_wb = {
-    word_from_word_7,
-    word_from_word_6,
-    word_from_word_5,
-    word_from_word_4,
-    word_from_word_3,
-    word_from_word_2,
-    word_from_word_1,
-    word_from_word_0
-};
 
 endmodule
