@@ -31,7 +31,7 @@ input line1_valid;
 input line0_dirty;
 input line1_dirty;
 input prev;
-output reg v;
+output reg v;  // v is victim
 
 assign go = ~rst & enable & cmp;
 
