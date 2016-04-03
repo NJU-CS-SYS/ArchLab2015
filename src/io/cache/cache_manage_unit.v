@@ -104,24 +104,24 @@ wire [ADDR_WIDTH - 1 : 0] ram_addr_dc_wb;
 wire [1:0] ram_addr_sel;
 
 // 提取 I-cache 访问请求的信息
-assign tag_to_ic = ic_addr[29:29-TAG_WIDTH+1];
-assign index_to_ic = ic_addr[29-TAG_WIDTH:OFFSET_WIDTH];
-assign ic_offset = ic_addr[OFFSET_WIDTH-1:0];
+assign tag_to_ic   = ic_addr[ADDR_WIDTH - 1 -= TAG_WIDTH];
+assign index_to_ic = ic_addr[OFFSET_WIDTH += INDEX_WIDTH];
+assign ic_offset   = ic_addr[OFFSET_WIDTH - 1 : 0];
 
 // 提取 D-cache 访问请求的信息
 // when load block for instruction cache, if target block is in data_cache
 // it should be loaded from data_cache.
-assign tag_to_dc = (~loading_ic) ? dc_addr[29:29-TAG_WIDTH+1] : tag_to_ic;
-assign index_to_dc = (~loading_ic) ? dc_addr[29-TAG_WIDTH:OFFSET_WIDTH] : index_to_ic;
-assign dc_offset =  dc_addr[OFFSET_WIDTH-1:0];
+assign tag_to_dc   = (~loading_ic) ? dc_addr[ADDR_WIDTH - 1 -= TAG_WIDTH] : tag_to_ic;
+assign index_to_dc = (~loading_ic) ? dc_addr[OFFSET_WIDTH += INDEX_WIDTH] : index_to_ic;
+assign dc_offset   =  dc_addr[OFFSET_WIDTH - 1 : 0];
 
 
 // 发送给 ram 的地址来源:
 //   00: ram_addr_ic
 //   01: ram_addr_dc
 //   1x: ram_addr_dc_wb
-assign ram_addr_ic = {tag_to_ic, index_to_ic, counter};
-assign ram_addr_dc = {tag_to_dc, index_to_dc, counter};
+assign ram_addr_ic    = {tag_to_ic,   index_to_ic, counter};
+assign ram_addr_dc    = {tag_to_dc,   index_to_dc, counter};
 assign ram_addr_dc_wb = {tag_from_dc ,index_to_dc ,counter};  // write back
 assign ram_addr_out = ram_addr_sel[1] ? ram_addr_dc_wb
                                       : (ram_addr_sel[0] ? ram_addr_dc : ram_addr_ic);
@@ -131,7 +131,7 @@ assign ram_addr_out = ram_addr_sel[1] ? ram_addr_dc_wb
 assign dc_data_out = word_from_dc;
 assign ic_data_out = word_from_ic;
 assign dc_data_wb  = block_from_dc;
-assign word_to_ic  = 32'd0;  // I-cache 不需要来自 CPU 的写操作
+assign word_to_ic  = 0;  // I-cache 不需要来自 CPU 的写操作
 assign word_to_dc  = data_from_reg;
 assign block_to_ic = block_from_ram;
 assign block_to_dc = block_from_ram;
@@ -207,7 +207,7 @@ cache_2ways dc (
 always @(posedge clk) begin
     if (rst) begin
         status <= `STAT_NORMAL;
-        counter <= 3'd7;
+        counter <= 0;
         write_after_load <= 0;
     end
     else begin
