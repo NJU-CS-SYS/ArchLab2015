@@ -111,6 +111,7 @@ always @(*) begin
 
             if(counter_in ==  `COUNT_FINISH) begin
                 status_next_reg = `STAT_NORMAL;
+                counter_next_reg = 0;
             end
             else begin
                 status_next_reg = `STAT_IC_MISS;
@@ -142,6 +143,7 @@ always @(*) begin
 
             if(counter_in == `COUNT_FINISH) begin
                 status_next_reg = `STAT_NORMAL;
+                counter_next_reg = 0;
             end
             else begin
                 status_next_reg = `STAT_DC_MISS;
@@ -211,7 +213,7 @@ always @(*) begin
             end
             if(counter_in == `COUNT_FINISH) begin
                 status_next_reg = `STAT_DC_MISS;
-                counter_next_reg = 3'd0;  // Restart counter for D-cache loading
+                counter_next_reg = 0;  // Restart counter for D-cache loading
             end
 
             else begin
@@ -244,7 +246,7 @@ always @(*) begin
 
             if(counter_in == `COUNT_FINISH) begin
                 status_next_reg = `STAT_DOUBLE_MISS;
-                counter_next_reg = 3'd0;  // Restart counter for I-cache loading
+                counter_next_reg = 0;  // Restart counter for I-cache loading
             end
             else begin
                 status_next_reg = `STAT_DOUBLE_MISS_D;
