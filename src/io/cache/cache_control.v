@@ -111,10 +111,7 @@ always @(*) begin
             end
 
             // 设定对 ram 的访问行为，使用 ram_addr_ic, 只读
-            ram_addr_sel_reg = 2'b00;  // RJ 常量符号化
-                                        // zyy: 高位表示是否写回，低位表示是ic
-                                        // 或是dc，对我来说是有语义的
-                                        // 看cache_manage_unit ,Line: 127 
+            ram_addr_sel_reg = 2'b00;  // 高位表示是否写回，低位表示是 ic 还是 dc
             ram_write_out = 0;
 
             if(counter_in ==  `COUNT_FINISH) begin
@@ -350,9 +347,7 @@ always @(*) begin
                 end
                 else begin //dc hit & ic hit
                     status_next_reg = `STAT_NORMAL;
-                    counter_next_reg = 3'b111;  // RJ 为什么是 7
-                                                // zyy: 这个值无所谓的，以前的
-                                                // 旧值是7，我就留着了
+                    counter_next_reg = 3'b111;  // 这个值无所谓
                 end
             end
         end

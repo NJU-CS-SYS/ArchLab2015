@@ -128,8 +128,7 @@ assign ram_addr_out = ram_addr_sel[1] ?
     (ram_addr_sel[0] ? ram_addr_dc : ram_addr_ic);
 
 
-// RJ 大部分 wire 变量没有被复用，可以简化。
-// zyy: 体现了语义，这是这次重构中，我做的为数不多的风格上的改进
+// 虽然这些 wire 变量没有被复用，但是体现了语义
 assign dc_data_out = word_from_dc;
 assign ic_data_out = word_from_ic;
 assign dc_data_wb = block_from_dc;
