@@ -95,7 +95,6 @@ always @(*) begin
             dc_write_reg = 0;
             dc_valid_reg = 0;
 
-            //dc_word_sel_reg = dc_word_sel_in;
             dc_word_sel_reg = counter_in;//it is meaningful while loading from dc
             dc_byte_w_en_reg = 4'b0000;
 
@@ -112,19 +111,11 @@ always @(*) begin
 
             if(counter_in ==  `COUNT_FINISH) begin
                 status_next_reg = `STAT_NORMAL;
-                counter_next_reg = 3'd7;
             end
             else begin
                 status_next_reg = `STAT_IC_MISS;
-                if(counter_in == 3'd0) counter_next_reg = 3'd1;
-                else if(counter_in == 3'd1) counter_next_reg = 3'd2;
-                else if(counter_in == 3'd2) counter_next_reg = 3'd3;
-                else if(counter_in == 3'd3) counter_next_reg = 3'd4;
-                else if(counter_in == 3'd4) counter_next_reg = 3'd5;
-                else if(counter_in == 3'd5) counter_next_reg = 3'd6;
-                else counter_next_reg = 3'd7;
+                counter_next_reg = counter_in + 1;
             end
-
         end
         `STAT_DC_MISS:
         begin
@@ -135,7 +126,6 @@ always @(*) begin
             ic_valid_reg = 0;
             ic_word_sel_reg = counter_in;
             ic_byte_w_en_reg = 4'b0000;
-                                        // zyy: ...
 
             // 写 D-cache
             dc_enable_reg = 1;
@@ -152,17 +142,10 @@ always @(*) begin
 
             if(counter_in == `COUNT_FINISH) begin
                 status_next_reg = `STAT_NORMAL;
-                counter_next_reg = 3'd7;
             end
             else begin
                 status_next_reg = `STAT_DC_MISS;
-                if(counter_in == 3'd0) counter_next_reg = 3'd1;
-                else if(counter_in == 3'd1) counter_next_reg = 3'd2;
-                else if(counter_in == 3'd2) counter_next_reg = 3'd3;
-                else if(counter_in == 3'd3) counter_next_reg = 3'd4;
-                else if(counter_in == 3'd4) counter_next_reg = 3'd5;
-                else if(counter_in == 3'd5) counter_next_reg = 3'd6;
-                else counter_next_reg = 3'd7;
+                counter_next_reg = counter_in + 1;
             end
         end
         `STAT_DC_MISS_D:
@@ -190,17 +173,11 @@ always @(*) begin
 
             if(counter_in == `COUNT_FINISH) begin
                 status_next_reg = `STAT_DC_MISS;
-                counter_next_reg = 3'd0;
+                counter_next_reg = 3'd0;  // Restart counter for D-cache loading
             end
             else begin
                 status_next_reg = `STAT_DC_MISS_D;
-                if(counter_in == 3'd0) counter_next_reg = 3'd1;
-                else if(counter_in == 3'd1) counter_next_reg = 3'd2;
-                else if(counter_in == 3'd2) counter_next_reg = 3'd3;
-                else if(counter_in == 3'd3) counter_next_reg = 3'd4;
-                else if(counter_in == 3'd4) counter_next_reg = 3'd5;
-                else if(counter_in == 3'd5) counter_next_reg = 3'd6;
-                else counter_next_reg = 3'd7;
+                counter_next_reg = counter_in + 1;
             end
         end
         `STAT_DOUBLE_MISS:
@@ -234,18 +211,12 @@ always @(*) begin
             end
             if(counter_in == `COUNT_FINISH) begin
                 status_next_reg = `STAT_DC_MISS;
-                counter_next_reg = 3'd0;
+                counter_next_reg = 3'd0;  // Restart counter for D-cache loading
             end
 
             else begin
                 status_next_reg = `STAT_DOUBLE_MISS;
-                if(counter_in == 3'd0) counter_next_reg = 3'd1;
-                else if(counter_in == 3'd1) counter_next_reg = 3'd2;
-                else if(counter_in == 3'd2) counter_next_reg = 3'd3;
-                else if(counter_in == 3'd3) counter_next_reg = 3'd4;
-                else if(counter_in == 3'd4) counter_next_reg = 3'd5;
-                else if(counter_in == 3'd5) counter_next_reg = 3'd6;
-                else counter_next_reg = 3'd7;
+                counter_next_reg = counter_in + 1;
             end
         end
         `STAT_DOUBLE_MISS_D:
@@ -273,17 +244,11 @@ always @(*) begin
 
             if(counter_in == `COUNT_FINISH) begin
                 status_next_reg = `STAT_DOUBLE_MISS;
-                counter_next_reg = 3'd0;
+                counter_next_reg = 3'd0;  // Restart counter for I-cache loading
             end
             else begin
                 status_next_reg = `STAT_DOUBLE_MISS_D;
-                if(counter_in == 3'd0) counter_next_reg = 3'd1;
-                else if(counter_in == 3'd1) counter_next_reg = 3'd2;
-                else if(counter_in == 3'd2) counter_next_reg = 3'd3;
-                else if(counter_in == 3'd3) counter_next_reg = 3'd4;
-                else if(counter_in == 3'd4) counter_next_reg = 3'd5;
-                else if(counter_in == 3'd5) counter_next_reg = 3'd6;
-                else counter_next_reg = 3'd7;
+                counter_next_reg = counter_in + 1;
             end
         end
         default: /*normal*/
@@ -312,37 +277,33 @@ always @(*) begin
             ic_valid_reg = ic_valid_in;
             dc_valid_reg = dc_valid_in;
 
+            counter_next_reg = 0;  // We can always reset counter in NORMAL status, as all other status using counter starting from 0.
+
             // 根据访问结果，决定下一状态，先判断 D-cache miss, 再判断 I-cache miss, 最后判断 I-cache miss。
             if(dc_enable_reg && !(dc_hit_in && dc_valid_in)) begin //dc miss
                 if(!(ic_hit_in && ic_valid_in)) begin //dc miss & ic miss
                     if(dc_dirty_in) begin //dc miss & ic miss & dc dirty
                         status_next_reg = `STAT_DOUBLE_MISS_D;
-                        counter_next_reg = 3'b000;
                     end
                     else begin //dc miss & ic miss & dc not dirty
                         status_next_reg = `STAT_DOUBLE_MISS;
-                        counter_next_reg = 3'b000;
                     end
                 end
                 else begin
                     if(dc_dirty_in) begin //dc miss & ic hit & dc dirty
                         status_next_reg = `STAT_DC_MISS_D;
-                        counter_next_reg = 3'b000;
                     end
                     else begin //dc miss & ic hit & dc not dirty
                         status_next_reg = `STAT_DC_MISS;
-                        counter_next_reg = 3'b000;
                     end
                 end
             end
             else begin //dc hit & ic miss
                 if(!(ic_hit_in && ic_valid_in)) begin
                     status_next_reg = `STAT_IC_MISS;
-                    counter_next_reg = 3'b000;
                 end
                 else begin //dc hit & ic hit
                     status_next_reg = `STAT_NORMAL;
-                    counter_next_reg = 3'b111;  // 这个值无所谓
                 end
             end
         end
