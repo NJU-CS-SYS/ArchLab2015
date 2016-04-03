@@ -185,7 +185,6 @@ assign dirty = dirty_from_line_0 & dirty_from_line_1;
 assign data_out = (hit_from_line_0 & valid_from_line_0) ? data_word_from_line_0 : data_word_from_line_1;
 
 // 写回数据
-// DONE 在 cmp 有效的场合，为什么需要返回有效的块数据？
 assign data_wb = cmp ? {(32*(2**OFFSET_WIDTH)){1'b0}}
                      : (victimway ? data_block_from_line_1 : data_block_from_line_0);
 

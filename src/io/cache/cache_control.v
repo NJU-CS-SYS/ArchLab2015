@@ -67,9 +67,6 @@ output reg [2:0] dc_word_sel_reg;
 output reg [3:0] ic_byte_w_en_reg;
 output reg [3:0] dc_byte_w_en_reg;
 
-// DONE 直接在 output 上加 reg 修饰，减少代码行数
-
-
 // 下面的 always 块是一个根据当前周期 cache 状态的 switch-case 语句
 // 每个 case 下的行为模式基本相似，即：
 //   (1). 生成本周期的控制信号
@@ -100,9 +97,8 @@ always @(*) begin
 
             //dc_word_sel_reg = dc_word_sel_in;
             dc_word_sel_reg = counter_in;//it is meaningful while loading from dc
-            dc_byte_w_en_reg = 4'b0000;  // DONE 反正写使能关了，字节写使能也无效吧
+            dc_byte_w_en_reg = 4'b0000;
 
-            // DONE 可以放后面吗？
             if(dc_hit_in && dc_valid_in)begin
                 ram_en_out = 0;
             end
@@ -138,7 +134,7 @@ always @(*) begin
             ic_write_reg = 0;
             ic_valid_reg = 0;
             ic_word_sel_reg = counter_in;
-            ic_byte_w_en_reg = 4'b0000;  // DONE 无效掉？
+            ic_byte_w_en_reg = 4'b0000;
                                         // zyy: ...
 
             // 写 D-cache
@@ -177,7 +173,7 @@ always @(*) begin
             ic_write_reg = 0;
             ic_valid_reg = 0;
             ic_word_sel_reg = counter_in;
-            ic_byte_w_en_reg = 4'b0000;  // DONE 无效掉？
+            ic_byte_w_en_reg = 4'b0000;
 
             // 读 D-cache
             dc_enable_reg = 1;
@@ -230,7 +226,6 @@ always @(*) begin
             ram_addr_sel_reg = 2'b00;  // ram_addr_ic
             ram_write_out = 0;
 
-            // DONE 放后面？
             if (dc_hit_in && dc_valid_in) begin
                 ram_en_out = 0;
             end
@@ -259,7 +254,7 @@ always @(*) begin
             ic_enable_reg = 0;
             ic_cmp_reg = 0;
             ic_write_reg = 0;
-            ic_byte_w_en_reg = 4'b0000;  // DONE 无效化？
+            ic_byte_w_en_reg = 4'b0000;
             ic_valid_reg = 0;
             ic_word_sel_reg = counter_in;
 

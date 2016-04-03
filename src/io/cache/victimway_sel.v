@@ -33,8 +33,6 @@ input line1_dirty;
 input prev;
 output reg v;
 
-// DONE reg output victim
-
 assign go = ~rst & enable & cmp;
 
 // 组合逻辑
