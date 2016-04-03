@@ -31,10 +31,15 @@ module cache_oneline(/*autoarg*/
 );
 
 parameter OFFSET_WIDTH = 3;
-parameter BLOCK_SZIE = 1<<OFFSET_WIDTH;
-parameter INDEX_WIDTH = 7;
-parameter CACHE_DEPTH = 1<<INDEX_WIDTH;
-parameter TAG_WIDTH = 30 - OFFSET_WIDTH - INDEX_WIDTH;
+parameter BLOCK_SIZE   = 1 << OFFSET_WIDTH;
+parameter INDEX_WIDTH  = 7;
+parameter CACHE_DEPTH  = 1 << INDEX_WIDTH;
+parameter TAG_WIDTH    = 30 - OFFSET_WIDTH - INDEX_WIDTH;
+parameter ADDR_WIDTH   = TAG_WIDTH + INDEX_WIDTH + OFFSET_WIDTH;
+parameter DATA_WIDTH   = 32;
+parameter BLOCK_WIDTH  = BLOCK_SIZE * DATA_WIDTH;
+// Keep compatible with the upper module,
+// I like the TAG_WIDTH being the final one to be determined.
 
 // system:
 input clk;
@@ -48,27 +53,27 @@ input [3:0] byte_w_en;
 
 // data and cache match related
 input valid_in;
-input [TAG_WIDTH-1:0] tag_in;
-input [INDEX_WIDTH-1:0] index;
-input [OFFSET_WIDTH-1:0] word_sel;
-input [31:0] data_in;
-input [(32*(2**OFFSET_WIDTH)-1) : 0] data_block_in;
+input [TAG_WIDTH    - 1 : 0] tag_in;
+input [INDEX_WIDTH  - 1 : 0] index;
+input [OFFSET_WIDTH - 1 : 0] word_sel;
+input [DATA_WIDTH   - 1 : 0] data_in;
+input [BLOCK_WIDTH  - 1 : 0] data_block_in;
 
 output hit;
 output dirty;
 output valid_out;
-output [TAG_WIDTH-1:0] tag_out;
-output reg [31:0] data_out;
-output [(32*(2**OFFSET_WIDTH)-1) : 0] data_wb;
+output [TAG_WIDTH - 1 : 0] tag_out;
+output reg [DATA_WIDTH - 1 : 0] data_out;
+output [BLOCK_WIDTH - 1 : 0] data_wb;
 
 // actual enable
 assign go = enable & ~rst;
 
-// 标签匹配
+// tag match
 assign match = (tag_in == tag_out);
 
 // dirty bit write enable
-assign dirty_override = go & write & (match|~cmp);
+assign dirty_override = go & write & (match | ~cmp);
 
 // valid bit write enable
 assign valid_overide = go & write & ~cmp;
@@ -84,17 +89,16 @@ assign dirty_in = cmp; //cmp & write will override dirty bit
 // 选择写访问的字节写使能，还是载入时的全写。
 wire [3:0] byte_w_en_to_word = cmp ? byte_w_en : 4'b1111;
 
-wire word_wen[7:0];
-wire [31:0] word_in[7:0];
-wire [31:0] word_out[7:0];
+wire word_wen[BLOCK_SIZE - 1 : 0];
+
+wire [DATA_WIDTH - 1 : 0] word_in  [BLOCK_SIZE - 1 : 0];
+wire [DATA_WIDTH - 1 : 0] word_out [BLOCK_SIZE - 1 : 0];
 
 genvar word_index;
-
 generate
-    for (word_index = 0; word_index < 8; word_index = word_index + 1)
-    begin: cache_word
+    for (word_index = 0; word_index < BLOCK_SIZE; word_index = word_index + 1) begin: cache_word
         assign word_wen[word_index] = go & write & ((word_sel == word_index) & (match) | ~cmp);
-        assign word_in[word_index]  = cmp ? data_in : data_block_in[word_index * 32 +: 32];
+        assign word_in[word_index]  = cmp ? data_in : data_block_in[word_index * DATA_WIDTH +: DATA_WIDTH];
 
         cache_mem_word #(INDEX_WIDTH) word_instance (
             clk,
@@ -106,7 +110,7 @@ generate
             byte_w_en_to_word
         );
 
-        assign data_wb[word_index * 32 +: 32] = word_out[word_index];
+        assign data_wb[word_index * DATA_WIDTH +: DATA_WIDTH] = word_out[word_index];
     end
 endgenerate
 
@@ -139,34 +143,34 @@ end
 */
 
 cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) mem_tag(/*autoinst*/
-    .clk                        (clk                            ),
-    .rst                        (rst                            ),
-    .write                      (tag_override                   ),
-    .data_in                    (tag_in                         ),
-    .addr                       (index                          ),
-    .data_out                   (tag_out                        )
+    .clk      ( clk          ),
+    .rst      ( rst          ),
+    .write    ( tag_override ),
+    .data_in  ( tag_in       ),
+    .addr     ( index        ),
+    .data_out ( tag_out      )
 );
 
 wire dirty_bit;
 
 cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,1) mem_dirty(/*autoinst*/
-    .clk                        (clk                            ),
-    .rst                        (rst                            ),
-    .write                      (dirty_override                 ),
-    .data_in                    (dirty_in                       ),
-    .addr                       (index                          ),
-    .data_out                   (dirty_bit                      )
+    .clk      ( clk            ),
+    .rst      ( rst            ),
+    .write    ( dirty_override ),
+    .data_in  ( dirty_in       ),
+    .addr     ( index          ),
+    .data_out ( dirty_bit      )
 );
 
 wire valid_bit;
 
 cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,1) mem_valid(/*autoinst*/
-    .clk                        (clk                            ),
-    .rst                        (rst                            ),
-    .write                      (valid_overide                  ),
-    .data_in                    (valid_in                       ),
-    .addr                       (index                          ),  
-    .data_out                   (valid_bit                      )
+    .clk      ( clk           ),
+    .rst      ( rst           ),
+    .write    ( valid_overide ),
+    .data_in  ( valid_in      ),
+    .addr     ( index         ),
+    .data_out ( valid_bit     )
 );
 
 assign hit = go & match;
