@@ -104,15 +104,15 @@ wire [ADDR_WIDTH - 1 : 0] ram_addr_dc_wb;
 wire [1:0] ram_addr_sel;
 
 // 提取 I-cache 访问请求的信息
-assign tag_to_ic   = ic_addr[ADDR_WIDTH - 1 -= TAG_WIDTH];
-assign index_to_ic = ic_addr[OFFSET_WIDTH += INDEX_WIDTH];
+assign tag_to_ic   = ic_addr[ADDR_WIDTH - 1 -: TAG_WIDTH];
+assign index_to_ic = ic_addr[OFFSET_WIDTH +: INDEX_WIDTH];
 assign ic_offset   = ic_addr[OFFSET_WIDTH - 1 : 0];
 
 // 提取 D-cache 访问请求的信息
 // when load block for instruction cache, if target block is in data_cache
 // it should be loaded from data_cache.
-assign tag_to_dc   = (~loading_ic) ? dc_addr[ADDR_WIDTH - 1 -= TAG_WIDTH] : tag_to_ic;
-assign index_to_dc = (~loading_ic) ? dc_addr[OFFSET_WIDTH += INDEX_WIDTH] : index_to_ic;
+assign tag_to_dc   = (~loading_ic) ? dc_addr[ADDR_WIDTH - 1 -: TAG_WIDTH] : tag_to_ic;
+assign index_to_dc = (~loading_ic) ? dc_addr[OFFSET_WIDTH +: INDEX_WIDTH] : index_to_ic;
 assign dc_offset   =  dc_addr[OFFSET_WIDTH - 1 : 0];
 
 
