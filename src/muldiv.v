@@ -120,6 +120,7 @@ begin
 			dividend_copy = (!Md_op[0] || !Rs_in[31])? {32'h0 , Rs_in} : {32'h0 , ~Rs_in + 1'b1};
 			divider_copy = (!Md_op[0] || !Rt_in[31])? {1'b0 , Rt_in , 31'd0} : {1'b0 , ~Rt_in + 1'b1 , 31'd0};
 			negative_output = Md_op[0] && ((Rt_in[31] && !Rs_in[31]) || (!Rt_in[31] && (Rs_in[31])));
+            Hi = diff[31:0];
 		end
 		else if(cnt > 0)	//substract
 		begin
@@ -132,9 +133,9 @@ begin
 			end
 			quotinent = (!negative_output) ? quotient_temp : ~quotient_temp + 1'b1;
 			divider_copy = divider_copy >> 1;
-			cnt = cnt - 1'b1;
-			Hi = remainder;
-			Lo = quotinent;
+			cnt <= cnt - 1'b1;
+			//Hi <= remainder;
+			Lo <= quotinent;
             if(cnt == 1) divided <= 1;
 		end
 	end
