@@ -11,7 +11,7 @@ volatile inline int badtrap()
 int main()
 {
     int a = 0;
-    int b = 10;
+    int b = 11;
     int c = 90;
     if(a == c%b) {
         return goodtrap();
