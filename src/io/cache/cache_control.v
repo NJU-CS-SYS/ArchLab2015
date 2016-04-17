@@ -67,9 +67,6 @@ output reg [2:0] dc_word_sel_reg;
 output reg [3:0] ic_byte_w_en_reg;
 output reg [3:0] dc_byte_w_en_reg;
 
-// DONE 直接在 output 上加 reg 修饰，减少代码行数
-
-
 // 下面的 always 块是一个根据当前周期 cache 状态的 switch-case 语句
 // 每个 case 下的行为模式基本相似，即：
 //   (1). 生成本周期的控制信号
@@ -98,11 +95,9 @@ always @(*) begin
             dc_write_reg = 0;
             dc_valid_reg = 0;
 
-            //dc_word_sel_reg = dc_word_sel_in;
             dc_word_sel_reg = counter_in;//it is meaningful while loading from dc
-            dc_byte_w_en_reg = 4'b0000;  // DONE 反正写使能关了，字节写使能也无效吧
+            dc_byte_w_en_reg = 4'b0000;
 
-            // DONE 可以放后面吗？
             if(dc_hit_in && dc_valid_in)begin
                 ram_en_out = 0;
             end
@@ -111,27 +106,17 @@ always @(*) begin
             end
 
             // 设定对 ram 的访问行为，使用 ram_addr_ic, 只读
-            ram_addr_sel_reg = 2'b00;  // RJ 常量符号化
-                                        // zyy: 高位表示是否写回，低位表示是ic
-                                        // 或是dc，对我来说是有语义的
-                                        // 看cache_manage_unit ,Line: 127 
+            ram_addr_sel_reg = 2'b00;  // 高位表示是否写回，低位表示是 ic 还是 dc
             ram_write_out = 0;
 
             if(counter_in ==  `COUNT_FINISH) begin
                 status_next_reg = `STAT_NORMAL;
-                counter_next_reg = 3'd7;
+                counter_next_reg = 0;
             end
             else begin
                 status_next_reg = `STAT_IC_MISS;
-                if(counter_in == 3'd0) counter_next_reg = 3'd1;
-                else if(counter_in == 3'd1) counter_next_reg = 3'd2;
-                else if(counter_in == 3'd2) counter_next_reg = 3'd3;
-                else if(counter_in == 3'd3) counter_next_reg = 3'd4;
-                else if(counter_in == 3'd4) counter_next_reg = 3'd5;
-                else if(counter_in == 3'd5) counter_next_reg = 3'd6;
-                else counter_next_reg = 3'd7;
+                counter_next_reg = counter_in + 1;
             end
-
         end
         `STAT_DC_MISS:
         begin
@@ -141,8 +126,7 @@ always @(*) begin
             ic_write_reg = 0;
             ic_valid_reg = 0;
             ic_word_sel_reg = counter_in;
-            ic_byte_w_en_reg = 4'b0000;  // DONE 无效掉？
-                                        // zyy: ...
+            ic_byte_w_en_reg = 4'b0000;
 
             // 写 D-cache
             dc_enable_reg = 1;
@@ -159,17 +143,11 @@ always @(*) begin
 
             if(counter_in == `COUNT_FINISH) begin
                 status_next_reg = `STAT_NORMAL;
-                counter_next_reg = 3'd7;
+                counter_next_reg = 0;
             end
             else begin
                 status_next_reg = `STAT_DC_MISS;
-                if(counter_in == 3'd0) counter_next_reg = 3'd1;
-                else if(counter_in == 3'd1) counter_next_reg = 3'd2;
-                else if(counter_in == 3'd2) counter_next_reg = 3'd3;
-                else if(counter_in == 3'd3) counter_next_reg = 3'd4;
-                else if(counter_in == 3'd4) counter_next_reg = 3'd5;
-                else if(counter_in == 3'd5) counter_next_reg = 3'd6;
-                else counter_next_reg = 3'd7;
+                counter_next_reg = counter_in + 1;
             end
         end
         `STAT_DC_MISS_D:
@@ -180,7 +158,7 @@ always @(*) begin
             ic_write_reg = 0;
             ic_valid_reg = 0;
             ic_word_sel_reg = counter_in;
-            ic_byte_w_en_reg = 4'b0000;  // DONE 无效掉？
+            ic_byte_w_en_reg = 4'b0000;
 
             // 读 D-cache
             dc_enable_reg = 1;
@@ -197,17 +175,11 @@ always @(*) begin
 
             if(counter_in == `COUNT_FINISH) begin
                 status_next_reg = `STAT_DC_MISS;
-                counter_next_reg = 3'd0;
+                counter_next_reg = 3'd0;  // Restart counter for D-cache loading
             end
             else begin
                 status_next_reg = `STAT_DC_MISS_D;
-                if(counter_in == 3'd0) counter_next_reg = 3'd1;
-                else if(counter_in == 3'd1) counter_next_reg = 3'd2;
-                else if(counter_in == 3'd2) counter_next_reg = 3'd3;
-                else if(counter_in == 3'd3) counter_next_reg = 3'd4;
-                else if(counter_in == 3'd4) counter_next_reg = 3'd5;
-                else if(counter_in == 3'd5) counter_next_reg = 3'd6;
-                else counter_next_reg = 3'd7;
+                counter_next_reg = counter_in + 1;
             end
         end
         `STAT_DOUBLE_MISS:
@@ -233,7 +205,6 @@ always @(*) begin
             ram_addr_sel_reg = 2'b00;  // ram_addr_ic
             ram_write_out = 0;
 
-            // DONE 放后面？
             if (dc_hit_in && dc_valid_in) begin
                 ram_en_out = 0;
             end
@@ -242,18 +213,12 @@ always @(*) begin
             end
             if(counter_in == `COUNT_FINISH) begin
                 status_next_reg = `STAT_DC_MISS;
-                counter_next_reg = 3'd0;
+                counter_next_reg = 0;  // Restart counter for D-cache loading
             end
 
             else begin
                 status_next_reg = `STAT_DOUBLE_MISS;
-                if(counter_in == 3'd0) counter_next_reg = 3'd1;
-                else if(counter_in == 3'd1) counter_next_reg = 3'd2;
-                else if(counter_in == 3'd2) counter_next_reg = 3'd3;
-                else if(counter_in == 3'd3) counter_next_reg = 3'd4;
-                else if(counter_in == 3'd4) counter_next_reg = 3'd5;
-                else if(counter_in == 3'd5) counter_next_reg = 3'd6;
-                else counter_next_reg = 3'd7;
+                counter_next_reg = counter_in + 1;
             end
         end
         `STAT_DOUBLE_MISS_D:
@@ -262,7 +227,7 @@ always @(*) begin
             ic_enable_reg = 0;
             ic_cmp_reg = 0;
             ic_write_reg = 0;
-            ic_byte_w_en_reg = 4'b0000;  // DONE 无效化？
+            ic_byte_w_en_reg = 4'b0000;
             ic_valid_reg = 0;
             ic_word_sel_reg = counter_in;
 
@@ -281,17 +246,11 @@ always @(*) begin
 
             if(counter_in == `COUNT_FINISH) begin
                 status_next_reg = `STAT_DOUBLE_MISS;
-                counter_next_reg = 3'd0;
+                counter_next_reg = 0;  // Restart counter for I-cache loading
             end
             else begin
                 status_next_reg = `STAT_DOUBLE_MISS_D;
-                if(counter_in == 3'd0) counter_next_reg = 3'd1;
-                else if(counter_in == 3'd1) counter_next_reg = 3'd2;
-                else if(counter_in == 3'd2) counter_next_reg = 3'd3;
-                else if(counter_in == 3'd3) counter_next_reg = 3'd4;
-                else if(counter_in == 3'd4) counter_next_reg = 3'd5;
-                else if(counter_in == 3'd5) counter_next_reg = 3'd6;
-                else counter_next_reg = 3'd7;
+                counter_next_reg = counter_in + 1;
             end
         end
         default: /*normal*/
@@ -320,39 +279,33 @@ always @(*) begin
             ic_valid_reg = ic_valid_in;
             dc_valid_reg = dc_valid_in;
 
+            counter_next_reg = 0;  // We can always reset counter in NORMAL status, as all other status using counter starting from 0.
+
             // 根据访问结果，决定下一状态，先判断 D-cache miss, 再判断 I-cache miss, 最后判断 I-cache miss。
             if(dc_enable_reg && !(dc_hit_in && dc_valid_in)) begin //dc miss
                 if(!(ic_hit_in && ic_valid_in)) begin //dc miss & ic miss
                     if(dc_dirty_in) begin //dc miss & ic miss & dc dirty
                         status_next_reg = `STAT_DOUBLE_MISS_D;
-                        counter_next_reg = 3'b000;
                     end
                     else begin //dc miss & ic miss & dc not dirty
                         status_next_reg = `STAT_DOUBLE_MISS;
-                        counter_next_reg = 3'b000;
                     end
                 end
                 else begin
                     if(dc_dirty_in) begin //dc miss & ic hit & dc dirty
                         status_next_reg = `STAT_DC_MISS_D;
-                        counter_next_reg = 3'b000;
                     end
                     else begin //dc miss & ic hit & dc not dirty
                         status_next_reg = `STAT_DC_MISS;
-                        counter_next_reg = 3'b000;
                     end
                 end
             end
             else begin //dc hit & ic miss
                 if(!(ic_hit_in && ic_valid_in)) begin
                     status_next_reg = `STAT_IC_MISS;
-                    counter_next_reg = 3'b000;
                 end
                 else begin //dc hit & ic hit
                     status_next_reg = `STAT_NORMAL;
-                    counter_next_reg = 3'b111;  // RJ 为什么是 7
-                                                // zyy: 这个值无所谓的，以前的
-                                                // 旧值是7，我就留着了
                 end
             end
         end
