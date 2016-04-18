@@ -53,6 +53,7 @@ int main() {
 			printf("arr[%d] != 1", j);
 		}*/
 	}
+    good();
     return goodtrap();
 }
 			

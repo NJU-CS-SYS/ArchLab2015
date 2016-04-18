@@ -115,7 +115,7 @@ always @(*) begin
             end
             else begin
                 status_next_reg = `STAT_IC_MISS;
-                counter_next_reg = counter_in + 1;
+                counter_next_reg = counter_in + `N_WORDS;
             end
         end
         `STAT_DC_MISS:
@@ -147,7 +147,7 @@ always @(*) begin
             end
             else begin
                 status_next_reg = `STAT_DC_MISS;
-                counter_next_reg = counter_in + 1;
+                counter_next_reg = counter_in + `N_WORDS;
             end
         end
         `STAT_DC_MISS_D:
@@ -179,7 +179,7 @@ always @(*) begin
             end
             else begin
                 status_next_reg = `STAT_DC_MISS_D;
-                counter_next_reg = counter_in + 1;
+                counter_next_reg = counter_in + `N_WORDS;
             end
         end
         `STAT_DOUBLE_MISS:
@@ -218,7 +218,7 @@ always @(*) begin
 
             else begin
                 status_next_reg = `STAT_DOUBLE_MISS;
-                counter_next_reg = counter_in + 1;
+                counter_next_reg = counter_in + `N_WORDS;
             end
         end
         `STAT_DOUBLE_MISS_D:
@@ -250,7 +250,7 @@ always @(*) begin
             end
             else begin
                 status_next_reg = `STAT_DOUBLE_MISS_D;
-                counter_next_reg = counter_in + 1;
+                counter_next_reg = counter_in + `N_WORDS;
             end
         end
         default: /*normal*/

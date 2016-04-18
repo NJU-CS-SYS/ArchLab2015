@@ -8,6 +8,7 @@
 `define STAT_DOUBLE_MISS 3'b100
 `define STAT_DOUBLE_MISS_D 3'b101
 
-`define COUNT_FINISH 3'd1
+`define COUNT_FINISH 3'd4
+`define N_WORDS 3'd4
 
 `endif
