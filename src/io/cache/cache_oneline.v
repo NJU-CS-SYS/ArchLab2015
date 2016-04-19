@@ -180,10 +180,16 @@ assign hit = go & match;
 // Load:  not expose the dirty bit
 // 写入的场合，不需要外界知道脏位信息，而且其也正被更新。
 // 其他场合，暴露脏位信息，用于决定 victimway
-assign dirty = go & dirty_bit & (~write | ( cmp & ~match ));
+
+// loop : ??
+// assign dirty = go & dirty_bit & (~write | ( cmp & ~match ));
+assign dirty = go & dirty_bit & ( cmp & ~match );
 
 // Read & Write:  expose the valid bit
 // Load: not expose the valid bit, because updating ?
-assign valid_out = go & valid_bit & (~write | cmp);
+
+// loop : ??
+// assign valid_out = go & valid_bit & (~write | cmp);
+assign valid_out = go & valid_bit;
 
 endmodule

@@ -4,7 +4,7 @@
 // Filename      : ddr_ctrl.v
 // Author        : zyy
 // Created On    : 2016-04-18 15:39
-// Last Modified : 2016-04-19 14:16
+// Last Modified : 2016-04-19 19:09
 // -------------------------------------------------------------------------------------------------
 // Svn Info:
 //   $Revision::                                                                                $:
@@ -117,12 +117,14 @@ mig_7series_0 m70(/*autoinst*/
     .app_rd_data_valid          (mig_data_valid                 ),  
     .app_rdy                    (mig_rdy                        ),  
     .app_wdf_rdy                (mig_wdf_rdy                    ),  
+
     .app_sr_req                 (0                              ),  // nosene    
     .app_ref_req                (0                              ),  // nosene    
     .app_zq_req                 (0                              ),  // nosene    
     .app_sr_active              (                               ),  // nosene
     .app_ref_ack                (                               ),  // nosene 
     .app_zq_ack                 (                               ),  // nosene  
+
     .ui_clk                     (ui_clk                         ),  
     .ui_clk_sync_rst            (                               ),  // nosene    
     .init_calib_complete        (init_calib_complete            ),  
