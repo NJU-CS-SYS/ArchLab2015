@@ -173,7 +173,7 @@ cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,1) mem_valid(/*autoinst*/
     .data_out ( valid_bit     )
 );
 
-assign hit = go & match;
+assign hit = match;
 
 // Read:  expose the dirty bit
 // Write: expose the dirty bit if not matched
@@ -183,13 +183,13 @@ assign hit = go & match;
 
 // loop : ??
 // assign dirty = go & dirty_bit & (~write | ( cmp & ~match ));
-assign dirty = go & dirty_bit & ( cmp & ~match );
+assign dirty = dirty_bit & ( cmp & ~match );
 
 // Read & Write:  expose the valid bit
 // Load: not expose the valid bit, because updating ?
 
 // loop : ??
 // assign valid_out = go & valid_bit & (~write | cmp);
-assign valid_out = go & valid_bit;
+assign valid_out = valid_bit;
 
 endmodule

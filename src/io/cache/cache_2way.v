@@ -162,18 +162,18 @@ cache_oneline #(OFFSET_WIDTH,BLOCK_SIZE,INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) c1(/*
 // zyy: if cmp is inactive, victimway is equal to victimway_ff 
 // the signal 'go' in victimway_sel depend on cmp;
 // In fact, it is redundancy...Victimway_ff should be removed.
-assign enable_to_line_0 = cmp ? enable : ~victimway;
-assign enable_to_line_1 = cmp ? enable : victimway;
+assign enable_to_line_0 = cmp ? enable : ~victimway_ff;
+assign enable_to_line_1 = cmp ? enable : victimway_ff;
 
 // 在写请求下，如果 cmp 有效，即正常访问，则判断对应块是否存在来决定是否可写
 // 在 cmp 无效时，则由 victimway 来决定那个块可写，并保证写使能是独热的。
-assign write_to_line_0 = write & (cmp ? (valid_from_line_0 & hit_from_line_0) : ~victimway);
-assign write_to_line_1 = write & (cmp ? (valid_from_line_1 & hit_from_line_1) : victimway);
+assign write_to_line_0 = write & (cmp ? (valid_from_line_0 & hit_from_line_0 & enable) : ~victimway_ff);
+assign write_to_line_1 = write & (cmp ? (valid_from_line_1 & hit_from_line_1 & enable) : victimway_ff);
 
 // 对外部，只要有一路 hit 即 cache hit.
 // valid 与 hit 的逻辑相似。
-assign hit = (valid_from_line_1 & hit_from_line_1) | (valid_from_line_0 & hit_from_line_0);
-assign valid_out = valid_from_line_0 | valid_from_line_1;
+assign hit = ((valid_from_line_1 & hit_from_line_1) | (valid_from_line_0 & hit_from_line_0)) & enable;
+assign valid_out = (valid_from_line_0 | valid_from_line_1) & enable;
 
 // dirty 用于通知外部需要进行写回操作。victim_sel 优先选择不脏的路进行替换，
 // 只有在所有的路都脏的情况下才进行需要通知外界进行写回操作。
@@ -186,10 +186,10 @@ assign data_out = (hit_from_line_0 & valid_from_line_0) ? data_word_from_line_0 
 
 // 写回数据
 assign data_wb = cmp ? {(32*(2**OFFSET_WIDTH)){1'b0}}
-                     : (victimway ? data_block_from_line_1 : data_block_from_line_0);
+                     : (victimway_ff ? data_block_from_line_1 : data_block_from_line_0);
 
 //if !cmp, then tag_out is used for write back, and it should be the victimway's tag
 assign tag_out = cmp ? {TAG_WIDTH{1'b0}}
-                     : (victimway ? tag_from_line_1 : tag_from_line_0);
+                     : (victimway_ff ? tag_from_line_1 : tag_from_line_0);
 
 endmodule

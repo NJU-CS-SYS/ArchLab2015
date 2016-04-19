@@ -143,21 +143,48 @@ wire [2:0] word_sel_to_ic;
 wire [2:0] word_sel_to_dc;
 
 // 控制单元，大部分控制信号在这里生成。
+
 cache_control cctrl (
-    dc_read_in, dc_write_in, ic_offset, dc_offset, dc_byte_w_en_in, 
-    hit_from_ic, valid_from_ic,/*ic's output*/
-    hit_from_dc, dirty_from_dc, valid_from_dc,/*dc's output*/
-    status, counter,/*status*/
+    .dc_read_in     (dc_read_in         ),
+    .dc_write_in    (dc_write_in        ),
+    .ic_hit_in      (hit_from_ic        ),
+    .ic_valid_in    (valid_from_ic      ),
 
-    enable_to_ic, word_sel_to_ic, cmp_to_ic, write_to_ic,
-    byte_w_en_to_ic, valid_to_ic,/*to ic*/
+    .dc_hit_in      (hit_from_dc        ),
+    .dc_dirty_in    (dirty_from_dc      ),
+    .dc_valid_in    (valid_from_dc      ),
 
-    enable_to_dc, word_sel_to_dc, cmp_to_dc, write_to_dc,
-    byte_w_en_to_dc, valid_to_dc,/*to dc*/
+    .status_in      (status             ),
+    .counter_in     (counter            ),
+    .ic_word_sel_in (ic_offset          ),
+    .dc_word_sel_in (dc_offset          ),
+    .dc_byte_w_en_in(dc_byte_w_en_in    ),
 
-    ram_addr_sel, ram_en_out, ram_write_out,
-    status_next, counter_next
+
+    .ic_enable_reg  (enable_to_ic       ),
+    .ic_cmp_reg     (cmp_to_ic          ),
+    .ic_write_reg   (write_to_ic        ),
+    .ic_valid_reg   (valid_to_ic        ),
+
+    .dc_enable_reg  (enable_to_dc       ),
+    .dc_cmp_reg     (cmp_to_dc          ),
+    .dc_write_reg   (write_to_dc        ),
+    .dc_valid_reg   (valid_to_dc        ),
+
+    .ram_en_out     (ram_en_out         ),
+    .ram_write_out  (ram_write_out      ),
+
+    .ram_addr_sel_reg   (ram_addr_sel           ),
+    .status_next_reg    (status_next            ),
+    .counter_next_reg   (counter_next           ),
+
+    .ic_word_sel_reg    (word_sel_to_ic         ),
+    .dc_word_sel_reg    (word_sel_to_dc         ),
+    .ic_byte_w_en_reg   (byte_w_en_to_ic        ),
+    .dc_byte_w_en_reg   (byte_w_en_to_dc        )
 );
+
+
 
 // Instruction Cache
 cache_2ways ic (

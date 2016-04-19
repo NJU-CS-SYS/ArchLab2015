@@ -21,20 +21,20 @@
 
 `include "status.vh"
 
-module cache_control(
-    dc_read_in, dc_write_in, ic_word_sel_in, dc_word_sel_in, dc_byte_w_en_in,/*external input*/
-    ic_hit_in, ic_valid_in, /*ic's output*/
-    dc_hit_in, dc_dirty_in, dc_valid_in,/*dc's output*/
-    status_in, counter_in, /*status info*/
+module cache_control(/* autoarg */
+    //Inputs
+    dc_read_in, dc_write_in, ic_hit_in, ic_valid_in, 
+    dc_hit_in, dc_dirty_in, dc_valid_in, 
+    status_in, counter_in, ic_word_sel_in, 
+    dc_word_sel_in, dc_byte_w_en_in, 
 
-    ic_enable_reg, ic_word_sel_reg, ic_cmp_reg,
-    ic_write_reg, ic_byte_w_en_reg, ic_valid_reg,
-
-    dc_enable_reg, dc_word_sel_reg, dc_cmp_reg,
-    dc_write_reg, dc_byte_w_en_reg, dc_valid_reg,
-
-    ram_addr_sel_reg, ram_en_out, ram_write_out,
-    status_next_reg, counter_next_reg
+    //Outputs
+    ic_enable_reg, ic_cmp_reg, ic_write_reg, 
+    ic_valid_reg, dc_enable_reg, dc_cmp_reg, 
+    dc_write_reg, dc_valid_reg, ram_en_out, 
+    ram_write_out, ram_addr_sel_reg, status_next_reg, 
+    counter_next_reg, ic_word_sel_reg, dc_word_sel_reg, 
+    ic_byte_w_en_reg, dc_byte_w_en_reg
 );
 input dc_read_in;
 input dc_write_in;
@@ -53,10 +53,12 @@ output reg ic_enable_reg;
 output reg ic_cmp_reg;
 output reg ic_write_reg;
 output reg ic_valid_reg;
+
 output reg dc_enable_reg;
 output reg dc_cmp_reg;
 output reg dc_write_reg;
 output reg dc_valid_reg;
+
 output reg ram_en_out;
 output reg ram_write_out;
 output reg [1:0] ram_addr_sel_reg;
