@@ -37,7 +37,7 @@ module cpu_interface(
     output ui_clk,
     output [31:0] ic_data_out,
     output [31:0] dmem_data_out,
-    output mem_stall
+    output mem_stall,
 
     // ddr Outputs
     output [12:0]                       ddr2_addr,

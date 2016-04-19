@@ -4,7 +4,7 @@
 // Filename      : ddr_ctrl.v
 // Author        : zyy
 // Created On    : 2016-04-18 15:39
-// Last Modified : 2016-04-18 19:07
+// Last Modified : 2016-04-18 19:20
 // -------------------------------------------------------------------------------------------------
 // Svn Info:
 //   $Revision::                                                                                $:
@@ -34,7 +34,7 @@ module ddr_ctrl(
 
     output ram_rdy,
     output [255:0] block_out,
-    output ui_clk;
+    output ui_clk,
 
     // ddr Outputs
     output [12:0]                       ddr2_addr,
