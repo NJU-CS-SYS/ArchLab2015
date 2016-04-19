@@ -114,7 +114,7 @@ ddr_ctrl ddr_ctrl_0(
     .rst                        (rst                            ),
     .ram_en                     (ram_en                         ),
     .ram_write                  (ram_write                      ),
-    .ram_addr                   (ram_addr[32:3]                 ),
+    .ram_addr                   (ram_addr[29:0]                 ),
     .data_to_ram                (block_from_dc_to_ram           ),
 
     .ram_rdy                    (ram_rdy                        ),

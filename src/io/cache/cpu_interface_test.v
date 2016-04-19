@@ -4,7 +4,7 @@
 // Filename      : cpu_interface_test.v
 // Author        : zyy
 // Created On    : 2016-04-19 16:28
-// Last Modified : 2016-04-19 17:08
+// Last Modified : 2016-04-19 17:18
 // -------------------------------------------------------------------------------------------------
 // Svn Info:
 //   $Revision::                                                                                $:
@@ -44,10 +44,9 @@ module cpu_interface_test(
 );
 
 wire clk_from_ip;
-
-reg [29:0] dc_addr;
+wire [29:0] dc_addr;
 reg [7:0] data_to_ci;
-reg [31:0] data_from_ci;
+wire [31:0] data_from_ci;
 wire dc_data;
 wire mem_stall;
 wire ui_clk;
@@ -62,6 +61,7 @@ reg [29:0] addr_base;
 reg [31:0] counter;
 reg slow_clk;
 
+assign dc_addr = addr_base + status;
 
 cpu_interface ci0(
     // Inouts
@@ -108,7 +108,7 @@ clk_wiz_0 clkw0(
 
 initial begin
     slow_clk <= 0;
-    addr_base <= 30'd0;
+    addr_base <= 30'h1000;
     status <= 3'd0;
 end
 
