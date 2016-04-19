@@ -4,7 +4,7 @@
 // Filename      : ddr_traffic.v
 // Author        : zyy
 // Created On    : 2016-04-19 08:10
-// Last Modified : 2016-04-19 09:44
+// Last Modified : 2016-04-19 14:16
 // -------------------------------------------------------------------------------------------------
 // Svn Info:
 //   $Revision::                                                                                $:
@@ -94,13 +94,14 @@ ddr_ctrl ddr0(
 clk_wiz_0 clkw0(
     .clk_in1(clk_from_e3),
     .clk_out1(clk_from_ip),
-    .reset(rst),
+    .resetn(rst),
     .locked()
 );
 
 initial begin
     slow_clk <= 0;
     addr_base <= 30'd0;
+    status <= 3'd0;
 end
 
 always @ (*) begin
@@ -138,7 +139,7 @@ end
 
 always @ (posedge ui_clk) begin
     if(~rst) begin
-        led <= 7'd0;
+        led <= 8'd0;
         counter <= 32'd0;
     end
     else begin
@@ -168,7 +169,7 @@ always @ (posedge slow_clk) begin
     end
     else begin
         status <= status + 1;
-        addr_base <= addr_base + 8;
+        addr_base <= addr_base + 32;
     end
 end
 
