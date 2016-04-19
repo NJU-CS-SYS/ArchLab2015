@@ -4,7 +4,7 @@
 // Filename      : ddr_traffic.v
 // Author        : zyy
 // Created On    : 2016-04-19 08:10
-// Last Modified : 2016-04-19 09:28
+// Last Modified : 2016-04-19 09:44
 // -------------------------------------------------------------------------------------------------
 // Svn Info:
 //   $Revision::                                                                                $:
@@ -27,6 +27,8 @@ module ddr_traffic(
     input clk_from_e3,
     input rst,
 
+    output reg [7:0] led,
+
     // ddr Outputs
     output [12:0]                       ddr2_addr,
     output [2:0]                      ddr2_ba,
@@ -43,7 +45,6 @@ module ddr_traffic(
 
 reg writing;
 reg reading;
-reg [7:0] led;
 reg [2:0] status;
 reg [29:0] addr_base;
 reg [31:0] counter;
