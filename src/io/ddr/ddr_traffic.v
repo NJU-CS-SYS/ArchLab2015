@@ -4,7 +4,7 @@
 // Filename      : ddr_traffic.v
 // Author        : zyy
 // Created On    : 2016-04-19 08:10
-// Last Modified : 2016-04-19 08:57
+// Last Modified : 2016-04-19 09:28
 // -------------------------------------------------------------------------------------------------
 // Svn Info:
 //   $Revision::                                                                                $:
@@ -24,7 +24,7 @@ module ddr_traffic(
     inout [1:0]                        ddr2_dqs_p,
 
     // CPU input and output
-    input clk_from_ip,
+    input clk_from_e3,
     input rst,
 
     // ddr Outputs
@@ -41,8 +41,6 @@ module ddr_traffic(
     output [0:0]                       ddr2_odt
 );
 
-reg written;
-reg read;
 reg writing;
 reg reading;
 reg [7:0] led;
@@ -54,10 +52,12 @@ reg slow_clk;
 wire [255:0] data_from_ram;
 wire ui_clk;
 wire ram_rdy;
+wire clk_from_ip;
 
 /* combination logic */
 reg ram_en;
 reg ram_write;
+reg [7:0] data_to_ram;
 
 ddr_ctrl ddr0(
     // Inouts
@@ -71,11 +71,11 @@ ddr_ctrl ddr0(
     .ram_en                     (ram_en                         ),
     .ram_write                  (ram_write                      ),
     .ram_addr                   (addr_base + status             ),
-    .data_to_ram                ({248'd0, status}               ),
+    .data_to_ram                ({248'd0, data_to_ram}          ),
 
     .ram_rdy                    (ram_rdy                        ),
     .block_out                  (data_from_ram                  ),
-    ,ui_clk                     (ui_clk                         ),
+    .ui_clk                     (ui_clk                         ),
     // Outputs
     .ddr2_addr                  (ddr2_addr                      ),
     .ddr2_ba                    (ddr2_ba                        ),
@@ -90,6 +90,18 @@ ddr_ctrl ddr0(
     .ddr2_odt                   (ddr2_odt                       )
 );
 
+clk_wiz_0 clkw0(
+    .clk_in1(clk_from_e3),
+    .clk_out1(clk_from_ip),
+    .reset(rst),
+    .locked()
+);
+
+initial begin
+    slow_clk <= 0;
+    addr_base <= 30'd0;
+end
+
 always @ (*) begin
     if(writing) begin
         ram_en = 1;
@@ -103,22 +115,35 @@ always @ (*) begin
         ram_en = 0;
         ram_write = 0;
     end
+    case(status)
+        3'd0:
+            data_to_ram = 8'b00000000;
+        3'd1:
+            data_to_ram = 8'b00000001;
+        3'd2:
+            data_to_ram = 8'b00000010;
+        3'd3:
+            data_to_ram = 8'b00000100;
+        3'd4:
+            data_to_ram = 8'b00001000;
+        3'd5:
+            data_to_ram = 8'b00010000;
+        3'd6:
+            data_to_ram = 8'b00100000;
+        3'd7:
+            data_to_ram = 8'b01000000;
+    endcase
 end
 
 always @ (posedge ui_clk) begin
-    if(rst) begin
-        addr_base <= 30'd0;
-        counter <= 32'd0;
-        written<= 0;
+    if(~rst) begin
         led <= 7'd0;
-        slow_clk <= 0;
+        counter <= 32'd0;
     end
     else begin
         if(counter == 32'd50000000) begin
             counter <= 0;
             slow_clk <= ~slow_clk;
-            written <= 0;
-            read <= 0;
             writing <= 1;
             reading <= 0;
         end
@@ -137,8 +162,13 @@ always @ (posedge ui_clk) begin
 end
 
 always @ (posedge slow_clk) begin
-    status <= status + 1;
-    addr_base <= addr_base + 8;
+    if(~rst) begin
+        addr_base <= 30'd0;
+    end
+    else begin
+        status <= status + 1;
+        addr_base <= addr_base + 8;
+    end
 end
 
 endmodule

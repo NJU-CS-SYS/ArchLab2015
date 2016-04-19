@@ -4,7 +4,7 @@
 // Filename      : ddr_ctrl.v
 // Author        : zyy
 // Created On    : 2016-04-18 15:39
-// Last Modified : 2016-04-19 08:11
+// Last Modified : 2016-04-19 09:22
 // -------------------------------------------------------------------------------------------------
 // Svn Info:
 //   $Revision::                                                                                $:
@@ -130,12 +130,10 @@ mig_7series_0 m70(/*autoinst*/
 );
 
 // control signal generation
-always @(*) begin
-end
 
 always @(ui_clk) begin
     if(rst) begin
-        last_op <= NOP;
+        last_op <= `NOP;
         last_addr <= 30'h3fffffff;
         writing <= 0;
         reading <= 0;
