@@ -26,6 +26,7 @@ module cpu_interface(
     inout [1:0]                        ddr2_dqs_n,
     inout [1:0]                        ddr2_dqs_p,
 
+    input rst,
     input [29:0] ic_addr,
     input dmem_read_in, 
     input dmem_write_in,
@@ -80,8 +81,8 @@ always @ (*) begin
 end
 
 cache_manage_unit u_cm_0 (
-    .clk             ( ui_clk                  ),
-    .rst             ( rst                  ),
+    .clk             ( ui_clk               ),
+    .rst             ( ~rst                 ), // !! make rst seem low active
     .dc_read_in      ( dc_read_in           ),
     .dc_write_in     ( dc_write_in          ),
     .dc_byte_w_en_in ( dc_byte_w_en         ),
