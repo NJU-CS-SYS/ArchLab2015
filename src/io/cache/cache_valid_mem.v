@@ -39,7 +39,8 @@ output [DATA_WIDTH-1:0] data_out;
 reg [DATA_WIDTH-1:0] mem [MEM_DEPTH-1:0];
 reg [ADDR_WIDTH-1+1:0] i;
 
-assign data_out = (write | rst) ? 32'b0 : mem[addr];
+//assign data_out = (write | rst) ? 32'b0 : mem[addr];
+assign data_out = mem[addr];
 
 always @(posedge clk) begin
     if(rst) begin

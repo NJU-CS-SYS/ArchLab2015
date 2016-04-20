@@ -142,7 +142,7 @@ always @ (*) begin
 end
 */
 
-cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) mem_tag(/*autoinst*/
+cache_mem #(INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) mem_tag(/*autoinst*/
     .clk      ( clk          ),
     .rst      ( rst          ),
     .write    ( tag_override ),
@@ -153,7 +153,7 @@ cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) mem_tag(/*autoinst*/
 
 wire dirty_bit;
 
-cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,1) mem_dirty(/*autoinst*/
+cache_mem #(INDEX_WIDTH,CACHE_DEPTH,1) mem_dirty(/*autoinst*/
     .clk      ( clk            ),
     .rst      ( rst            ),
     .write    ( dirty_override ),
