@@ -4,7 +4,7 @@
 // Filename      : cpu_interface_test.v
 // Author        : zyy
 // Created On    : 2016-04-19 16:28
-// Last Modified : 2016-04-19 17:18
+// Last Modified : 2016-04-20 16:42
 // -------------------------------------------------------------------------------------------------
 // Svn Info:
 //   $Revision::                                                                                $:
@@ -172,13 +172,8 @@ always @ (posedge ui_clk) begin
 end
 
 always @ (posedge slow_clk) begin
-    if(~rst) begin
-        addr_base <= 30'd0;
-    end
-    else begin
-        status <= status + 1;
-        addr_base <= addr_base + 32;
-    end
+    status <= status + 1;
+    addr_base <= addr_base + 32;
 end
 
 

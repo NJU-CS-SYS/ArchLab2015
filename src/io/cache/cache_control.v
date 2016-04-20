@@ -95,7 +95,7 @@ always @(*) begin
             dc_enable_reg = 1;
             dc_cmp_reg = 1;
             dc_write_reg = 0;
-            dc_valid_reg = 0;
+            dc_valid_reg = 1;
 
             dc_word_sel_reg = counter_in;//it is meaningful while loading from dc
             dc_byte_w_en_reg = 4'b0000;
@@ -126,7 +126,7 @@ always @(*) begin
             ic_enable_reg = 0;
             ic_cmp_reg = 0;
             ic_write_reg = 0;
-            ic_valid_reg = 0;
+            ic_valid_reg = 1;
             ic_word_sel_reg = counter_in;
             ic_byte_w_en_reg = 4'b0000;
 
@@ -158,7 +158,7 @@ always @(*) begin
             ic_enable_reg = 0;
             ic_cmp_reg = 0;
             ic_write_reg = 0;
-            ic_valid_reg = 0;
+            ic_valid_reg = 1;
             ic_word_sel_reg = counter_in;
             ic_byte_w_en_reg = 4'b0000;
 
@@ -199,7 +199,7 @@ always @(*) begin
             dc_enable_reg = 1;
             dc_cmp_reg = 1;
             dc_write_reg = 0;
-            dc_valid_reg = 0;
+            dc_valid_reg = 1;
             dc_word_sel_reg = counter_in;
             dc_byte_w_en_reg = 4'b0000;
 
@@ -230,7 +230,7 @@ always @(*) begin
             ic_cmp_reg = 0;
             ic_write_reg = 0;
             ic_byte_w_en_reg = 4'b0000;
-            ic_valid_reg = 0;
+            ic_valid_reg = 1;
             ic_word_sel_reg = counter_in;
 
             // 读 D-cache
@@ -278,8 +278,8 @@ always @(*) begin
 
             /* cache_2way 响应 */
 
-            ic_valid_reg = ic_valid_in;
-            dc_valid_reg = dc_valid_in;
+            ic_valid_reg = 1;
+            dc_valid_reg = 1;
 
             counter_next_reg = 0;  // We can always reset counter in NORMAL status, as all other status using counter starting from 0.
 
