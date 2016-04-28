@@ -29,5 +29,5 @@ int main()
     if(c != a*b) {
         return badtrap();
     }
-    return 0;
+    return goodtrap();
 }
