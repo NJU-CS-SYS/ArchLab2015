@@ -36,8 +36,9 @@ module cpu_interface(
     input dmem_write_in,
     input [29:0] dmem_addr,
     input [31:0] data_from_reg,
-    input [3:0] dc_byte_w_en,
+    input [3:0] dmem_byte_w_en,
     input clk_from_ip,
+    input clk_origin,
 
     output ui_clk,
     output [31:0] instr_data_out,
@@ -55,7 +56,14 @@ module cpu_interface(
     output [0:0]                       ddr2_cke,
     output [0:0]           ddr2_cs_n,
     output [1:0]                        ddr2_dm,
-    output [0:0]                       ddr2_odt
+    output [0:0]                       ddr2_odt,
+    
+    // VGA outputs
+    output [3:0] VGA_R,
+    output [3:0] VGA_G,
+    output [3:0] VGA_B,
+    output VGA_HS,
+    output VGA_VS
 );
 localparam VMEM_START   = 32'hc0000000;
 localparam TIMER_START  = 32'hd0000000;
@@ -71,6 +79,9 @@ wire [255:0] block_from_dc_to_ram;
 
 wire [31:0] dc_data_out;
 wire [31:0] loader_data;
+reg [14:0] vga_addr; // 2**15 is enough for vga mem
+reg [7:0] char_to_vga;
+reg vga_wen;
 
 reg dc_read_in, dc_write_in;
 
@@ -79,7 +90,9 @@ always @ (*) begin
     dc_read_in = dmem_read_in;
     dc_write_in = dmem_write_in;
     dmem_data_out = dc_data_out;
+    vga_wen = 0;
     if(dmem_addr[31:28] == 4'hc) begin // VMEM
+        vga_wen = 1;
         dc_read_in = 0;
         dc_write_in = 0;
         dmem_data_out = 32'd0; // never read
@@ -102,6 +115,28 @@ always @ (*) begin
         ic_addr = 32'h0;
         instr_data_out = loader_data;
     end
+
+    // vga ddr calculate
+
+    vga_addr[14:2] = dmem_addr[12:0]; //dmem_addr is four byte aligned
+    case(dmem_byte_w_en)
+        4'b1000: begin
+            vga_addr[1:0] = 2'd0;
+            char_to_vga = data_from_reg[7:0];
+        end
+        4'b0100: begin
+            vga_addr[1:0] = 2'd1; 
+            char_to_vga = data_from_reg[15:8];
+        end
+        4'b0010: begin
+            vga_addr[1:0] = 2'd2;
+            char_to_vga = data_from_reg[23:16];
+        end
+        4'b0001: begin
+            vga_addr[1:0] = 2'd3;
+            char_to_vga = data_from_reg[31:24];
+        end
+    endcase
 end
 
 cache_manage_unit u_cm_0 (
@@ -109,7 +144,7 @@ cache_manage_unit u_cm_0 (
     .rst             ( ~rst                 ), // !! make rst seem low active
     .dc_read_in      ( dc_read_in           ),
     .dc_write_in     ( dc_write_in          ),
-    .dc_byte_w_en_in ( dc_byte_w_en         ),
+    .dc_byte_w_en_in ( dmem_byte_w_en         ),
     .ic_addr         ( ic_addr              ),
     .dc_addr         ( dmem_addr            ),
     .data_from_reg   ( data_from_reg        ),
@@ -165,5 +200,20 @@ loader_mem loader (         // single port Block RAM
     .clka   (ui_clk             ),
     .wea    (0                  )
 );
+
+vga #(
+    .DATA_ADDR_WIDTH( 6 )
+) vga0 (
+    .CLK        (clk_origin     ),
+    .RESET      (rst            ),
+    .DATA_ADDR  (vga_addr[5:0]  ),
+    .DATA_IN    (char_to_vga    ),
+    .WR_EN      (vga_wen        ),
+    .VGA_R      (VGA_R          ),
+    .VGA_G      (VGA_G          ),
+    .VGA_B      (VGA_B          ),
+    .VGA_HS     (VGA_HS         ),
+    .VGA_VS     (VGA_VS         )
+)
 
 endmodule
