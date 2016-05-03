@@ -16,7 +16,8 @@ LDFLAGS = -EL
 
 CSRC = $(shell find . -name "*.c") 
 SSRC = $(shell find . -name "*.S") 
-OBJECTS = $(SSRC:.S=.o) $(CSRC:.c=.o) 
+# OBJECTS = $(SSRC:.S=.o) $(CSRC:.c=.o) 
+OBJECTS = $(CSRC:.c=.o) 
 ASMS = $(CSRC:.c=.S)
 	
 export CROSS_COMPILE

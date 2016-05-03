@@ -1,8 +1,8 @@
-ENTRY(_reset)
+ENTRY(main)
 SECTIONS
 {
     . = 0xf0000000;
-    PROVIDE(_reset = .);
+    PROVIDE(main = .);
     .text : AT(0xf0000000) { *(.text) }
     .data : { *(.data) }
     .bss : { *(.bss) }
