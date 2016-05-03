@@ -17,6 +17,10 @@
 // Revision 0.01 - File Created
 // Additional Comments:
 // 
+// 0~128MB: main memory
+// 0xc000000~ : vmem (Block RAM)
+// 0xd000000~ : clock
+// 0xe000000~ : keyboard
 //////////////////////////////////////////////////////////////////////////////////
 
 
@@ -53,8 +57,9 @@ module cpu_interface(
     output [1:0]                        ddr2_dm,
     output [0:0]                       ddr2_odt
 );
-localparam TIMER_PORT   = 32'h00004000;
-localparam KBD_PORT     = 32'h00004010;
+localparam VMEM_START   = 32'hc0000000;
+localparam TIMER_START  = 32'hd0000000;
+localparam KBD_START    = 32'he0000010;
 
 wire [255:0] block_from_ram;
 wire ram_rdy;
@@ -68,16 +73,18 @@ reg dc_read_in, dc_write_in;
 always @ (*) begin
     dc_read_in = dmem_read_in;
     dc_write_in = dmem_write_in;
-/*
-    if(dmem_addr == TIMER_PORT[31:2]) begin
+    if(dmem_addr[31:28] == 4'hc) begin // VMEM
         dc_read_in = 0;
         dc_write_in = 0;
     end
-    else if(dmem_addr == KBD_PORT[31:2]) begin
+    if(dmem_addr[31:28] == 4'hd) begin // timer
         dc_read_in = 0;
         dc_write_in = 0;
     end
-    */
+    else if(dmem_addr[31:28] == 4'he) begin //keyborad
+        dc_read_in = 0;
+        dc_write_in = 0;
+    end
 end
 
 cache_manage_unit u_cm_0 (
