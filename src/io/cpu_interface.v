@@ -214,6 +214,6 @@ vga #(
     .VGA_B      (VGA_B          ),
     .VGA_HS     (VGA_HS         ),
     .VGA_VS     (VGA_VS         )
-)
+);
 
 endmodule
