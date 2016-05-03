@@ -31,7 +31,7 @@ module cpu_interface(
     inout [1:0]                        ddr2_dqs_p,
 
     input rst,
-    input [29:0] ic_addr,
+    input [29:0] instr_addr,
     input dmem_read_in, 
     input dmem_write_in,
     input [29:0] dmem_addr,
@@ -40,7 +40,7 @@ module cpu_interface(
     input clk_from_ip,
 
     output ui_clk,
-    output [31:0] ic_data_out,
+    output [31:0] instr_data_out,
     output [31:0] dmem_data_out,
     output mem_stall,
 
@@ -59,7 +59,8 @@ module cpu_interface(
 );
 localparam VMEM_START   = 32'hc0000000;
 localparam TIMER_START  = 32'hd0000000;
-localparam KBD_START    = 32'he0000010;
+localparam KBD_START    = 32'he0000000;
+localparam LOADER_START    = 32'hf0000000;
 
 wire [255:0] block_from_ram;
 wire ram_rdy;
@@ -68,22 +69,37 @@ wire ram_write;
 wire [29:0] ram_addr;
 wire [255:0] block_from_dc_to_ram;
 
+wire [31:0] dc_data_out;
+wire [31:0] loader_data;
+
 reg dc_read_in, dc_write_in;
 
 always @ (*) begin
+    // data R/W redirect
     dc_read_in = dmem_read_in;
     dc_write_in = dmem_write_in;
+    dmem_data_out = dc_data_out;
     if(dmem_addr[31:28] == 4'hc) begin // VMEM
         dc_read_in = 0;
         dc_write_in = 0;
+        dmem_data_out = 32'd0; // never read
     end
     if(dmem_addr[31:28] == 4'hd) begin // timer
         dc_read_in = 0;
         dc_write_in = 0;
+        dmem_data_out = 32'd0; // not added now
     end
     else if(dmem_addr[31:28] == 4'he) begin //keyborad
         dc_read_in = 0;
         dc_write_in = 0;
+        dmem_data_out = 32'd0; // not added now
+    end
+
+    // instruction fetch redirect
+    ic_addr = instr_addr;
+    instr_data_out = ic_data_out;
+    if(instr_addr[31:28] == 4'hf) begin
+        instr_data_out = loader_data;
     end
 end
 
@@ -101,7 +117,7 @@ cache_manage_unit u_cm_0 (
     .block_from_ram  ( block_from_ram       ),
 
     .mem_stall       ( mem_stall            ),
-    .dc_data_out     ( dmem_data_out        ),
+    .dc_data_out     ( dc_data_out        ),
     .ic_data_out     ( ic_data_out          ),
 
     .ram_en_out      ( ram_en               ),

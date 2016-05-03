@@ -836,7 +836,7 @@ cp0 inst_cp0 (
 ////////////////////////////////////////////////////////////////////////////////
 
 cpu_interface inst_ci (
-    .ic_addr      ( pc_out[31:2]        ),
+    .instr_addr      ( pc_out[31:2]        ),
     .dmem_read_in   ( mem_mem_r           ),
     .dmem_write_in  ( mem_mem_w           ),
     .dmem_addr      ( mem_alu_res[31:2]   ),
@@ -844,7 +844,7 @@ cpu_interface inst_ci (
     .dc_byte_w_en ( mem_mem_byte_w_en   ),
     .clk          ( clk                 ),
     .rst          ( reset               ),
-    .ic_data_out  ( ic_data_out         ),
+    .instr_data_out  ( ic_data_out         ),
     .dmem_data_out  ( mem_data            ),
     .mem_stall    ( mem_stall           )
 );
