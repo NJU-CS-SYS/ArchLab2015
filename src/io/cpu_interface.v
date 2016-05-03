@@ -82,6 +82,8 @@ wire [31:0] loader_data;
 reg [14:0] vga_addr; // 2**15 is enough for vga mem
 reg [7:0] char_to_vga;
 reg vga_wen;
+reg loader_en;
+
 
 reg dc_read_in, dc_write_in;
 
@@ -91,8 +93,11 @@ always @ (*) begin
     dc_write_in = dmem_write_in;
     dmem_data_out = dc_data_out;
     vga_wen = 0;
+    loader_en = 0;
     if(dmem_addr[31:28] == 4'hc) begin // VMEM
+        loader_en = 1;
         vga_wen = 1;
+        vga_en = 1;
         dc_read_in = 0;
         dc_write_in = 0;
         dmem_data_out = 32'd0; // never read
@@ -198,7 +203,8 @@ loader_mem loader (         // single port Block RAM
     .dina   (0                  ),
     .douta  (loader_data        ),
     .clka   (ui_clk             ),
-    .wea    (0                  )
+    .wea    (0                  ),
+    .ena    (loader_en          )
 );
 
 vga #(
