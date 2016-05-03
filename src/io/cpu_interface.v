@@ -99,6 +99,7 @@ always @ (*) begin
     ic_addr = instr_addr;
     instr_data_out = ic_data_out;
     if(instr_addr[31:28] == 4'hf) begin
+        ic_addr = 32'h0;
         instr_data_out = loader_data;
     end
 end
@@ -157,5 +158,12 @@ ddr_ctrl ddr_ctrl_0(
     .ddr2_odt                   (ddr2_odt                       )
 );
 
+loader_mem loader (         // single port Block RAM
+    .addra  (instr_addr[27:0]   ), // lower 28 bits of initial address must start at 0
+    .dina   (0                  ),
+    .douta  (loader_data        ),
+    .clka   (ui_clk             ),
+    .wea    (0                  )
+);
 
 endmodule
