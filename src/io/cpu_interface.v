@@ -79,13 +79,29 @@ wire [255:0] block_from_dc_to_ram;
 
 wire [31:0] dc_data_out;
 wire [31:0] loader_data;
+wire cache_stall;
+
+reg dc_read_in, dc_write_in;
 reg [14:0] vga_addr; // 2**15 is enough for vga mem
 reg [7:0] char_to_vga;
 reg vga_wen;
 reg loader_en;
+reg one_cycle_latency_for_bram;
 
+assign mem_stall = cache_stall | (~one_cycle_latency_for_bram & loader_en);
 
-reg dc_read_in, dc_write_in;
+initial begin
+    one_cycle_latency_for_bram <= 0;
+end
+
+always @ (ui_clk) begin
+    if (loader_en ) begin
+        one_cycle_latency_for_bram <= ~one_cycle_latency_for_bram;
+    end
+    else begin
+        one_cycle_latency_for_bram <= 0;
+    end
+end
 
 always @ (*) begin
     // data R/W redirect
@@ -157,7 +173,7 @@ cache_manage_unit u_cm_0 (
     .ram_ready       ( ram_rdy              ),
     .block_from_ram  ( block_from_ram       ),
 
-    .mem_stall       ( mem_stall            ),
+    .mem_stall       ( cache_stall            ),
     .dc_data_out     ( dc_data_out        ),
     .ic_data_out     ( ic_data_out          ),
 
