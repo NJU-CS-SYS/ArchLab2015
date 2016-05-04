@@ -38,7 +38,7 @@ module cpu_interface(
     input [31:0] data_from_reg,
     input [3:0] dmem_byte_w_en,
     input clk_from_ip,
-    input clk_origin,
+    input clk_from_board,
 
     output ui_clk,
     output reg [31:0] instr_data_out,
@@ -97,7 +97,7 @@ initial begin
 end
 
 always @ (posedge ui_clk) begin
-    if (loader_en ) begin
+    if (loader_en) begin
         one_cycle_latency_for_bram <= ~one_cycle_latency_for_bram;
     end
     else begin
@@ -232,7 +232,7 @@ loader_mem loader (         // single port Block RAM
 vga #(
     .DATA_ADDR_WIDTH( 6 )
 ) vga0 (
-    .CLK        (clk_origin     ),
+    .CLK        (clk_from_board     ),
     .RESET      (rst            ),
     .DATA_ADDR  (vga_addr[5:0]  ),
     .DATA_IN    (char_to_vga    ),
