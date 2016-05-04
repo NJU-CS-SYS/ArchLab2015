@@ -6,11 +6,35 @@
 `include "common.vh"
 
 module pipeline (
+    // ddr Inouts
+    inout [15:0]                         ddr2_dq,
+    inout [1:0]                        ddr2_dqs_n,
+    inout [1:0]                        ddr2_dqs_p,
     // Just to simpilfy RTL generation,
-    input clk,         // the global clock
+    input clk_origin,         // the global clock
     input reset,       // the global reset
     input [7:0] intr,   // 8 hardware interruption
-    output [31:0] mem_pc_out
+    output [31:0] mem_pc_out,
+
+    // ddr Outputs
+    output [12:0]                       ddr2_addr,
+    output [2:0]                      ddr2_ba,
+    output                                       ddr2_ras_n,
+    output                                       ddr2_cas_n,
+    output                                       ddr2_we_n,
+    output [0:0]                        ddr2_ck_p,
+    output [0:0]                        ddr2_ck_n,
+    output [0:0]                       ddr2_cke,
+    output [0:0]           ddr2_cs_n,
+    output [1:0]                        ddr2_dm,
+    output [0:0]                       ddr2_odt,
+        
+    // VGA outputs
+    output [3:0] VGA_R,
+    output [3:0] VGA_G,
+    output [3:0] VGA_B,
+    output VGA_HS,
+    output VGA_VS
 );
 
 parameter DATA_WIDTH = 32;
@@ -24,6 +48,7 @@ parameter DATA_WIDTH = 32;
 
 wire [DATA_WIDTH - 1 : 0] predicted_pc;
 wire bpu_w_en;                        // Whether the PC in EX is expected
+wire clk;
 
 wire [DATA_WIDTH - 1 : 0] jmp;        // Absolute jump
 wire [DATA_WIDTH - 1 : 0] jr;         // Jump to $31
@@ -836,17 +861,50 @@ cp0 inst_cp0 (
 ////////////////////////////////////////////////////////////////////////////////
 
 cpu_interface inst_ci (
-    .instr_addr      ( pc_out[31:2]        ),
-    .dmem_read_in   ( mem_mem_r           ),
-    .dmem_write_in  ( mem_mem_w           ),
-    .dmem_addr      ( mem_alu_res[31:2]   ),
-    .data_from_reg     ( mem_aligned_rt_data ),
-    .dmem_byte_w_en ( mem_mem_byte_w_en   ),
-    .clk          ( clk                 ),
-    .rst          ( reset               ),
-    .instr_data_out  ( ic_data_out         ),
-    .dmem_data_out  ( mem_data            ),
-    .mem_stall    ( mem_stall           )
+    // DDR Inouts
+    .ddr2_dq                    (ddr2_dq                        ),
+    .ddr2_dqs_n                 (ddr2_dqs_n                     ),
+    .ddr2_dqs_p                 (ddr2_dqs_p                     ),
+
+    // DDR Outputs
+    .ddr2_addr                  (ddr2_addr                      ),
+    .ddr2_ba                    (ddr2_ba                        ),
+    .ddr2_ras_n                 (ddr2_ras_n                     ),
+    .ddr2_cas_n                 (ddr2_cas_n                     ),
+    .ddr2_we_n                  (ddr2_we_n                      ),
+    .ddr2_ck_p                  (ddr2_ck_p                      ),
+    .ddr2_ck_n                  (ddr2_ck_n                      ),
+    .ddr2_cke                   (ddr2_cke                       ),
+    .ddr2_cs_n                  (ddr2_cs_n                      ),
+    .ddr2_dm                    (ddr2_dm                        ),
+    .ddr2_odt                   (ddr2_odt                       ),
+
+    // VGA
+    .VGA_R      (VGA_R          ),
+    .VGA_G      (VGA_G          ),
+    .VGA_B      (VGA_B          ),
+    .VGA_HS     (VGA_HS         ),
+    .VGA_VS     (VGA_VS         ),
+
+    .rst            ( reset                 ),
+    .instr_addr     ( pc_out[31:2]          ),
+    .dmem_read_in   ( mem_mem_r             ),
+    .dmem_write_in  ( mem_mem_w             ),
+    .dmem_addr      ( mem_alu_res[31:2]     ),
+    .data_from_reg  ( mem_aligned_rt_data   ),
+    .dmem_byte_w_en ( mem_mem_byte_w_en     ),
+    .clk_from_ip    ( clk_from_ip           ),
+    .clk_origin     ( clk_origin            ),
+
+    .ui_clk         ( clk                   ),
+    .instr_data_out ( ic_data_out           ),
+    .dmem_data_out  ( mem_data              ),
+    .mem_stall      ( mem_stall             )
+);
+
+ddr_clock_gen dcg0 (
+    .clk_in1    (clk_origin),
+    .clk_out1   (clk_from_ip)
 );
 
 assign mem_pc_out = mem_pc;

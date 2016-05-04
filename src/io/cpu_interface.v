@@ -78,6 +78,7 @@ wire [29:0] ram_addr;
 wire [255:0] block_from_dc_to_ram;
 
 wire [31:0] dc_data_out;
+wire [31:0] ic_data_out;
 wire [31:0] loader_data;
 reg [29:0] ic_addr;
 wire cache_stall;
@@ -95,7 +96,7 @@ initial begin
     one_cycle_latency_for_bram <= 0;
 end
 
-always @ (ui_clk) begin
+always @ (posedge ui_clk) begin
     if (loader_en ) begin
         one_cycle_latency_for_bram <= ~one_cycle_latency_for_bram;
     end
@@ -158,6 +159,10 @@ always @ (*) begin
             vga_addr[1:0] = 2'd3;
             char_to_vga = data_from_reg[31:24];
         end
+        default: begin // remove latch, but should never be encountered
+            vga_addr[1:0] = 2'd3;
+            char_to_vga = data_from_reg[31:24];
+        end
     endcase
 end
 
@@ -216,7 +221,7 @@ ddr_ctrl ddr_ctrl_0(
 );
 
 loader_mem loader (         // single port Block RAM
-    .addra  (instr_addr[27:0]   ), // lower 28 bits of initial address must start at 0
+    .addra  (instr_addr[11:0]   ), // lower 28 bits of initial address must start at 0
     .dina   (0                  ),
     .douta  (loader_data        ),
     .clka   (ui_clk             ),
