@@ -36,7 +36,9 @@ module pipeline (
     output [3:0] VGA_G,
     output [3:0] VGA_B,
     output VGA_HS,
-    output VGA_VS
+    output VGA_VS,
+    output reg [6:0] seg_out,
+    output reg [7:0] seg_ctrl
 );
 
 parameter DATA_WIDTH = 32;
@@ -911,6 +913,23 @@ ddr_clock_gen dcg0 (
     .clk_out1   (clk_from_ip),
     .clk_out2   (clk_pixel)
 );
+
+// segs used to output instruction
+
+seg_ctrl (
+    .clk(clk_from_board),
+    .hex1(ifid_instr[3:0]),
+    .hex2(ifid_instr[7:4]),
+    .hex3(ifid_instr[11:8]),
+    .hex4(ifid_instr[15:12]),
+    .hex5(ifid_instr[19:16]),
+    .hex6(ifid_instr[23:20]),
+    .hex7(ifid_instr[27:24]),
+    .hex8(ifid_instr[31:28]),
+    .seg_out(seg_out),
+    .seg_ctrl(seg_ctrl)
+);
+
 
 //assign mem_pc_out = mem_pc;
 assign led[7:0]     = mem_pc[7:0];
