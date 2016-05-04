@@ -41,8 +41,8 @@ module cpu_interface(
     input clk_origin,
 
     output ui_clk,
-    output [31:0] instr_data_out,
-    output [31:0] dmem_data_out,
+    output reg [31:0] instr_data_out,
+    output reg [31:0] dmem_data_out,
     output mem_stall,
 
     // ddr Outputs
@@ -79,6 +79,7 @@ wire [255:0] block_from_dc_to_ram;
 
 wire [31:0] dc_data_out;
 wire [31:0] loader_data;
+reg [29:0] ic_addr;
 wire cache_stall;
 
 reg dc_read_in, dc_write_in;
@@ -110,20 +111,20 @@ always @ (*) begin
     dmem_data_out = dc_data_out;
     vga_wen = 0;
     loader_en = 0;
-    if(dmem_addr[31:28] == 4'hc) begin // VMEM
+    if(dmem_addr[29:26] == 4'hc) begin // VMEM
         loader_en = 1;
         vga_wen = 1;
-        vga_en = 1;
+        //vga_en = 1;
         dc_read_in = 0;
         dc_write_in = 0;
         dmem_data_out = 32'd0; // never read
     end
-    if(dmem_addr[31:28] == 4'hd) begin // timer
+    if(dmem_addr[29:26] == 4'hd) begin // timer
         dc_read_in = 0;
         dc_write_in = 0;
         dmem_data_out = 32'd0; // not added now
     end
-    else if(dmem_addr[31:28] == 4'he) begin //keyborad
+    else if(dmem_addr[29:26] == 4'he) begin //keyborad
         dc_read_in = 0;
         dc_write_in = 0;
         dmem_data_out = 32'd0; // not added now
@@ -132,8 +133,8 @@ always @ (*) begin
     // instruction fetch redirect
     ic_addr = instr_addr;
     instr_data_out = ic_data_out;
-    if(instr_addr[31:28] == 4'hf) begin
-        ic_addr = 32'h0;
+    if(instr_addr[29:26] == 4'hf) begin
+        ic_addr = 30'h0;
         instr_data_out = loader_data;
     end
 
