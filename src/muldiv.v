@@ -34,7 +34,7 @@ module muldiv
 // invalidate it because of implementation error
 
 assign Res_out = 32'd0;
-assign Md_op = 0;
+assign Md_stall = 0;
 
 /*
 
