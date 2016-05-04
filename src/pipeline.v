@@ -15,6 +15,7 @@ module pipeline (
     input reset,       // the global reset
     //input [7:0] intr,   // 8 hardware interruption
     //output [31:0] mem_pc_out,
+    output [15:0] led,
 
     // ddr Outputs
     output [12:0]                       ddr2_addr,
@@ -887,14 +888,14 @@ cpu_interface inst_ci (
     .VGA_HS     (VGA_HS         ),
     .VGA_VS     (VGA_VS         ),
 
-    .rst            ( reset                 ),
+    .rst            ( ~reset                 ), // reset is high active in this module
     .instr_addr     ( pc_out[31:2]          ),
     .dmem_read_in   ( mem_mem_r             ),
     .dmem_write_in  ( mem_mem_w             ),
     .dmem_addr      ( mem_alu_res[31:2]     ),
     .data_from_reg  ( mem_aligned_rt_data   ),
     .dmem_byte_w_en ( mem_mem_byte_w_en     ),
-    .clk_from_ip    ( clk_from_ip           ),
+    .clk_from_ip    ( clk_from_board        ),
     .clk_from_board ( clk_from_board        ),
     .pixel_clk      ( clk_pixel             ),
 
@@ -911,5 +912,7 @@ ddr_clock_gen dcg0 (
 );
 
 //assign mem_pc_out = mem_pc;
+assign led[7:0]     = mem_pc[7:0];
+assign led[15:8]    = mem_pc[31:24];
 
 endmodule

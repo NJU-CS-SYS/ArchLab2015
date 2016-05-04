@@ -4,7 +4,7 @@
 // Filename      : ddr_ctrl.v
 // Author        : zyy
 // Created On    : 2016-04-18 15:39
-// Last Modified : 2016-04-20 19:19
+// Last Modified : 2016-05-04 19:12
 // -------------------------------------------------------------------------------------------------
 // Svn Info:
 //   $Revision::                                                                                $:
@@ -84,6 +84,8 @@ assign go = mig_rdy & mig_wdf_rdy & init_calib_complete; // able to go
 `define OP_READ 2'b00
 `define OP_WRITE 2'b01
 
+assign ddr2_cs_n = 0;
+
 mig_7series_0 m70(/*autoinst*/
     // Inouts
     .ddr2_dq                    (ddr2_dq                        ),
@@ -98,12 +100,12 @@ mig_7series_0 m70(/*autoinst*/
     .ddr2_ck_p                  (ddr2_ck_p                      ),
     .ddr2_ck_n                  (ddr2_ck_n                      ),
     .ddr2_cke                   (ddr2_cke                       ),
-    .ddr2_cs_n                  (ddr2_cs_n                      ),
+    //.ddr2_cs_n                  (ddr2_cs_n                      ),
     .ddr2_dm                    (ddr2_dm                        ),
     .ddr2_odt                   (ddr2_odt                       ),
 
-    
     .sys_clk_i                  (clk_from_ip                    ),  
+    .clk_ref_i                  (clk_from_ip                    ),  
 
     .app_addr                   (addr_to_mig                    ),
     .app_cmd                    (cmd_to_mig                     ),
