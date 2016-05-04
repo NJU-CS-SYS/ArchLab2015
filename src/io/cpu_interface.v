@@ -226,8 +226,8 @@ loader_mem loader (         // single port Block RAM
     .dina   (32'd0              ),
     .douta  (loader_data        ),
     .clka   (ui_clk             ),
-    .wea    (0                  ),
-    .ena    (loader_en          )
+    .wea    (0                  )
+    //.ena    (loader_en          )
 );
 
 vga #(

@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
 /**
- * @brief PC 模块
+ * @brief PC 
  * @author whz
  */
 

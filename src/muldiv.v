@@ -31,6 +31,13 @@ module muldiv
 	output Md_stall
 );
 
+// invalidate it because of implementation error
+
+assign Res_out = 32'd0;
+assign Md_op = 0;
+
+/*
+
 // Md_op = 0001	op = DIV
 //	   0010 op = DIVU
 //	   0011 op = MFHI 
@@ -146,4 +153,5 @@ begin
     end
 end
 
+*/
 endmodule
