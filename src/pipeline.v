@@ -13,8 +13,8 @@ module pipeline (
     // Just to simpilfy RTL generation,
     input clk_original,         // the global clock
     input reset,       // the global reset
-    input [7:0] intr,   // 8 hardware interruption
-    output [31:0] mem_pc_out,
+    //input [7:0] intr,   // 8 hardware interruption
+    //output [31:0] mem_pc_out,
 
     // ddr Outputs
     output [12:0]                       ddr2_addr,
@@ -847,7 +847,8 @@ cp0 inst_cp0 (
     .Wb_cp0_dst_addr ( wb_cp0_dst_addr ),
     .Ex_data         ( wb_ex_data      ),
     .Cu_exec_code    ( cu_exec_code    ),
-    .Interrupt       ( intr            ),
+    //.Interrupt       ( intr            ),
+    .Interrupt       ( 8'd0            ),
     .Clk             ( clk             ),
     .Cp0_data        ( cp0_data        ),
     .Cp0_epc         ( epc             ),
@@ -907,6 +908,6 @@ ddr_clock_gen dcg0 (
     .clk_out1   (clk_from_ip)
 );
 
-assign mem_pc_out = mem_pc;
+//assign mem_pc_out = mem_pc;
 
 endmodule
