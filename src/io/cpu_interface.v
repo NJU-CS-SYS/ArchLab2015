@@ -39,6 +39,7 @@ module cpu_interface(
     input [3:0] dmem_byte_w_en,
     input clk_from_ip,
     input clk_from_board,
+    input pixel_clk,
 
     output ui_clk,
     output reg [31:0] instr_data_out,
@@ -222,7 +223,7 @@ ddr_ctrl ddr_ctrl_0(
 
 loader_mem loader (         // single port Block RAM
     .addra  (instr_addr[11:0]   ), // lower 28 bits of initial address must start at 0
-    .dina   (0                  ),
+    .dina   (32'd0              ),
     .douta  (loader_data        ),
     .clka   (ui_clk             ),
     .wea    (0                  ),
@@ -237,6 +238,7 @@ vga #(
     .DATA_ADDR  (vga_addr[5:0]  ),
     .DATA_IN    (char_to_vga    ),
     .WR_EN      (vga_wen        ),
+    .pixel_clk  (pixel_clk      ),
     .VGA_R      (VGA_R          ),
     .VGA_G      (VGA_G          ),
     .VGA_B      (VGA_B          ),

@@ -11,7 +11,7 @@ module pipeline (
     inout [1:0]                        ddr2_dqs_n,
     inout [1:0]                        ddr2_dqs_p,
     // Just to simpilfy RTL generation,
-    input clk_original,         // the global clock
+    input clk_from_board,         // the global clock
     input reset,       // the global reset
     //input [7:0] intr,   // 8 hardware interruption
     //output [31:0] mem_pc_out,
@@ -895,7 +895,8 @@ cpu_interface inst_ci (
     .data_from_reg  ( mem_aligned_rt_data   ),
     .dmem_byte_w_en ( mem_mem_byte_w_en     ),
     .clk_from_ip    ( clk_from_ip           ),
-    .clk_from_board ( clk_original          ),
+    .clk_from_board ( clk_from_board        ),
+    .pixel_clk      ( clk_pixel             ),
 
     .ui_clk         ( clk                   ),
     .instr_data_out ( ic_data_out           ),
@@ -904,8 +905,9 @@ cpu_interface inst_ci (
 );
 
 ddr_clock_gen dcg0 (
-    .clk_in1    (clk_original),
-    .clk_out1   (clk_from_ip)
+    .clk_in1    (clk_from_board),
+    .clk_out1   (clk_from_ip),
+    .clk_out2   (clk_pixel)
 );
 
 //assign mem_pc_out = mem_pc;
