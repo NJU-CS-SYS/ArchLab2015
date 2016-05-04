@@ -27,7 +27,7 @@ module pipeline (
     output [0:0]                        ddr2_ck_p,
     output [0:0]                        ddr2_ck_n,
     output [0:0]                       ddr2_cke,
-    output [0:0]           ddr2_cs_n,
+    //output [0:0]           ddr2_cs_n,
     output [1:0]                        ddr2_dm,
     output [0:0]                       ddr2_odt,
         
@@ -37,8 +37,8 @@ module pipeline (
     output [3:0] VGA_B,
     output VGA_HS,
     output VGA_VS,
-    output reg [6:0] seg_out,
-    output reg [7:0] seg_ctrl
+    output [6:0] seg_out,
+    output [7:0] seg_ctrl
 );
 
 parameter DATA_WIDTH = 32;
@@ -880,7 +880,7 @@ cpu_interface inst_ci (
     .ddr2_ck_p                  (ddr2_ck_p                      ),
     .ddr2_ck_n                  (ddr2_ck_n                      ),
     .ddr2_cke                   (ddr2_cke                       ),
-    .ddr2_cs_n                  (ddr2_cs_n                      ),
+    .ddr2_cs_n                  (                      ),
     .ddr2_dm                    (ddr2_dm                        ),
     .ddr2_odt                   (ddr2_odt                       ),
 
@@ -916,7 +916,7 @@ ddr_clock_gen dcg0 (
 
 // segs used to output instruction
 
-seg_ctrl (
+seg_ctrl seg_ctrl0(
     .clk(clk_from_board),
     .hex1(ifid_instr[3:0]),
     .hex2(ifid_instr[7:4]),
