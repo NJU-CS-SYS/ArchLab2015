@@ -32,7 +32,6 @@ module memwb_reg(
     input [31:0] ex_data,
     input [4:0] exmem_cp0_dst_addr,
     input exmem_cp0_w_en,
-    input [31:0] aligned_rt_data_in,
     output reg memwb_mem_r,
     output reg memwb_reg_w,
     output reg [3:0] reg_byte_w_en_out,
