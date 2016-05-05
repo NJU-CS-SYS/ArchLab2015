@@ -201,7 +201,6 @@ wire mem_branch;
 wire mem_lf;
 wire mem_zf;
 wire [2:0] mem_load_sel;
-wire [2:0] mem_store_sel;
 wire [2:0] mem_condition;
 wire [`PC_BUS] mem_target;
 // MEM exception
@@ -675,7 +674,6 @@ exmem_reg  inst_exmem_reg (
     .ex_res                ( exec_result         ),
     .real_rd_addr          ( ex_rd_addr          ),
     .idex_load_sel         ( ex_load_sel         ),
-    .idex_store_sel        ( ex_store_sel        ),
     .reg_byte_w_en_in      ( ex_reg_byte_w_en    ),
     .mem_byte_w_en_in      ( ex_mem_byte_w_en    ),
     .idex_pc               ( ex_pc               ),
@@ -704,7 +702,6 @@ exmem_reg  inst_exmem_reg (
     .exmem_lf              ( mem_lf              ),
     .exmem_zf              ( mem_zf              ),
     .exmem_load_sel        ( mem_load_sel        ),
-    .exmem_store_sel       ( mem_store_sel       ),
     .exmem_cp0_dst_addr    ( mem_cp0_dst_addr    ),
     .cp0_w_en_out          ( mem_cp0_w_en        ),
     .syscall_out           ( mem_syscall         ),

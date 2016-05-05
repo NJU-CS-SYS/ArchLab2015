@@ -39,7 +39,6 @@ module exmem_reg(
     input [31:0] ex_res,
     input [4:0] real_rd_addr,
     input [2:0] idex_load_sel,
-    input [2:0] idex_store_sel,
     input [3:0] reg_byte_w_en_in,
     input [3:0] mem_byte_w_en_in,
     input [31:0] idex_pc,
@@ -67,7 +66,6 @@ module exmem_reg(
     output reg exmem_lf,
     output reg exmem_zf,
     output reg [2:0] exmem_load_sel,
-    output reg [2:0] exmem_store_sel,
     output reg [4:0] exmem_cp0_dst_addr,
     output reg cp0_w_en_out,
     output reg syscall_out,
@@ -92,7 +90,6 @@ module exmem_reg(
             exmem_lf        <= 0;
             exmem_zf        <= 0;
             exmem_load_sel  <= 0;
-            exmem_store_sel <= 0;
             exmem_cp0_dst_addr <= 0;
             cp0_w_en_out    <= 0;
             syscall_out     <= 0;
@@ -117,7 +114,6 @@ module exmem_reg(
             exmem_lf        <= alu_lf;
             exmem_zf        <= alu_zf;
             exmem_load_sel  <= idex_load_sel;
-            exmem_store_sel <= idex_store_sel;
             exmem_cp0_dst_addr <= idex_cp0_dst_addr;
             cp0_w_en_out        <= cp0_w_en_in;
             syscall_out         <= syscall_in;
