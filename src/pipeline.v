@@ -863,6 +863,8 @@ cp0 inst_cp0 (
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+wire clk_from_ddr;
+
 cpu_interface inst_ci (
     // DDR Inouts
     .ddr2_dq                    (ddr2_dq                        ),
@@ -900,7 +902,7 @@ cpu_interface inst_ci (
     .clk_from_board ( clk_from_board        ),
     .pixel_clk      ( clk_pixel             ),
 
-    .ui_clk         (                    ),
+    .ui_clk         ( clk_from_ddr          ),
     .instr_data_out ( ic_data_out           ),
     .dmem_data_out  ( mem_data              ),
     .mem_stall      ( mem_stall             )
@@ -943,6 +945,6 @@ end
 assign led[7:0]     = mem_pc[7:0];
 assign led[15:8]    = mem_pc[31:24];
 assign clk = manual_clk;
-//assign clk = clk_from_board;
+//assign clk = clk_from_ddr;
 
 endmodule
