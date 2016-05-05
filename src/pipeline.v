@@ -14,6 +14,7 @@ module pipeline (
     input clk_from_board,         // the global clock
     input manual_clk,
     input reset,       // the global reset
+    input [3:0] debug_sel,
     //input [7:0] intr,   // 8 hardware interruption
     //output [31:0] mem_pc_out,
     output [15:0] led,
@@ -918,18 +919,27 @@ ddr_clock_gen dcg0 (
 
 seg_ctrl seg_ctrl0(
     .clk(clk_from_board),
-    .hex1(ifid_instr[3:0]),
-    .hex2(ifid_instr[7:4]),
-    .hex3(ifid_instr[11:8]),
-    .hex4(ifid_instr[15:12]),
-    .hex5(ifid_instr[19:16]),
-    .hex6(ifid_instr[23:20]),
-    .hex7(ifid_instr[27:24]),
-    .hex8(ifid_instr[31:28]),
+    .hex1(hex_to_seg[3:0]),
+    .hex2(hex_to_seg[7:4]),
+    .hex3(hex_to_seg[11:8]),
+    .hex4(hex_to_seg[15:12]),
+    .hex5(hex_to_seg[19:16]),
+    .hex6(hex_to_seg[23:20]),
+    .hex7(hex_to_seg[27:24]),
+    .hex8(hex_to_seg[31:28]),
     .seg_out(seg_out),
     .seg_ctrl(seg_ctrl)
 );
 
+reg [31:0] hex_to_seg;
+always @ (*) begin
+    case (debug_sel)
+        4'b0000: hex_to_seg = ifid_instr;
+        4'b0001: hex_to_seg = mem_pc;
+        4'b0010: hex_to_seg = mem_alu_res;
+        default: hex_to_seg = mem_alu_res;
+    endcase
+end
 
 //assign mem_pc_out = mem_pc;
 assign led[7:0]     = mem_pc[7:0];
