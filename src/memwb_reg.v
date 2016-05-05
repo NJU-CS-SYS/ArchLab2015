@@ -40,7 +40,7 @@ module memwb_reg(
     output reg [31:0] memwb_memdata,
     output reg [31:0] memwb_exdata,
     output reg [4:0] memwb_cp0_dst_addr,
-    output reg memwb_cp0_w_en,
+    output reg memwb_cp0_w_en
     );
 
     always@(negedge clk) begin
