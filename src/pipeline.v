@@ -12,7 +12,7 @@ module pipeline (
     inout [1:0]                        ddr2_dqs_p,
     // Just to simpilfy RTL generation,
     input clk_from_board,         // the global clock
-    input manual_clk,
+    //input manual_clk,
     input reset,       // the global reset
     //input [7:0] intr,   // 8 hardware interruption
     //output [31:0] mem_pc_out,
@@ -934,6 +934,6 @@ seg_ctrl seg_ctrl0(
 //assign mem_pc_out = mem_pc;
 assign led[7:0]     = mem_pc[7:0];
 assign led[15:8]    = mem_pc[31:24];
-assign clk = manual_clk;
+assign clk = clk_from_board;
 
 endmodule

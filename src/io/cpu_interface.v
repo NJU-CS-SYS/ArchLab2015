@@ -98,7 +98,10 @@ initial begin
 end
 
 always @ (posedge ui_clk) begin
-    if (loader_en) begin
+    if (~rst)begin
+        one_cycle_latency_for_bram <= 0;
+    end
+    else if (loader_en) begin
         one_cycle_latency_for_bram <= ~one_cycle_latency_for_bram;
     end
     else begin
