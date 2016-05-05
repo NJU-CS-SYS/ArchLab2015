@@ -41,7 +41,6 @@ module memwb_reg(
     output reg [31:0] memwb_exdata,
     output reg [4:0] memwb_cp0_dst_addr,
     output reg memwb_cp0_w_en,
-    output reg [31:0] aligned_rt_data_out
     );
 
     always@(negedge clk) begin
@@ -54,7 +53,6 @@ module memwb_reg(
             memwb_exdata        <= 0;
             memwb_cp0_dst_addr  <= 0;
             memwb_cp0_w_en      <= 0;
-            aligned_rt_data_out <= 0;
         end
         else if ( !mem_stall ) begin
             memwb_mem_r         <= exmem_mem_r;
@@ -65,7 +63,6 @@ module memwb_reg(
             memwb_exdata        <= ex_data;
             memwb_cp0_dst_addr  <= exmem_cp0_dst_addr;
             memwb_cp0_w_en      <= exmem_cp0_w_en;
-            aligned_rt_data_out <= aligned_rt_data_in;
         end
     end
 endmodule

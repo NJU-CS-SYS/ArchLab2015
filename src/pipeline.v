@@ -766,7 +766,6 @@ memwb_reg  inst_memwb_reg (
     .ex_data             ( mem_alu_res          ),
     .exmem_cp0_dst_addr  ( mem_cp0_dst_addr     ),
     .exmem_cp0_w_en      ( mem_cp0_w_en         ),
-    .aligned_rt_data_in  ( mem_aligned_rt_data  ),
     // Output to wb
     .memwb_mem_r         ( wb_mem_r             ),
     .memwb_reg_w         ( wb_reg_w             ),
@@ -775,8 +774,7 @@ memwb_reg  inst_memwb_reg (
     .memwb_memdata       ( wb_mem_data          ),
     .memwb_exdata        ( wb_ex_data           ),
     .memwb_cp0_dst_addr  ( wb_cp0_dst_addr      ),
-    .memwb_cp0_w_en      ( wb_cp0_w_en          ),
-    .aligned_rt_data_out ( wb_aligned_rt_data   )
+    .memwb_cp0_w_en      ( wb_cp0_w_en          )
 );
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -942,8 +940,9 @@ always @ (*) begin
 end
 
 //assign mem_pc_out = mem_pc;
-assign led[7:0]     = mem_pc[7:0];
-assign led[15:8]    = mem_pc[31:24];
+assign led[0]       = mem_mem_w;
+assign led[1]       = mem_stall;
+assign led[15:2]    = 14'd0;
 assign clk = manual_clk;
 //assign clk = clk_from_ddr;
 
