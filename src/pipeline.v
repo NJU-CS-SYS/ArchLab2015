@@ -915,6 +915,7 @@ ddr_clock_gen dcg0 (
     .clk_out2   (clk_pixel)
 );
 
+reg [31:0] hex_to_seg;
 // segs used to output instruction
 
 seg_ctrl seg_ctrl0(
@@ -931,12 +932,12 @@ seg_ctrl seg_ctrl0(
     .seg_ctrl(seg_ctrl)
 );
 
-reg [31:0] hex_to_seg;
 always @ (*) begin
     case (debug_sel)
         4'b0000: hex_to_seg = ifid_instr;
         4'b0001: hex_to_seg = mem_pc;
         4'b0010: hex_to_seg = mem_alu_res;
+        4'b0011: hex_to_seg = mem_aligned_rt_data;
         default: hex_to_seg = mem_alu_res;
     endcase
 end
