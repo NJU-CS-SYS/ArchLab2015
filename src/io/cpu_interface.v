@@ -89,23 +89,23 @@ reg [14:0] vga_addr; // 2**15 is enough for vga mem
 reg [7:0] char_to_vga;
 reg vga_wen;
 reg loader_en;
-reg one_cycle_latency_for_bram;
+reg fetched_from_loader;
 
-assign mem_stall = cache_stall | (~one_cycle_latency_for_bram & loader_en);
+assign mem_stall = cache_stall | (~fetched_from_loader & loader_en);
 
 initial begin
-    one_cycle_latency_for_bram <= 0;
+    fetched_from_loader <= 0;
 end
 
 always @ (posedge ui_clk) begin
     if (~rst)begin
-        one_cycle_latency_for_bram <= 0;
+        fetched_from_loader <= 0;
     end
     else if (loader_en) begin
-        one_cycle_latency_for_bram <= ~one_cycle_latency_for_bram;
+        fetched_from_loader <= 1;
     end
     else begin
-        one_cycle_latency_for_bram <= 0;
+        fetched_from_loader <= 0;
     end
 end
 
