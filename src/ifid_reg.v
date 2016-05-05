@@ -38,7 +38,7 @@ module ifid_reg(
     assign ifid_rd_addr   = ifid_instr[`RD_SLICE];
     assign ifid_imm       = ifid_instr[`IMM_SLICE];
     
-    always @(negedge clk or posedge reset) begin
+    always @(negedge clk) begin
         if (reset || (!cu_stall && cu_flush)) begin
             ifid_pc    <= `PC_WIDTH'd0;
             ifid_pc_4  <= `PC_WIDTH'd4;

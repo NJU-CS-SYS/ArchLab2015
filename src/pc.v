@@ -21,8 +21,7 @@ end
 
 always @(negedge clk) begin
     if (reset) pc_out <= `PC_WIDTH'hf0000000; //loader address
-    else if (stall) pc_out <= pc_out;
-    else pc_out <= pc_in;
+    else if (~stall) pc_out <= pc_in;
 end
 
 endmodule
