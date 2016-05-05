@@ -19,7 +19,7 @@ initial begin
     pc_out <= `PC_WIDTH'hf0000000; //loader address
 end
 
-always @(negedge clk or posedge reset) begin
+always @(negedge clk) begin
     if (reset) pc_out <= `PC_WIDTH'hf0000000; //loader address
     else if (stall) pc_out <= pc_out;
     else pc_out <= pc_in;

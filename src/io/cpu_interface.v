@@ -118,7 +118,7 @@ always @ (*) begin
     loader_en = 0;
     if(dmem_addr[29:26] == 4'hc) begin // VMEM
         loader_en = 1;
-        vga_wen = 1;
+        vga_wen = dmem_write_in;
         //vga_en = 1;
         dc_read_in = 0;
         dc_write_in = 0;
@@ -234,11 +234,11 @@ loader_mem loader (         // single port Block RAM
 );
 
 vga #(
-    .DATA_ADDR_WIDTH( 6 )
+    .DATA_ADDR_WIDTH( 15 )
 ) vga0 (
     .CLK        (clk_from_board     ),
     .RESET      (rst            ),
-    .DATA_ADDR  (vga_addr[5:0]  ),
+    .DATA_ADDR  (vga_addr[14:0]  ),
     .DATA_IN    (char_to_vga    ),
     .WR_EN      (vga_wen        ),
     .pixel_clk  (pixel_clk      ),
