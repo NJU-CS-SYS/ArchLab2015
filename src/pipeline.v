@@ -897,7 +897,6 @@ cpu_interface inst_ci (
     .data_from_reg  ( mem_aligned_rt_data   ),
     .dmem_byte_w_en ( mem_mem_byte_w_en     ),
     .clk_from_ip    ( clk_from_board        ),
-    .clk_from_board ( clk_from_board        ),
     .pixel_clk      ( clk_pixel             ),
 
     .ui_clk         ( clk_from_ddr          ),

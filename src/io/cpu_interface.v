@@ -38,7 +38,6 @@ module cpu_interface(
     input [31:0] data_from_reg,
     input [3:0] dmem_byte_w_en,
     input clk_from_ip,
-    input clk_from_board,
     input pixel_clk,
 
     output ui_clk,
@@ -248,7 +247,6 @@ loader_mem loader (         // single port Block RAM
 vga #(
     .DATA_ADDR_WIDTH( 15 )
 ) vga0 (
-    .CLK        (clk_from_board     ),
     .RESET      (rst            ),
     .DATA_ADDR  (vga_addr[14:0]  ),
     .DATA_IN    (char_to_vga    ),
