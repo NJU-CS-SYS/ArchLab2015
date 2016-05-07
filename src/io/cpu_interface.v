@@ -79,11 +79,13 @@ wire [255:0] block_from_dc_to_ram;
 
 wire [31:0] dc_data_out;
 wire [31:0] ic_data_out;
+wire [31:0] loader_instr;
 wire [31:0] loader_data;
 reg [29:0] ic_addr;
 wire cache_stall;
 
 reg dc_read_in, dc_write_in;
+reg loader_wen;  // accessing loader mapping area & writing request
 reg [14:0] vga_addr; // 2**15 is enough for vga mem
 reg [7:0] char_to_vga;
 
@@ -125,25 +127,30 @@ end
 
 always @ (*) begin
     // data R/W redirect
-    dc_read_in = dmem_read_in;
-    dc_write_in = dmem_write_in;
-    dmem_data_out = dc_data_out;
-    vga_stall = 0;
+    // default value, which have the least effects on the memory system.
+    dc_read_in    = 0;
+    dc_write_in   = 0;
+    dmem_data_out = 0;
+    vga_stall     = 0;
+    loader_wen    = 0;
+
     if(dmem_addr[29:26] == 4'hc) begin // VMEM
         vga_stall = dmem_write_in;
-        dc_read_in = 0;
-        dc_write_in = 0;
-        dmem_data_out = 32'd0; // never read
     end
     if(dmem_addr[29:26] == 4'hd) begin // timer
-        dc_read_in = 0;
-        dc_write_in = 0;
-        dmem_data_out = 32'd0; // not added now
+        // TODO dmem_data_out = timer_data
     end
     else if(dmem_addr[29:26] == 4'he) begin //keyborad
-        dc_read_in = 0;
-        dc_write_in = 0;
-        dmem_data_out = 32'd0; // not added now
+        // TODO dmem_data_out = kb_data, and needs further consideration.
+    end
+    else if (dmem_addr[29:26] == 4'hf) begin  // loader
+        loader_wen  = dmem_write_in;
+        dmem_data_out = loader_data;
+    end
+    else begin  // data cache
+        dc_read_in    = dmem_read_in;
+        dc_write_in   = dmem_write_in;
+        dmem_data_out = dc_data_out;
     end
 
     // instruction fetch redirect
@@ -151,7 +158,7 @@ always @ (*) begin
     instr_data_out = ic_data_out;
     if(instr_addr[29:26] == 4'hf) begin
         ic_addr = 30'h0;
-        instr_data_out = loader_data;
+        instr_data_out = loader_instr;
     end
 
     // vga ddr calculate
@@ -236,12 +243,18 @@ ddr_ctrl ddr_ctrl_0(
 );
 
 loader_mem loader (         // single port Block RAM
-    .addra  (instr_addr[11:0]   ), // lower 28 bits of initial address must start at 0
-    .dina   (32'd0              ),
-    .douta  (loader_data        ),
-    .clka   (ui_clk             ),
-    .wea    (0                  )
-    //.ena    (loader_en          )
+    // Data port
+    .addra ( dmem_addr[11:0]  ),
+    .dina  ( data_from_reg    ),
+    .douta ( loader_data      ),
+    .clka  ( ui_clk           ),
+    .wea   ( loader_wen       ),
+    // Instr port (read-only)
+    .addrb ( instr_addr[11:0] ), // lower 28 bits of initial address must start at 0
+    .dinb  ( 0                ), // not used
+    .doutb ( loader_instr     ),
+    .clkb  ( ui_clk           ),
+    .web   ( 0                )  // not used
 );
 
 vga #(
