@@ -7,7 +7,7 @@ OBJDUMP = $(CROSS_COMPILE)objdump
 
 
 CFLAGS = -MD -fno-pic -static -fno-strict-aliasing -fno-builtin  -fno-stack-protector -mno-check-zero-division -fno-delayed-branch -Wall -Werror -EL -march=mips32 -mno-llsc -mno-imadd -mno-mad -Wno-unused-function
-CFLAGS += -I. -O2
+CFLAGS += -I. -O0
 SCFLAGS = -MD -fno-pic -static -fno-strict-aliasing -fno-builtin  -fno-stack-protector -mno-check-zero-division -fno-delayed-branch -Wall -Werror -EL -march=mips32 -mno-llsc -mno-imadd -mno-mad -I../include -O2 -S -Wno-unused-function
 CFLAGS += -g
 ASFLAGS = -MD -EL -mno-check-zero-division -mips32 -O2
@@ -16,8 +16,7 @@ LDFLAGS = -EL
 
 CSRC = $(shell find . -name "*.c") 
 SSRC = $(shell find . -name "*.S") 
-# OBJECTS = $(SSRC:.S=.o) $(CSRC:.c=.o) 
-OBJECTS = $(CSRC:.c=.o) 
+OBJECTS = $(SSRC:.S=.o) $(CSRC:.c=.o)
 ASMS = $(CSRC:.c=.S)
 	
 export CROSS_COMPILE
