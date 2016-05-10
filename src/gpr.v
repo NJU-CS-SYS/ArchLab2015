@@ -18,7 +18,7 @@ module GPR
 );
 
     // Declare the register file
-    reg [DATA_WIDTH-1:0] register[2**ADDR_WIDTH-1:0];
+    reg [DATA_WIDTH-1:0] register[2**ADDR_WIDTH-1:1];
     integer i;
     integer reg_cnt;
 
@@ -32,7 +32,7 @@ module GPR
     always @(negedge clk or posedge reset) begin
         if (reset) begin
             reg_cnt = 2**ADDR_WIDTH - 1;
-            for (i = 0; i < reg_cnt; i = i + 1)
+            for (i = 1; i < reg_cnt; i = i + 1)
                 register[i] = 0;
         end
         else if (Rd_addr != 0 && write) begin

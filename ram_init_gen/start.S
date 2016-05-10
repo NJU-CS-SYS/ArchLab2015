@@ -3,8 +3,7 @@
 
 _reset:
   li $sp, 4096
-  nop
-  j main
+  jal main
 $L_GOOD:
   j $L_GOOD
 
@@ -13,4 +12,3 @@ _qemu:
   jal main
 $L_LOOP:
   j $L_LOOP
-

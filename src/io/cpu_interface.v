@@ -38,7 +38,6 @@ module cpu_interface(
     input [31:0] data_from_reg,
     input [3:0] dmem_byte_w_en,
     input clk_from_ip,
-    input clk_from_board,
     input pixel_clk,
 
     output ui_clk,
@@ -80,59 +79,78 @@ wire [255:0] block_from_dc_to_ram;
 
 wire [31:0] dc_data_out;
 wire [31:0] ic_data_out;
+wire [31:0] loader_instr;
 wire [31:0] loader_data;
 reg [29:0] ic_addr;
 wire cache_stall;
 
 reg dc_read_in, dc_write_in;
+reg loader_wen;  // accessing loader mapping area & writing request
 reg [14:0] vga_addr; // 2**15 is enough for vga mem
 reg [7:0] char_to_vga;
+
+// vga_wen is synchronized by pixel_clk to avoid race between wen, addr & char.
+// vga_stall is a combinational logic which just indicates the address to write falls in text memory.
+// vga_stall_cnt is used to stall enough pixel cycles, whose value can be considered simply as a
+// cycle counter as well as the following semantic meaning:
+//   0 - initial state, nothing happened
+//   1 - starting / during the 1st pixel cycle to write;
+//   2 - starting / during the 2nd pixel cycle to write;
+//   3 - writing finished and the counter will spin on this value to ensure that pipeline retrieves from stalling.
 reg vga_wen;
-reg loader_en;
-reg fetched_from_loader;
+reg vga_stall;
+reg [1:0] vga_stall_cnt;
 
-assign mem_stall = cache_stall | (~fetched_from_loader & loader_en);
+// As vga_stall is a combinational logic, the pipeline will stall immediately while the vga_wen needs a posedge
+// of pixel_clk to become active. At that time, the address and char data are stable.
+// `vga_stall_cnt < 3' ensures that the pipeline will recover as soon as the writing finishes.
+assign mem_stall = cache_stall | (vga_stall && (vga_stall_cnt < 3));
 
-initial begin
-    fetched_from_loader <= 0;
-end
-
-always @ (posedge ui_clk) begin
-    if (~rst)begin
-        fetched_from_loader <= 0;
+always @ (posedge pixel_clk) begin
+    if (!rst || !vga_stall) begin  // when reseted (low-active) or not accessing vmem, keep this initial state
+        vga_wen <= 0;
+        vga_stall_cnt <= 0;
     end
-    else if (loader_en) begin
-        fetched_from_loader <= 1;
-    end
-    else begin
-        fetched_from_loader <= 0;
+    else if (vga_stall) begin
+        if (vga_stall_cnt >= 2) begin
+            // spin state, disabling write enable, allowing the pipeline to go on,
+            // and expecting the pipeline to reset the state.
+            vga_wen <= 0;
+            vga_stall_cnt <= 3;
+        end
+        else begin
+            vga_wen <= 1;
+            vga_stall_cnt <= vga_stall_cnt + 1;
+        end
     end
 end
 
 always @ (*) begin
     // data R/W redirect
-    dc_read_in = dmem_read_in;
-    dc_write_in = dmem_write_in;
-    dmem_data_out = dc_data_out;
-    vga_wen = 0;
-    loader_en = 0;
+    // default value, which have the least effects on the memory system.
+    dc_read_in    = 0;
+    dc_write_in   = 0;
+    dmem_data_out = 0;
+    vga_stall     = 0;
+    loader_wen    = 0;
+
     if(dmem_addr[29:26] == 4'hc) begin // VMEM
-        loader_en = 1;
-        vga_wen = dmem_write_in;
-        //vga_en = 1;
-        dc_read_in = 0;
-        dc_write_in = 0;
-        dmem_data_out = 32'd0; // never read
+        vga_stall = dmem_write_in;
     end
     if(dmem_addr[29:26] == 4'hd) begin // timer
-        dc_read_in = 0;
-        dc_write_in = 0;
-        dmem_data_out = 32'd0; // not added now
+        // TODO dmem_data_out = timer_data
     end
     else if(dmem_addr[29:26] == 4'he) begin //keyborad
-        dc_read_in = 0;
-        dc_write_in = 0;
-        dmem_data_out = 32'd0; // not added now
+        // TODO dmem_data_out = kb_data, and needs further consideration.
+    end
+    else if (dmem_addr[29:26] == 4'hf) begin  // loader
+        loader_wen  = dmem_write_in;
+        dmem_data_out = loader_data;
+    end
+    else begin  // data cache
+        dc_read_in    = dmem_read_in;
+        dc_write_in   = dmem_write_in;
+        dmem_data_out = dc_data_out;
     end
 
     // instruction fetch redirect
@@ -140,7 +158,7 @@ always @ (*) begin
     instr_data_out = ic_data_out;
     if(instr_addr[29:26] == 4'hf) begin
         ic_addr = 30'h0;
-        instr_data_out = loader_data;
+        instr_data_out = loader_instr;
     end
 
     // vga ddr calculate
@@ -225,18 +243,23 @@ ddr_ctrl ddr_ctrl_0(
 );
 
 loader_mem loader (         // single port Block RAM
-    .addra  (instr_addr[11:0]   ), // lower 28 bits of initial address must start at 0
-    .dina   (32'd0              ),
-    .douta  (loader_data        ),
-    .clka   (ui_clk             ),
-    .wea    (0                  )
-    //.ena    (loader_en          )
+    // Data port
+    .addra ( dmem_addr[11:0]  ),
+    .dina  ( data_from_reg    ),
+    .douta ( loader_data      ),
+    .clka  ( ui_clk           ),
+    .wea   ( loader_wen       ),
+    // Instr port (read-only)
+    .addrb ( instr_addr[11:0] ), // lower 28 bits of initial address must start at 0
+    .dinb  ( 0                ), // not used
+    .doutb ( loader_instr     ),
+    .clkb  ( ui_clk           ),
+    .web   ( 0                )  // not used
 );
 
 vga #(
     .DATA_ADDR_WIDTH( 15 )
 ) vga0 (
-    .CLK        (clk_from_board     ),
     .RESET      (rst            ),
     .DATA_ADDR  (vga_addr[14:0]  ),
     .DATA_IN    (char_to_vga    ),
