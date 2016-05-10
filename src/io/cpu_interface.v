@@ -101,6 +101,7 @@ reg vga_wen;
 reg vga_stall;
 reg [1:0] vga_stall_cnt;
 reg fetched_from_loader;
+reg loader_en;
 
 // As vga_stall is a combinational logic, the pipeline will stall immediately while the vga_wen needs a posedge
 // of pixel_clk to become active. At that time, the address and char data are stable.
@@ -257,7 +258,7 @@ ddr_ctrl ddr_ctrl_0(
     .ddr2_odt                   (ddr2_odt                       )
 );
 
-loader_mem loader (         // dual port Block RAM
+loader_mem loader (         // use dual port Block RAM
     // Data port
     .addra ( dmem_addr[11:0]  ),
     .dina  ( data_from_reg    ),
