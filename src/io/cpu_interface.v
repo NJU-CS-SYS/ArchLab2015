@@ -100,6 +100,7 @@ reg [7:0] char_to_vga;
 reg vga_wen;
 reg vga_stall;
 reg [1:0] vga_stall_cnt;
+reg fetched_from_loader;
 
 // As vga_stall is a combinational logic, the pipeline will stall immediately while the vga_wen needs a posedge
 // of pixel_clk to become active. At that time, the address and char data are stable.
@@ -125,14 +126,27 @@ always @ (posedge pixel_clk) begin
     end
 end
 
+always @ (posedge ui_clk) begin
+    if (~rst)begin
+        fetched_from_loader <= 0;
+    end 
+    else if (loader_en) begin
+        fetched_from_loader <= 1;
+    end 
+    else begin
+        fetched_from_loader <= 0;
+    end 
+end
+
 always @ (*) begin
     // data R/W redirect
     // default value, which have the least effects on the memory system.
-    dc_read_in    = 0;
-    dc_write_in   = 0;
-    dmem_data_out = 0;
-    vga_stall     = 0;
-    loader_wen    = 0;
+    dc_read_in      = 0;
+    dc_write_in     = 0;
+    dmem_data_out   = 0;
+    vga_stall       = 0;
+    loader_wen      = 0;
+    loader_en       = 0;
 
     if(dmem_addr[29:26] == 4'hc) begin // VMEM
         vga_stall = dmem_write_in;
@@ -144,6 +158,7 @@ always @ (*) begin
         // TODO dmem_data_out = kb_data, and needs further consideration.
     end
     else if (dmem_addr[29:26] == 4'hf) begin  // loader
+        loader_en = 1;
         loader_wen  = dmem_write_in;
         dmem_data_out = loader_data;
     end
