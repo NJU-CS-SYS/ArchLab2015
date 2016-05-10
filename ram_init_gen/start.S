@@ -3,6 +3,7 @@
 
 _reset:
   li $sp, 4096
+  nop # avoid delay slot optimization
   jal main
 $L_GOOD:
   j $L_GOOD
