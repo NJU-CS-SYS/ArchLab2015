@@ -242,7 +242,7 @@ ddr_ctrl ddr_ctrl_0(
     .ddr2_odt                   (ddr2_odt                       )
 );
 
-loader_mem loader (         // single port Block RAM
+loader_mem loader (         // dual port Block RAM
     // Data port
     .addra ( dmem_addr[11:0]  ),
     .dina  ( data_from_reg    ),
