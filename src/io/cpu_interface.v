@@ -107,7 +107,9 @@ reg loader_en;
 // As vga_stall is a combinational logic, the pipeline will stall immediately while the vga_wen needs a posedge
 // of pixel_clk to become active. At that time, the address and char data are stable.
 // `vga_stall_cnt < 3' ensures that the pipeline will recover as soon as the writing finishes.
-assign mem_stall = cache_stall | (vga_stall && (vga_stall_cnt < 3));
+assign mem_stall = cache_stall 
+        | (vga_stall && (vga_stall_cnt < 3)) 
+        | (loader_en && ~fetched_from_loader);
 
 always @ (posedge pixel_clk) begin
     if (!rst || !vga_stall) begin  // when reseted (low-active) or not accessing vmem, keep this initial state

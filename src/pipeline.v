@@ -906,13 +906,27 @@ cpu_interface inst_ci (
     .mem_stall      ( mem_stall             )
 );
 
-wire clk_slow; // 5MHz
+reg clk_slow; // 5MHz
+reg [13:0] clk_counter;
+
+always @ (ui_clk) begin
+    if(reset) begin
+        clk_counter <= 0;
+        clk_slow <= 0;
+    end
+    else begin
+        clk_counter <= clk_counter + 1;
+        if(clk_counter == 14'd1) begin
+            clk_slow <= ~clk_slow;
+        end
+    end
+end
 
 ddr_clock_gen dcg0 (
     .clk_in1    (clk_from_board),
     .clk_out1   (clk_from_ip),
     .clk_out2   (clk_pixel),
-    .clk_out3   (clk_slow)
+    .clk_out3   ()
 );
 
 reg [31:0] hex_to_seg;
