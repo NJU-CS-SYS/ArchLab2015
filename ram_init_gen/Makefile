@@ -11,7 +11,7 @@ CFLAGS += -I. -O2
 CFLAGS += -mno-abicalls -fno-pic
 SCFLAGS = -MD -fno-pic -static -fno-strict-aliasing -fno-builtin  -fno-stack-protector -mno-check-zero-division -fno-delayed-branch -Wall -Werror -EL -march=mips32 -mno-llsc -mno-imadd -mno-mad -I../include -O2 -S -Wno-unused-function
 CFLAGS += -g
-ASFLAGS = -MD -EL -mno-check-zero-division -mips32 -O2 -mno-abicalls -fno-pic
+ASFLAGS = -MD -EL -mno-check-zero-division -mips32 -O0 -mno-abicalls -fno-pic -fno-delayed-branch
 LDFLAGS = -EL
 
 

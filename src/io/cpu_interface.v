@@ -133,13 +133,13 @@ end
 always @ (posedge ui_clk) begin
     if (~rst)begin
         fetched_from_loader <= 0;
-    end 
+    end
     else if (loader_en) begin
         fetched_from_loader <= 1;
-    end 
+    end
     else begin
         fetched_from_loader <= 0;
-    end 
+    end
 end
 
 always @ (*) begin
@@ -189,7 +189,7 @@ always @ (*) begin
             char_to_vga = data_from_reg[7:0];
         end
         4'b0100: begin
-            vga_addr[1:0] = 2'd1; 
+            vga_addr[1:0] = 2'd1;
             char_to_vga = data_from_reg[15:8];
         end
         4'b0010: begin

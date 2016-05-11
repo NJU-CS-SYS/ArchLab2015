@@ -112,19 +112,19 @@ begin idex_mem_read = 1'b1; idex_rd_addr = 32'hfcfc8e70; ifid_rs_addr = 32'hfcfc
 begin idex_mem_read = 1'b1; idex_rd_addr = 32'hfcfc8e70; ifid_rs_addr = 32'h00000000; real_rt_addr = 32'hfcfc8e70; end
 
 //branch hazard
-#20 begin predicted_idex_pc = 32'ccffc8e70; target_exmem_pc = 32'ceffc8e70; cpo_intr = 1'b0; end
+#20 begin predicted_idex_pc = 32'hccffc8e70; target_exmem_pc = 32'hceffc8e70; cpo_intr = 1'b0; end
 
-#20 begin id_jump = 1'b1; predicted_idex_pc = 32'ccffc8e70; target_exmem_pc = 32'ccffc8e70; end
+#20 begin id_jump = 1'b1; predicted_idex_pc = 32'hccffc8e70; target_exmem_pc = 32'hccffc8e70; end
 
-#20 begin id_jr = 1'b1; predicted_idex_pc = 32'ccffc8e70; target_exmem_pc = 32'ccffc8e70; end
+#20 begin id_jr = 1'b1; predicted_idex_pc = 32'hccffc8e70; target_exmem_pc = 32'hccffc8e70; end
 
-#20 begin exmem_syscall end
+#20 begin exmem_syscall = 1'b1; end
 
-#20 begin cp0_intr = 1'b1; predicted_idex_pc = 32'ccffc8e70; target_exmem_pc = 32'ceffc8e70; end
+#20 begin cp0_intr = 1'b1; predicted_idex_pc = 32'hccffc8e70; target_exmem_pc = 32'hceffc8e70; end
 
-#20 begin cp0_intr = 1'b1; predicted_idex_pc = 32'ccffc8e70; target_exmem_pc = 32'ccffc8e70; end
+#20 begin cp0_intr = 1'b1; predicted_idex_pc = 32'hccffc8e70; target_exmem_pc = 32'hccffc8e70; end
 
-#20 exmem_eret = 1'b1; end
+#20 begin exmem_eret = 1'b1; end
 end
 endmodule
 
