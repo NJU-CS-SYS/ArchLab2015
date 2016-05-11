@@ -150,6 +150,8 @@ begin
 	end
     else begin
         calculated_res <= 32'h0;
+        multiplied <= 0;
+        divided <= 0;
     end
 end
 

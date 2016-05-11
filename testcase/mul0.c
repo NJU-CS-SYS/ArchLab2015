@@ -10,13 +10,24 @@ volatile inline int badtrap()
 }
 int main()
 {
-    int a = 1;
-    int b = 2;
-    int c = 2;
-    if(c == a*b) {
-        return goodtrap();
-    }
-    else {
+    int a = 9;
+    int b = 10;
+    int c = 90;
+    if(c != a*b) {
         return badtrap();
     }
+
+    a = 81;
+    b = 1;
+    c = 81;
+    if(c != a*b) {
+        return badtrap();
+    }
+    a = 7;
+    b = 8;
+    c = 56;
+    if(c != a*b) {
+        return badtrap();
+    }
+    return goodtrap();
 }
