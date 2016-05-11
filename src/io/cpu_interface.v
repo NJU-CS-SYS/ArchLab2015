@@ -37,8 +37,9 @@ module cpu_interface(
     input [29:0] dmem_addr,
     input [31:0] data_from_reg,
     input [3:0] dmem_byte_w_en,
-    input clk_from_ip,
+    input clk_for_ddr,
     input pixel_clk,
+    input manual_clk,
 
     output ui_clk,
     output reg [31:0] instr_data_out,
@@ -234,7 +235,7 @@ ddr_ctrl ddr_ctrl_0(
     .ddr2_dqs_p                 (ddr2_dqs_p                     ),
 
     // original signals
-    .clk_from_ip                (clk_from_ip                    ),
+    .clk_from_ip                (clk_for_ddr                    ), 
     .rst                        (rst                            ),
     .ram_en                     (ram_en                         ),
     .ram_write                  (ram_write                      ),

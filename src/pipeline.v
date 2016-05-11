@@ -861,7 +861,7 @@ cp0 inst_cp0 (
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-wire clk_from_ddr;
+wire ui_clk_from_ddr;
 
 cpu_interface inst_ci (
     // DDR Inouts
@@ -896,19 +896,23 @@ cpu_interface inst_ci (
     .dmem_addr      ( mem_alu_res[31:2]     ),
     .data_from_reg  ( mem_aligned_rt_data   ),
     .dmem_byte_w_en ( mem_mem_byte_w_en     ),
-    .clk_from_ip    ( clk_from_board        ),
+    .clk_for_ddr    ( clk_from_board        ), // 100 MHz
     .pixel_clk      ( clk_pixel             ),
+    .manual_clk     ( manual_clk            ),
 
-    .ui_clk         ( clk_from_ddr          ),
+    .ui_clk         ( ui_clk_from_ddr       ),
     .instr_data_out ( ic_data_out           ),
     .dmem_data_out  ( mem_data              ),
     .mem_stall      ( mem_stall             )
 );
 
+wire clk_slow; // 5MHz
+
 ddr_clock_gen dcg0 (
     .clk_in1    (clk_from_board),
     .clk_out1   (clk_from_ip),
-    .clk_out2   (clk_pixel)
+    .clk_out2   (clk_pixel),
+    .clk_out3   (clk_slow)
 );
 
 reg [31:0] hex_to_seg;
@@ -942,7 +946,6 @@ end
 assign led[0]       = mem_mem_w;
 assign led[1]       = mem_stall;
 assign led[15:2]    = 14'd0;
-assign clk = manual_clk;
-//assign clk = clk_from_ddr;
+assign clk = clk_slow; // pipeline clock
 
 endmodule
