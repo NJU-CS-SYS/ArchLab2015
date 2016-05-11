@@ -907,7 +907,7 @@ cpu_interface inst_ci (
 );
 
 reg clk_slow; // 5MHz
-reg [13:0] clk_counter;
+reg [25:0] clk_counter;
 
 always @ (posedge ui_clk_from_ddr) begin
     if(reset) begin
@@ -916,7 +916,7 @@ always @ (posedge ui_clk_from_ddr) begin
     end
     else begin
         clk_counter <= clk_counter + 1;
-        if(clk_counter == 14'd1) begin
+        if(clk_counter == 26'd1) begin
             clk_slow <= ~clk_slow;
         end
     end
@@ -960,6 +960,6 @@ end
 assign led[0]       = mem_mem_w;
 assign led[1]       = mem_stall;
 assign led[15:2]    = 14'd0;
-assign clk = clk_slow; // pipeline clock
+assign clk = ui_clk_from_ddr; // pipeline clock
 
 endmodule
