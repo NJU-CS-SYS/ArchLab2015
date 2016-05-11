@@ -909,7 +909,7 @@ cpu_interface inst_ci (
 reg clk_slow; // 5MHz
 reg [13:0] clk_counter;
 
-always @ (ui_clk) begin
+always @ (posedge ui_clk_from_ddr) begin
     if(reset) begin
         clk_counter <= 0;
         clk_slow <= 0;
