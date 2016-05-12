@@ -12,6 +12,7 @@ module pipeline (
     inout [1:0] ddr2_dqs_p,
     // Just to simpilfy RTL generation,
     input [7:0] SW,
+    input SLOW,
     input clk_from_board,         // the global clock
     input manual_clk,
     input reset,       // the global reset
@@ -965,6 +966,6 @@ end
 assign led[0]       = mem_mem_w;
 assign led[1]       = mem_stall;
 assign led[15:2]    = 14'd0;
-assign clk = clk_slow; // pipeline clock
+assign clk = SLOW ? clk_slow : ui_clk_from_ddr; // pipeline clock
 
 endmodule
