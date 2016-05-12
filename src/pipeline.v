@@ -11,6 +11,7 @@ module pipeline (
     inout [1:0] ddr2_dqs_n,
     inout [1:0] ddr2_dqs_p,
     // Just to simpilfy RTL generation,
+    input [7:0] SW,
     input clk_from_board,         // the global clock
     input manual_clk,
     input reset,       // the global reset
@@ -862,6 +863,7 @@ cp0 inst_cp0 (
 ////////////////////////////////////////////////////////////////////////////////
 
 wire ui_clk_from_ddr;
+wire [31:0] loader_data;
 
 cpu_interface inst_ci (
     // DDR Inouts
@@ -903,6 +905,8 @@ cpu_interface inst_ci (
     .ui_clk         ( ui_clk_from_ddr       ),
     .instr_data_out ( ic_data_out           ),
     .dmem_data_out  ( mem_data              ),
+    .loader_addr    ( {4'd0, SW }           ),
+    .loader_data_o  ( loader_data           ),
     .mem_stall      ( mem_stall             )
 );
 
@@ -952,6 +956,7 @@ always @ (*) begin
         4'b0001: hex_to_seg = mem_pc;
         4'b0010: hex_to_seg = mem_alu_res;
         4'b0011: hex_to_seg = mem_aligned_rt_data;
+        4'b0100: hex_to_seg = loader_data;
         default: hex_to_seg = mem_alu_res;
     endcase
 end
@@ -960,6 +965,6 @@ end
 assign led[0]       = mem_mem_w;
 assign led[1]       = mem_stall;
 assign led[15:2]    = 14'd0;
-assign clk = ui_clk_from_ddr; // pipeline clock
+assign clk = clk_slow; // pipeline clock
 
 endmodule

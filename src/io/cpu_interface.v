@@ -59,6 +59,9 @@ module cpu_interface(
     output [1:0] ddr2_dm,
     output [0:0] ddr2_odt,
 
+    input  [11:0] loader_addr,
+    output [31:0] loader_data_o,
+
     // VGA outputs
     output [3:0] VGA_R,
     output [3:0] VGA_G,
@@ -264,9 +267,13 @@ ddr_ctrl ddr_ctrl_0(
     .ddr2_odt                   ( ddr2_odt              )
 );
 
+assign loader_data_o = loader_data;
+
+wire [11:0] ld_real_addr = loader_en ? dmem_addr[11:0] : loader_addr[11:0];
+
 loader_mem loader (         // use dual port Block RAM
     // Data port
-    .addra ( dmem_addr[11:0]  ),
+    .addra ( ld_real_addr     ),
     .dina  ( data_from_reg    ),
     .douta ( loader_data      ),
     .clka  ( ui_clk           ),
