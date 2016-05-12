@@ -112,7 +112,9 @@ assign mem_stall = cache_stall
         | (vga_stall && (vga_stall_cnt < 3))
         | (loader_en && ~fetched_from_loader);
 
-always @ (posedge pixel_clk) begin
+wire text_mem_clk = ui_clk;  // The clock driving text memory
+
+always @ (posedge text_mem_clk) begin
     if (!rst || !vga_stall) begin  // when reseted (low-active) or not accessing vmem, keep this initial state
         vga_wen <= 0;
         vga_stall_cnt <= 0;
@@ -285,7 +287,7 @@ vga #(
     .DATA_IN    ( char_to_vga    ),
     .WR_EN      ( vga_wen        ),
     .pixel_clk  ( pixel_clk      ),
-    .cpu_clk    ( pixel_clk      ),
+    .cpu_clk    ( text_mem_clk   ),
     .VGA_R      ( VGA_R          ),
     .VGA_G      ( VGA_G          ),
     .VGA_B      ( VGA_B          ),
