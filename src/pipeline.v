@@ -7,9 +7,9 @@
 
 module pipeline (
     // ddr Inouts
-    inout [15:0]                         ddr2_dq,
-    inout [1:0]                        ddr2_dqs_n,
-    inout [1:0]                        ddr2_dqs_p,
+    inout [15:0] ddr2_dq,
+    inout [1:0] ddr2_dqs_n,
+    inout [1:0] ddr2_dqs_p,
     // Just to simpilfy RTL generation,
     input clk_from_board,         // the global clock
     input manual_clk,
@@ -20,17 +20,17 @@ module pipeline (
     output [15:0] led,
 
     // ddr Outputs
-    output [12:0]                       ddr2_addr,
-    output [2:0]                      ddr2_ba,
-    output                                       ddr2_ras_n,
-    output                                       ddr2_cas_n,
-    output                                       ddr2_we_n,
-    output [0:0]                        ddr2_ck_p,
-    output [0:0]                        ddr2_ck_n,
-    output [0:0]                       ddr2_cke,
+    output [12:0] ddr2_addr,
+    output [2:0] ddr2_ba,
+    output ddr2_ras_n,
+    output ddr2_cas_n,
+    output ddr2_we_n,
+    output [0:0] ddr2_ck_p,
+    output [0:0] ddr2_ck_n,
+    output [0:0] ddr2_cke,
     //output [0:0]           ddr2_cs_n,
-    output [1:0]                        ddr2_dm,
-    output [0:0]                       ddr2_odt,
+    output [1:0] ddr2_dm,
+    output [0:0] ddr2_odt,
         
     // VGA outputs
     output [3:0] VGA_R,
@@ -910,13 +910,13 @@ reg clk_slow; // 5MHz
 reg [25:0] clk_counter;
 
 always @ (posedge ui_clk_from_ddr) begin
-    if(reset) begin
+    if (reset) begin
         clk_counter <= 0;
         clk_slow <= 0;
     end
     else begin
         clk_counter <= clk_counter + 1;
-        if(clk_counter == 26'd1) begin
+        if (clk_counter == 1) begin
             clk_slow <= ~clk_slow;
         end
     end
