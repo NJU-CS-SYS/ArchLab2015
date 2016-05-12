@@ -889,7 +889,7 @@ cpu_interface inst_ci (
     .VGA_HS     (VGA_HS         ),
     .VGA_VS     (VGA_VS         ),
 
-    .rst            ( ~reset                 ), // reset is high active in this module
+    .rst            ( ~reset                ), // reset is high active in this module
     .instr_addr     ( pc_out[31:2]          ),
     .dmem_read_in   ( mem_mem_r             ),
     .dmem_write_in  ( mem_mem_w             ),
@@ -907,7 +907,7 @@ cpu_interface inst_ci (
 );
 
 reg clk_slow; // 5MHz
-reg [25:0] clk_counter;
+reg [3:0] clk_counter;
 
 always @ (posedge ui_clk_from_ddr) begin
     if(reset) begin
@@ -916,7 +916,7 @@ always @ (posedge ui_clk_from_ddr) begin
     end
     else begin
         clk_counter <= clk_counter + 1;
-        if(clk_counter == 26'd1) begin
+        if(clk_counter == 3'd1) begin
             clk_slow <= ~clk_slow;
         end
     end
@@ -925,8 +925,7 @@ end
 ddr_clock_gen dcg0 (
     .clk_in1    (clk_from_board),
     .clk_out1   (clk_from_ip),
-    .clk_out2   (clk_pixel),
-    .clk_out3   ()
+    .clk_out2   (clk_pixel)
 );
 
 reg [31:0] hex_to_seg;

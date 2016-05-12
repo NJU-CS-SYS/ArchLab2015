@@ -277,7 +277,15 @@ loader_mem loader (         // use dual port Block RAM
 );
 
 vga #(
-    .DATA_ADDR_WIDTH( 15 )
+    .DATA_ADDR_WIDTH( 15 ),
+    .h_disp         (1280),
+    .h_front        ( 48 ),
+    .h_sync         (112 ),
+    .h_back         (248 ),
+    .v_disp         (1024),
+    .v_front        ( 1  ),
+    .v_sync         ( 3  ),
+    .v_back         ( 38 )
 ) vga0 (
     .RESET      (rst            ),
     .DATA_ADDR  (vga_addr[14:0]  ),
