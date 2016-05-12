@@ -62,7 +62,7 @@ always @(*) begin
 end
 
 // 更新逻辑
-wire [`TAG_BUS] update_tag = tag_pc[`TAG_BUS];
+wire [`TAG_BUS] update_tag = valid_tag_pc[`TAG_BUS];
 wire update_predict = bpu_predict[update_tag];
 always @(negedge clk or posedge reset) begin
     if (reset) begin
