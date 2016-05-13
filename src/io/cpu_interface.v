@@ -105,15 +105,13 @@ reg [7:0] char_to_vga;
 reg vga_wen;
 reg vga_stall;
 reg [1:0] vga_stall_cnt;
-reg fetched_from_loader;  // we just need to delay one cycle
 reg loader_en;
 
 // As vga_stall is a combinational logic, the pipeline will stall immediately while the vga_wen needs a posedge
 // of pixel_clk to become active. At that time, the address and char data are stable.
 // `vga_stall_cnt < 3' ensures that the pipeline will recover as soon as the writing finishes.
 assign mem_stall = cache_stall
-        | (vga_stall && (vga_stall_cnt < 3))
-        | (loader_en && ~fetched_from_loader);
+        | (vga_stall && (vga_stall_cnt < 3));
 
 wire text_mem_clk = ui_clk;  // The clock driving text memory
 
@@ -133,21 +131,6 @@ always @ (posedge text_mem_clk) begin
             vga_wen <= 1;
             vga_stall_cnt <= vga_stall_cnt + 1;
         end
-    end
-end
-
-always @ (posedge ui_clk) begin
-    // These two conditions are prior to loader_en
-    if (~rst | ~mem_stall)begin
-        // For ~mem_stall: if pipeline is driven by **ui_clk** as loader is, this
-        // condition will work fine to recover loader's ability to stall the pipeline.
-        fetched_from_loader <= 0;
-    end
-    else if (loader_en) begin
-        fetched_from_loader <= 1;
-    end
-    else begin  // no reset, no access to loader, but stalled
-        fetched_from_loader <= 0;
     end
 end
 
