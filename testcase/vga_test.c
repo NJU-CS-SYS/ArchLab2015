@@ -1,11 +1,11 @@
 #define VMEM ((char *)0xc0000000)
 
-char *a = "Hello, World!";
+char *str = "Hello, World!";
+char *vga = VMEM;
 
 int main() {
-    char *vga = VMEM;
-    while (*a) {
-        *vga++ = *a++;
+    while (*str) {
+        *vga++ = *str++;
     }
     return 0;
 }
