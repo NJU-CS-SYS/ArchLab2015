@@ -30,9 +30,12 @@ volatile inline int goodtrap(){
     return 0;
 }
 
+#define VMEM ((char *)0xc0000000)
+
 //#include <stdio.h> 
 #include "trap.h"
 int main() {
+    char* vga = VMEM + 320 + 160;
 	int arr[100];
 	int j;
 	for(j = 0; j < 100; j += 2) {
@@ -43,12 +46,14 @@ int main() {
 
 	for(j = 0; j < 50; j ++) {
 		ASSERT(arr[j] == 12);
+        *(vga++) = 'Y';
 		/*if(arr[j] != 0) {
 			printf("arr[%d] != 0", j);
 		}*/
 	}
 	for(;j < 100; j ++) {
 		ASSERT(arr[j] == 55);
+        *(vga++) = 'Y';
 		/*if(arr[j] != 1) {
 			printf("arr[%d] != 1", j);
 		}*/

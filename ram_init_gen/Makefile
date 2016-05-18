@@ -1,4 +1,4 @@
-CROSS_COMPILE = mips-linux-gnu-
+CROSS_COMPILE = mips-linux-
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc
 LD = $(CROSS_COMPILE)ld

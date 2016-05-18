@@ -965,10 +965,7 @@ end
 assign led[0]       = mem_mem_w;
 assign led[1]       = mem_stall;
 assign led[15:2]    = 14'd0;
-<<<<<<< HEAD
-assign clk = clk_slow;
-=======
+
 assign clk = SLOW ? clk_slow : ui_clk_from_ddr; // pipeline clock
->>>>>>> de679e8782a7b9470fa236b8d4e75b222de082c2
 
 endmodule
