@@ -7,10 +7,12 @@
 
 module pipeline (
     // ddr Inouts
-    inout [15:0]                         ddr2_dq,
-    inout [1:0]                        ddr2_dqs_n,
-    inout [1:0]                        ddr2_dqs_p,
+    inout [15:0] ddr2_dq,
+    inout [1:0] ddr2_dqs_n,
+    inout [1:0] ddr2_dqs_p,
     // Just to simpilfy RTL generation,
+    input [7:0] SW,
+    input SLOW,
     input clk_from_board,         // the global clock
     input manual_clk,
     input reset,       // the global reset
@@ -20,17 +22,17 @@ module pipeline (
     output [15:0] led,
 
     // ddr Outputs
-    output [12:0]                       ddr2_addr,
-    output [2:0]                      ddr2_ba,
-    output                                       ddr2_ras_n,
-    output                                       ddr2_cas_n,
-    output                                       ddr2_we_n,
-    output [0:0]                        ddr2_ck_p,
-    output [0:0]                        ddr2_ck_n,
-    output [0:0]                       ddr2_cke,
+    output [12:0] ddr2_addr,
+    output [2:0] ddr2_ba,
+    output ddr2_ras_n,
+    output ddr2_cas_n,
+    output ddr2_we_n,
+    output [0:0] ddr2_ck_p,
+    output [0:0] ddr2_ck_n,
+    output [0:0] ddr2_cke,
     //output [0:0]           ddr2_cs_n,
-    output [1:0]                        ddr2_dm,
-    output [0:0]                       ddr2_odt,
+    output [1:0] ddr2_dm,
+    output [0:0] ddr2_odt,
         
     // VGA outputs
     output [3:0] VGA_R,
@@ -862,6 +864,7 @@ cp0 inst_cp0 (
 ////////////////////////////////////////////////////////////////////////////////
 
 wire ui_clk_from_ddr;
+wire [31:0] loader_data;
 
 cpu_interface inst_ci (
     // DDR Inouts
@@ -903,6 +906,8 @@ cpu_interface inst_ci (
     .ui_clk         ( ui_clk_from_ddr       ),
     .instr_data_out ( ic_data_out           ),
     .dmem_data_out  ( mem_data              ),
+    .loader_addr    ( {4'd0, SW }           ),
+    .loader_data_o  ( loader_data           ),
     .mem_stall      ( mem_stall             )
 );
 
@@ -910,13 +915,13 @@ reg clk_slow; // 5MHz
 reg [1:0] clk_counter;
 
 always @ (posedge ui_clk_from_ddr) begin
-    if(reset) begin
+    if (reset) begin
         clk_counter <= 0;
         clk_slow <= 0;
     end
     else begin
         clk_counter <= clk_counter + 1;
-        if(clk_counter == 3'd1) begin
+        if (clk_counter == 1) begin
             clk_slow <= ~clk_slow;
         end
     end
@@ -951,6 +956,7 @@ always @ (*) begin
         4'b0001: hex_to_seg = mem_pc;
         4'b0010: hex_to_seg = mem_alu_res;
         4'b0011: hex_to_seg = mem_aligned_rt_data;
+        4'b0100: hex_to_seg = loader_data;
         default: hex_to_seg = mem_alu_res;
     endcase
 end
@@ -959,6 +965,10 @@ end
 assign led[0]       = mem_mem_w;
 assign led[1]       = mem_stall;
 assign led[15:2]    = 14'd0;
+<<<<<<< HEAD
 assign clk = clk_slow;
+=======
+assign clk = SLOW ? clk_slow : ui_clk_from_ddr; // pipeline clock
+>>>>>>> de679e8782a7b9470fa236b8d4e75b222de082c2
 
 endmodule
