@@ -5,6 +5,7 @@ tags
 *.d
 *.o
 ram_init_gen/
+!ram_init_gen/stdio.*
 !testcase/*.S
 *~
 tags
