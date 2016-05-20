@@ -4,7 +4,7 @@
 // Filename      : ddr_ctrl.v
 // Author        : zyy
 // Created On    : 2016-04-18 15:39
-// Last Modified : 2016-05-04 19:12
+// Last Modified : 2016-05-20 21:13
 // -------------------------------------------------------------------------------------------------
 // Svn Info:
 //   $Revision::                                                                                $:
@@ -20,9 +20,23 @@
 
 module ddr_ctrl(
     // ddr Inouts
-    inout [15:0]                         ddr2_dq,
-    inout [1:0]                        ddr2_dqs_n,
-    inout [1:0]                        ddr2_dqs_p,
+    inout [15:0] ddr2_dq,
+    inout [1:0]  ddr2_dqs_n,
+    inout [1:0]  ddr2_dqs_p,
+
+
+    // ddr Outputs
+    output [12:0] ddr2_addr,
+    output [2:0]  ddr2_ba,
+    output        ddr2_ras_n,
+    output        ddr2_cas_n,
+    output        ddr2_we_n,
+    output [0:0]  ddr2_ck_p,
+    output [0:0]  ddr2_ck_n,
+    output [0:0]  ddr2_cke,
+    output [0:0]  ddr2_cs_n,
+    output [1:0]  ddr2_dm,
+    output [0:0]  ddr2_odt,
 
     // CPU input and output
     input clk_from_ip,
@@ -35,24 +49,13 @@ module ddr_ctrl(
     output ram_rdy,
     output [255:0] block_out,
     output ui_clk,
-
-    // ddr Outputs
-    output [12:0]                       ddr2_addr,
-    output [2:0]                      ddr2_ba,
-    output                                       ddr2_ras_n,
-    output                                       ddr2_cas_n,
-    output                                       ddr2_we_n,
-    output [0:0]                        ddr2_ck_p,
-    output [0:0]                        ddr2_ck_n,
-    output [0:0]                       ddr2_cke,
-    output [0:0]           ddr2_cs_n,
-    output [1:0]                        ddr2_dm,
-    output [0:0]                       ddr2_odt
+    output [127:0] data_to_mig,
+    output reg [255:0] buffer,
+    output [26:0] addr_to_mig
 );
 
 reg reading;
 reg writing;
-reg [255:0] buffer;
 reg [29:0] last_addr;
 reg [1:0] last_op; // 11 for NOP, 00 for read, 01 for write
 
@@ -60,9 +63,7 @@ wire [1:0] cur_op;
 wire busy;
 wire buf_w_en_high;
 wire buf_w_en_low;
-wire [26:0] addr_to_mig;
 wire [2:0] cmd_to_mig;
-wire [127:0] data_to_mig;
 wire [127:0] data_from_mig;
 wire mig_rdy;
 wire mig_data_valid;

@@ -40,8 +40,10 @@ module cpu_interface(
     input clk_for_ddr,
     input pixel_clk,
     input manual_clk,
+    input clk_pipeline,
 
     output ui_clk,
+    output reg sync_manual_clk,
     output reg [31:0] instr_data_out,
     output reg [31:0] dmem_data_out,
     output mem_stall,
@@ -61,6 +63,11 @@ module cpu_interface(
 
     input  [11:0] loader_addr,
     output [31:0] loader_data_o,
+
+    //debug:
+    output [127:0] data_to_mig,
+    output [255:0] buffer_of_ddrctrl,
+    output [26:0] addr_to_mig,
 
     // VGA outputs
     output [3:0] VGA_R,
@@ -114,6 +121,10 @@ assign mem_stall = cache_stall
         | (vga_stall && (vga_stall_cnt < 3));
 
 wire text_mem_clk = ui_clk;  // The clock driving text memory
+
+always @ (posedge ui_clk) begin
+    sync_manual_clk <= manual_clk;
+end
 
 always @ (posedge text_mem_clk) begin
     if (!rst || !vga_stall) begin  // when reseted (low-active) or not accessing vmem, keep this initial state
@@ -200,7 +211,7 @@ always @ (*) begin
 end
 
 cache_manage_unit u_cm_0 (
-    .clk             ( ui_clk               ),
+    .clk             ( clk_pipeline         ),
     .rst             ( ~rst                 ), // !! make rst seem low active
     .dc_read_in      ( dc_read_in           ),
     .dc_write_in     ( dc_write_in          ),
@@ -223,34 +234,39 @@ cache_manage_unit u_cm_0 (
 );
 
 ddr_ctrl ddr_ctrl_0(
+
     // Inouts
-    .ddr2_dq                    ( ddr2_dq               ),
-    .ddr2_dqs_n                 ( ddr2_dqs_n            ),
-    .ddr2_dqs_p                 ( ddr2_dqs_p            ),
+    .ddr2_dq        ( ddr2_dq              ),
+    .ddr2_dqs_n     ( ddr2_dqs_n           ),
+    .ddr2_dqs_p     ( ddr2_dqs_p           ),
 
     // original signals
-    .clk_from_ip                ( clk_for_ddr           ),
-    .rst                        ( rst                   ),
-    .ram_en                     ( ram_en                ),
-    .ram_write                  ( ram_write             ),
-    .ram_addr                   ( ram_addr[29:0]        ),
-    .data_to_ram                ( block_from_dc_to_ram  ),
+    .clk_from_ip    ( clk_for_ddr          ),
+    .rst            ( rst                  ),
+    .ram_en         ( ram_en               ),
+    .ram_write      ( ram_write            ),
+    .ram_addr       ( ram_addr[29:0]       ),
+    .data_to_ram    ( block_from_dc_to_ram ),
 
-    .ram_rdy                    ( ram_rdy               ),
-    .block_out                  ( block_from_ram        ),
-    .ui_clk                     ( ui_clk                ),
+    .ram_rdy        ( ram_rdy              ),
+    .block_out      ( block_from_ram       ),
+    .ui_clk         ( ui_clk               ),
     // Outputs
-    .ddr2_addr                  ( ddr2_addr             ),
-    .ddr2_ba                    ( ddr2_ba               ),
-    .ddr2_ras_n                 ( ddr2_ras_n            ),
-    .ddr2_cas_n                 ( ddr2_cas_n            ),
-    .ddr2_we_n                  ( ddr2_we_n             ),
-    .ddr2_ck_p                  ( ddr2_ck_p             ),
-    .ddr2_ck_n                  ( ddr2_ck_n             ),
-    .ddr2_cke                   ( ddr2_cke              ),
-    .ddr2_cs_n                  ( ddr2_cs_n             ),
-    .ddr2_dm                    ( ddr2_dm               ),
-    .ddr2_odt                   ( ddr2_odt              )
+    .ddr2_addr      ( ddr2_addr            ),
+    .ddr2_ba        ( ddr2_ba              ),
+    .ddr2_ras_n     ( ddr2_ras_n           ),
+    .ddr2_cas_n     ( ddr2_cas_n           ),
+    .ddr2_we_n      ( ddr2_we_n            ),
+    .ddr2_ck_p      ( ddr2_ck_p            ),
+    .ddr2_ck_n      ( ddr2_ck_n            ),
+    .ddr2_cke       ( ddr2_cke             ),
+    .ddr2_cs_n      ( ddr2_cs_n            ),
+    .ddr2_dm        ( ddr2_dm              ),
+    .ddr2_odt       ( ddr2_odt             ),
+    // debug ports
+    .data_to_mig    ( data_to_mig          ),
+    .buffer         ( buffer_of_ddrctrl    ),
+    .addr_to_mig    ( addr_to_mig          )
 );
 
 assign loader_data_o = loader_data;
@@ -259,17 +275,17 @@ wire [11:0] ld_real_addr = loader_en ? dmem_addr[11:0] : loader_addr[11:0];
 
 loader_mem loader (         // use dual port Block RAM
     // Data port
-    .addra ( ld_real_addr     ),
-    .dina  ( data_from_reg    ),
-    .douta ( loader_data      ),
-    .clka  ( ui_clk           ),
-    .wea   ( loader_wen       ),
+    .addra ( ld_real_addr       ),
+    .dina  ( data_from_reg      ),
+    .douta ( loader_data        ),
+    .clka  ( clk_pipeline       ),
+    .wea   ( loader_wen         ),
     // Instr port (read-only)
-    .addrb ( instr_addr[11:0] ), // lower 28 bits of initial address must start at 0
-    .dinb  ( 0                ), // not used
-    .doutb ( loader_instr     ),
-    .clkb  ( ui_clk           ),
-    .web   ( 0                )  // not used
+    .addrb ( instr_addr[11:0]   ), // lower 28 bits of initial address must start at 0
+    .dinb  ( 0                  ), // not used
+    .doutb ( loader_instr       ),
+    .clkb  ( clk_pipeline       ),
+    .web   ( 0                  )  // not used
 );
 
 vga #(

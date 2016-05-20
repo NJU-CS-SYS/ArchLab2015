@@ -8,3 +8,4 @@ ram_init_gen/
 !testcase/*.S
 *~
 tags
+note

@@ -865,54 +865,67 @@ cp0 inst_cp0 (
 
 wire ui_clk_from_ddr;
 wire [31:0] loader_data;
+wire sync_manual_clk;
 
-cpu_interface inst_ci (
+wire [26:0] addr_to_mig;
+wire [255:0] buffer_of_ddrctrl;
+wire [127:0] data_to_mig;
+
+cpu_interface inst_ci  (
     // DDR Inouts
-    .ddr2_dq                    (ddr2_dq                        ),
-    .ddr2_dqs_n                 (ddr2_dqs_n                     ),
-    .ddr2_dqs_p                 (ddr2_dqs_p                     ),
+    .ddr2_dq           ( ddr2_dq             ),
+    .ddr2_dqs_n        ( ddr2_dqs_n          ),
+    .ddr2_dqs_p        ( ddr2_dqs_p          ),
 
     // DDR Outputs
-    .ddr2_addr                  (ddr2_addr                      ),
-    .ddr2_ba                    (ddr2_ba                        ),
-    .ddr2_ras_n                 (ddr2_ras_n                     ),
-    .ddr2_cas_n                 (ddr2_cas_n                     ),
-    .ddr2_we_n                  (ddr2_we_n                      ),
-    .ddr2_ck_p                  (ddr2_ck_p                      ),
-    .ddr2_ck_n                  (ddr2_ck_n                      ),
-    .ddr2_cke                   (ddr2_cke                       ),
-    .ddr2_cs_n                  (                      ),
-    .ddr2_dm                    (ddr2_dm                        ),
-    .ddr2_odt                   (ddr2_odt                       ),
+    .ddr2_addr         ( ddr2_addr           ),
+    .ddr2_ba           ( ddr2_ba             ),
+    .ddr2_ras_n        ( ddr2_ras_n          ),
+    .ddr2_cas_n        ( ddr2_cas_n          ),
+    .ddr2_we_n         ( ddr2_we_n           ),
+    .ddr2_ck_p         ( ddr2_ck_p           ),
+    .ddr2_ck_n         ( ddr2_ck_n           ),
+    .ddr2_cke          ( ddr2_cke            ),
+    .ddr2_cs_n         (                     ),
+    .ddr2_dm           ( ddr2_dm             ),
+    .ddr2_odt          ( ddr2_odt            ),
 
     // VGA
-    .VGA_R      (VGA_R          ),
-    .VGA_G      (VGA_G          ),
-    .VGA_B      (VGA_B          ),
-    .VGA_HS     (VGA_HS         ),
-    .VGA_VS     (VGA_VS         ),
+    .VGA_R             ( VGA_R               ),
+    .VGA_G             ( VGA_G               ),
+    .VGA_B             ( VGA_B               ),
+    .VGA_HS            ( VGA_HS              ),
+    .VGA_VS            ( VGA_VS              ),
 
-    .rst            ( ~reset                ), // reset is high active in this module
-    .instr_addr     ( pc_out[31:2]          ),
-    .dmem_read_in   ( mem_mem_r             ),
-    .dmem_write_in  ( mem_mem_w             ),
-    .dmem_addr      ( mem_alu_res[31:2]     ),
-    .data_from_reg  ( mem_aligned_rt_data   ),
-    .dmem_byte_w_en ( mem_mem_byte_w_en     ),
-    .clk_for_ddr    ( clk_from_board        ), // 100 MHz
-    .pixel_clk      ( clk_pixel             ),
-    .manual_clk     ( manual_clk            ),
+    .rst               ( ~reset              ), // reset is high active in this module
+    .instr_addr        ( pc_out[31:2]        ),
+    .dmem_read_in      ( mem_mem_r           ),
+    .dmem_write_in     ( mem_mem_w           ),
+    .dmem_addr         ( mem_alu_res[31:2]   ),
+    .data_from_reg     ( mem_aligned_rt_data ),
+    .dmem_byte_w_en    ( mem_mem_byte_w_en   ),
+    .clk_for_ddr       ( clk_from_board      ), // 100 MHz
+    .pixel_clk         ( clk_pixel           ),
+    .manual_clk        ( manual_clk          ),
+    .clk_pipeline      ( clk                 ),
 
-    .ui_clk         ( ui_clk_from_ddr       ),
-    .instr_data_out ( ic_data_out           ),
-    .dmem_data_out  ( mem_data              ),
-    .loader_addr    ( {4'd0, SW }           ),
-    .loader_data_o  ( loader_data           ),
-    .mem_stall      ( mem_stall             )
+    .ui_clk            ( ui_clk_from_ddr     ),
+    .sync_manual_clk   ( sync_manual_clk     ),
+    .instr_data_out    ( ic_data_out         ),
+    .dmem_data_out     ( mem_data            ),
+    .loader_addr       ( {4'd0, SW }         ),
+    .loader_data_o     ( loader_data         ),
+    .mem_stall         ( mem_stall           ),
+
+    //debug
+    .data_to_mig       ( data_to_mig         ),
+    .buffer_of_ddrctrl ( buffer_of_ddrctrl   ),
+    .addr_to_mig       ( addr_to_mig         )
 );
 
-reg clk_slow; // 5MHz
-reg [1:0] clk_counter;
+reg clk_slow;
+// reg [2:0] clk_counter;
+reg clk_counter;
 
 always @ (posedge ui_clk_from_ddr) begin
     if (reset) begin
@@ -936,18 +949,18 @@ ddr_clock_gen dcg0 (
 reg [31:0] hex_to_seg;
 // segs used to output instruction
 
-seg_ctrl seg_ctrl0(
-    .clk(clk_from_board),
-    .hex1(hex_to_seg[3:0]),
-    .hex2(hex_to_seg[7:4]),
-    .hex3(hex_to_seg[11:8]),
-    .hex4(hex_to_seg[15:12]),
-    .hex5(hex_to_seg[19:16]),
-    .hex6(hex_to_seg[23:20]),
-    .hex7(hex_to_seg[27:24]),
-    .hex8(hex_to_seg[31:28]),
-    .seg_out(seg_out),
-    .seg_ctrl(seg_ctrl)
+seg_ctrl seg_ctrl0 (
+    .clk           ( clk_from_board    ),
+    .hex1          ( hex_to_seg[3:0]   ),
+    .hex2          ( hex_to_seg[7:4]   ),
+    .hex3          ( hex_to_seg[11:8]  ),
+    .hex4          ( hex_to_seg[15:12] ),
+    .hex5          ( hex_to_seg[19:16] ),
+    .hex6          ( hex_to_seg[23:20] ),
+    .hex7          ( hex_to_seg[27:24] ),
+    .hex8          ( hex_to_seg[31:28] ),
+    .seg_out       ( seg_out           ),
+    .seg_ctrl      ( seg_ctrl          )
 );
 
 always @ (*) begin
@@ -957,6 +970,9 @@ always @ (*) begin
         4'b0010: hex_to_seg = mem_alu_res;
         4'b0011: hex_to_seg = mem_aligned_rt_data;
         4'b0100: hex_to_seg = loader_data;
+        4'b0101: hex_to_seg = {5'd0, addr_to_mig};
+        4'b0110: hex_to_seg = data_to_mig[31:0];
+        4'b0111: hex_to_seg = buffer_of_ddrctrl[31:0];
         default: hex_to_seg = mem_alu_res;
     endcase
 end
@@ -966,6 +982,6 @@ assign led[0]       = mem_mem_w;
 assign led[1]       = mem_stall;
 assign led[15:2]    = 14'd0;
 
-assign clk = SLOW ? clk_slow : ui_clk_from_ddr; // pipeline clock
+assign clk = SLOW ? clk_slow : sync_manual_clk; // pipeline clock
 
 endmodule
