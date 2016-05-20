@@ -923,23 +923,6 @@ cpu_interface inst_ci  (
     .addr_to_mig       ( addr_to_mig         )
 );
 
-reg clk_slow;
-// reg [2:0] clk_counter;
-reg clk_counter;
-
-always @ (posedge ui_clk_from_ddr) begin
-    if (reset) begin
-        clk_counter <= 0;
-        clk_slow <= 0;
-    end
-    else begin
-        clk_counter <= clk_counter + 1;
-        if (clk_counter == 1) begin
-            clk_slow <= ~clk_slow;
-        end
-    end
-end
-
 ddr_clock_gen dcg0 (
     .clk_in1    (clk_from_board),
     .clk_out1   (clk_from_ip),
@@ -982,6 +965,6 @@ assign led[0]       = mem_mem_w;
 assign led[1]       = mem_stall;
 assign led[15:2]    = 14'd0;
 
-assign clk = SLOW ? clk_slow : sync_manual_clk; // pipeline clock
+assign clk = SLOW ? ui_clk_from_ddr : sync_manual_clk; // pipeline clock
 
 endmodule
