@@ -32,6 +32,7 @@ all:$(OBJECTS)
 	$(OBJCOPY) -O binary boot boot.bin
 	$(OBJDUMP) -D boot  > code.txt
 	python ./bin2text.py boot.bin ram.txt
+	python load_coe_gen.py
 
 qemu:
 	$(LD) $(LDFLAGS) -T qemu.ld $(OBJECTS) -o qemu.bin
