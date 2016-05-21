@@ -4,7 +4,7 @@
 // Filename      : hex_to_seg.v
 // Author        : zyy
 // Created On    : 2016-05-04 23:01
-// Last Modified : 2016-05-04 23:15
+// Last Modified : 2016-05-21 12:39
 // -------------------------------------------------------------------------------------------------
 // Svn Info:
 //   $Revision::                                                                                $:
@@ -52,7 +52,7 @@ always @(*) begin
             seg = 7'b0000000;
         end
         4'h9: begin
-            seg = 7'b0000010;
+            seg = 7'b0000100;
         end
         4'ha: begin
             seg = 7'b0001000;
