@@ -37,9 +37,11 @@ int main() {
     unsigned int step = 0x800;
 
     deref((pointer + 0*step) | lsb0) = value1;
-    deref((pointer + 1*step) | lsb0) = value2;
 
     check(deref((pointer + 0*step) | lsb0), value1);
+
+    deref((pointer + 1*step) | lsb0) = value2;
+
     check(deref((pointer + 1*step) | lsb0), value2);
 
     deref((pointer + 2*step) | lsb0) = value3;

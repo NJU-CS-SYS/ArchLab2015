@@ -913,7 +913,7 @@ cpu_interface inst_ci  (
     .sync_manual_clk   ( sync_manual_clk     ),
     .instr_data_out    ( ic_data_out         ),
     .dmem_data_out     ( mem_data            ),
-    .loader_addr       ( {4'd0, SW }         ),
+    .loader_addr       ( {5'd0, SW }         ),
     .loader_data_o     ( loader_data         ),
     .mem_stall         ( mem_stall           ),
 

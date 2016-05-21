@@ -61,7 +61,7 @@ module cpu_interface(
     output [1:0] ddr2_dm,
     output [0:0] ddr2_odt,
 
-    input  [11:0] loader_addr,
+    input  [12:0] loader_addr,
     output [31:0] loader_data_o,
 
     //debug:
@@ -271,7 +271,7 @@ ddr_ctrl ddr_ctrl_0(
 
 assign loader_data_o = loader_data;
 
-wire [11:0] ld_real_addr = loader_en ? dmem_addr[11:0] : loader_addr[11:0];
+wire [12:0] ld_real_addr = loader_en ? dmem_addr[12:0] : loader_addr[12:0];
 
 loader_mem loader (         // use dual port Block RAM
     // Data port
@@ -281,7 +281,7 @@ loader_mem loader (         // use dual port Block RAM
     .clka  ( clk_pipeline       ),
     .wea   ( loader_wen         ),
     // Instr port (read-only)
-    .addrb ( instr_addr[11:0]   ), // lower 28 bits of initial address must start at 0
+    .addrb ( instr_addr[12:0]   ), // lower 28 bits of initial address must start at 0
     .dinb  ( 0                  ), // not used
     .doutb ( loader_instr       ),
     .clkb  ( clk_pipeline       ),
