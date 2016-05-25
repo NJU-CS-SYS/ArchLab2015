@@ -40,6 +40,20 @@ int main() {
             check(deref((pointer + j*step + 4*i) | lsb0), value[(i+j)%4]);
         }
     }
+    // when j become 2 or 3 above, first two data blocks are written back;
+    // so codes below will test whether they have been written back correctly
+    // by read them again.
+    for (j = 0; j < 2; j++) {
+        for (i = 0; i < 8; i++) {
+            check(deref((pointer + j*step + 4*i) | lsb0), value[(i+j)%4]);
+        }
+    }
+    for (j = 0; j < 2; j++) {
+        for (i = 0; i < 8; i++) {
+            check(deref((pointer + j*step + 4*i) | lsb0), value[(i+j)%4]);
+        }
+    }
+
 
     good();
     return 0;
