@@ -11,11 +11,6 @@
 #define lsb1 0x2a0
 #define lsb2 0x7e0
 
-#define value1 0xc5c5c5c5
-#define value2 0xf0f0f0f0
-#define value3 0x84848484
-#define value4 0x93939393
-
 #define deref(x) *((unsigned int *) (x))
 
 char* vga = VMEM + 420 + 80;
@@ -36,12 +31,13 @@ void check(unsigned int mem, unsigned int expected_val) {
 int main() {
     volatile unsigned int pointer = 0x0;
     unsigned int step = 0x800;
+    int value[4] = { 0xc5c5c5c5, 0xf0f0f0f0, 0x84848484, 0x93939393};
 
     int i, j;
     for (j = 0; j < 4; j++) {
         for (i = 0; i < 8; i++) {
-            deref((pointer + j*step + 4*i) | lsb0) = value1;
-            check(deref((pointer + j*step + 4*i) | lsb0), value1);
+            deref((pointer + j*step + 4*i) | lsb0) = value[(i+j)%4];
+            check(deref((pointer + j*step + 4*i) | lsb0), value[(i+j)%4]);
         }
     }
 
