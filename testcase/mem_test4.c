@@ -25,6 +25,7 @@ char* vga = VMEM + 420 + 80;
 __attribute__((noinline)) void check(unsigned int mem, unsigned int expected_val) {
     if(mem == expected_val) {
         putc('Y', vga);
+        vga += 210;
     }
     else {
         putc('N', vga);
