@@ -122,7 +122,7 @@ assign dc_offset   =  dc_addr[OFFSET_WIDTH - 1 : 0];
 //   1x: ram_addr_dc_wb
 assign ram_addr_ic    = {tag_to_ic,   index_to_ic, counter};
 assign ram_addr_dc    = {tag_to_dc,   index_to_dc, counter};
-assign ram_addr_dc_wb = {tag_from_dc ,index_to_dc ,counter};  // write back
+assign ram_addr_dc_wb = {tag_from_dc, index_to_dc ,counter};  // write back
 assign ram_addr_out = ram_addr_sel[1] ? ram_addr_dc_wb
                                       : (ram_addr_sel[0] ? ram_addr_dc : ram_addr_ic);
 

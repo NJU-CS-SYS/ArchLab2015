@@ -4,7 +4,7 @@
 // Filename      : ddr_ctrl.v
 // Author        : zyy
 // Created On    : 2016-04-18 15:39
-// Last Modified : 2016-05-20 21:13
+// Last Modified : 2016-05-26 00:17
 // -------------------------------------------------------------------------------------------------
 // Svn Info:
 //   $Revision::                                                                                $:
@@ -62,7 +62,7 @@ reg [1:0] last_op; // 11 for NOP, 00 for read, 01 for write
 wire [1:0] cur_op;
 wire busy;
 wire buf_w_en_high;
-wire buf_w_en_low;
+// wire buf_w_en_low;
 wire [2:0] cmd_to_mig;
 wire [127:0] data_from_mig;
 wire mig_rdy;
@@ -74,8 +74,8 @@ wire go;
 assign cur_op[1] = !ram_en;
 assign cur_op[0] = ram_write;
 assign busy = ram_en & ((ram_addr != last_addr) || (cur_op != last_op)); // need to work
-assign buf_w_en_high = ram_addr[4:4];
-assign buf_w_en_low = !ram_addr[4:4]; // highest bit of block selector
+assign buf_w_en_high = ram_addr[2]; // highest bit of block selector
+// assign buf_w_en_low = !ram_addr[4:4]; 
 assign addr_to_mig = {ram_addr[24:0], 2'b0}; // highest 5 bits was ignored
 assign cmd_to_mig = ram_write ? 3'b000 : 3'b001; 
 assign data_to_mig = buf_w_en_high ? data_to_ram[255:128] : data_to_ram[127:0];
@@ -155,7 +155,7 @@ always @(posedge ui_clk) begin
             if(go) begin
                 if(mig_data_valid) begin
                     if(buf_w_en_high) buffer[255:128] <= data_from_mig;
-                    if(buf_w_en_low) buffer[127:0] <= data_from_mig;
+                    else buffer[127:0] <= data_from_mig;
                     last_addr <= ram_addr;
                     last_op <= cur_op;
                     reading <= 0;
