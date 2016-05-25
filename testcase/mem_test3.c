@@ -23,6 +23,7 @@ char* vga = VMEM + 420 + 80;
 void check(unsigned int mem, unsigned int expected_val) {
     if(mem == expected_val) {
         putc('Y', vga);
+        vga += 210;
     }
     else {
         putc('N', vga);
@@ -47,10 +48,12 @@ int main() {
     deref((pointer + 2*step) | lsb0) = value3;
 
     check(deref((pointer + 0*step) | lsb0), value1);
+    check(deref((pointer + 0*step) | lsb0), value1);
 
     deref((pointer + 3*step) | lsb0) = value4;
 
     check(deref((pointer + 0*step) | lsb0), value1);
+    check(deref((pointer + 1*step) | lsb0), value2);
     check(deref((pointer + 1*step) | lsb0), value2);
     check(deref((pointer + 2*step) | lsb0), value3);
     check(deref((pointer + 3*step) | lsb0), value4);
@@ -75,7 +78,10 @@ int main() {
     deref((pointer + 3*step) | lsb2) = value4;
 
     check(deref((pointer + 0*step) | lsb2), value1);
+    check(deref((pointer + 0*step) | lsb2), value1);
     check(deref((pointer + 1*step) | lsb2), value2);
+    check(deref((pointer + 1*step) | lsb2), value2);
+    check(deref((pointer + 2*step) | lsb2), value3);
     check(deref((pointer + 2*step) | lsb2), value3);
     check(deref((pointer + 3*step) | lsb2), value4);
 
