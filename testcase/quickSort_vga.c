@@ -31,7 +31,7 @@ void quickSort3Ways(volatile int arr[], int lowIndex, int highIndex) {
 #define VMEM ((char *)0xc0000000)
 
 int main() {
-    char* vga = VMEM + 420 + 80;
+    char* vga = VMEM + 320 + 80;
 	volatile int arr[100];
 	int j;
 	for(j = 0; j < 100; j += 2) {
@@ -42,12 +42,12 @@ int main() {
 
 	for(j = 0; j < 50; j ++) {
         put_hex(arr[j], vga);
-        vga += 210;
+        vga += 160;
 	}
     vga += 210;
 	for(;j < 100; j ++) {
         put_hex(arr[j], vga);
-        vga += 210;
+        vga += 160;
 	}
     good();
     return good();

@@ -34,7 +34,7 @@ int main() {
     int value[4] = { 0xc5c5c5c5, 0xf0f0f0f0, 0x84848484, 0x93939393};
 
     int i, j;
-    for (j = 0; j < 4; j++) {
+    for (j = 0; j < 8; j++) {
         for (i = 0; i < 8; i++) {
             deref((pointer + j*step + 4*i) | lsb0) = value[(i+j)%4];
             check(deref((pointer + j*step + 4*i) | lsb0), value[(i+j)%4]);
@@ -43,12 +43,12 @@ int main() {
     // when j become 2 or 3 above, first two data blocks are written back;
     // so codes below will test whether they have been written back correctly
     // by read them again.
-    for (j = 0; j < 2; j++) {
+    for (j = 0; j < 6; j++) {
         for (i = 0; i < 8; i++) {
             check(deref((pointer + j*step + 4*i) | lsb0), value[(i+j)%4]);
         }
     }
-    for (j = 0; j < 2; j++) {
+    for (j = 0; j < 6; j++) {
         for (i = 0; i < 8; i++) {
             check(deref((pointer + j*step + 4*i) | lsb0), value[(i+j)%4]);
         }
