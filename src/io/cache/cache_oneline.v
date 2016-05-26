@@ -97,7 +97,7 @@ wire [DATA_WIDTH - 1 : 0] word_out [BLOCK_SIZE - 1 : 0];
 genvar word_index;
 generate
     for (word_index = 0; word_index < BLOCK_SIZE; word_index = word_index + 1) begin: cache_word
-        assign word_wen[word_index] = go & write & ((word_sel == word_index) & (match) | ~cmp);
+        assign word_wen[word_index] = go & write & (((word_sel == word_index) & match) | (~cmp & (word_index[2] == word_sel[2])));
         assign word_in[word_index]  = cmp ? data_in : data_block_in[word_index * DATA_WIDTH +: DATA_WIDTH];
 
         cache_mem_word #(INDEX_WIDTH) word_instance (

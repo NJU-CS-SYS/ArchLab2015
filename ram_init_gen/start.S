@@ -2,8 +2,8 @@
 .global _qemu
 
 _reset:
-  # li $sp, 0xf0004000
-  li $sp, 0x8000
+  li $sp, 0xf0004000
+  # li $sp, 0x8000
   jal main
 $L_GOOD:
   b $L_GOOD

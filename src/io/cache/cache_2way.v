@@ -185,8 +185,11 @@ assign dirty = dirty_from_line_0 & dirty_from_line_1;
 assign data_out = (hit_from_line_0 & valid_from_line_0) ? data_word_from_line_0 : data_word_from_line_1;
 
 // 写回数据
-assign data_wb = cmp ? {(32*(2**OFFSET_WIDTH)){1'b0}}
-                     : (victimway_ff ? data_block_from_line_1 : data_block_from_line_0);
+// assign data_wb = cmp ? {(32*(2**OFFSET_WIDTH)){1'b0}}
+//                     : (victimway_ff ? data_block_from_line_1 : data_block_from_line_0);
+assign data_wb = cmp ? 
+    ((hit_from_line_0 & valid_from_line_0) ? data_block_from_line_0 : data_block_from_line_1)
+    : (victimway_ff ? data_block_from_line_1 : data_block_from_line_0);
 
 //if !cmp, then tag_out is used for write back, and it should be the victimway's tag
 assign tag_out = cmp ? {TAG_WIDTH{1'b0}}
