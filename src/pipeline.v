@@ -870,6 +870,7 @@ wire sync_manual_clk;
 wire [26:0] addr_to_mig;
 wire [255:0] buffer_of_ddrctrl;
 wire [127:0] data_to_mig;
+reg [31:0] part_of_buffer;
 
 cpu_interface inst_ci  (
     // DDR Inouts
@@ -955,8 +956,18 @@ always @ (*) begin
         4'b0100: hex_to_seg = loader_data;
         4'b0101: hex_to_seg = {5'd0, addr_to_mig};
         4'b0110: hex_to_seg = data_to_mig[31:0];
-        4'b0111: hex_to_seg = buffer_of_ddrctrl[31:0];
+        4'b0111: hex_to_seg = part_of_buffer;
         default: hex_to_seg = mem_alu_res;
+    endcase
+    case (SW[2:0])
+        0: part_of_buffer = buffer_of_ddrctrl[1*32-1: 0*32];
+        1: part_of_buffer = buffer_of_ddrctrl[2*32-1: 1*32];
+        2: part_of_buffer = buffer_of_ddrctrl[3*32-1: 2*32];
+        3: part_of_buffer = buffer_of_ddrctrl[4*32-1: 3*32];
+        4: part_of_buffer = buffer_of_ddrctrl[5*32-1: 4*32];
+        5: part_of_buffer = buffer_of_ddrctrl[6*32-1: 5*32];
+        6: part_of_buffer = buffer_of_ddrctrl[7*32-1: 6*32];
+        7: part_of_buffer = buffer_of_ddrctrl[8*32-1: 7*32];
     endcase
 end
 
