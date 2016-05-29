@@ -4,7 +4,7 @@
 // Filename      : ddr_ctrl.v
 // Author        : zyy
 // Created On    : 2016-04-18 15:39
-// Last Modified : 2016-05-26 00:17
+// Last Modified : 2016-05-29 19:40
 // -------------------------------------------------------------------------------------------------
 // Svn Info:
 //   $Revision::                                                                                $:
@@ -136,7 +136,7 @@ mig_7series_0 m70(/*autoinst*/
 
 // control signal generation
 
-always @(posedge ui_clk) begin
+always @(negedge ui_clk) begin
     if(~rst) begin
         last_op <= `NOP;
         last_addr <= 30'h3fffffff;
@@ -153,7 +153,7 @@ always @(posedge ui_clk) begin
         end 
         else if (reading) begin
             if(go) begin
-                if(mig_data_valid) begin
+                if(mig_data_valid & ram_en) begin
                     if(buf_w_en_high) buffer[255:128] <= data_from_mig;
                     else buffer[127:0] <= data_from_mig;
                     last_addr <= ram_addr;

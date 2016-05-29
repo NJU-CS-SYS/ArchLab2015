@@ -112,12 +112,14 @@ reg vga_wen;
 reg vga_stall;
 reg [1:0] vga_stall_cnt;
 reg loader_en;
+reg trap_stall;
 
 // As vga_stall is a combinational logic, the pipeline will stall immediately while the vga_wen needs a posedge
 // of pixel_clk to become active. At that time, the address and char data are stable.
 // `vga_stall_cnt < 3' ensures that the pipeline will recover as soon as the writing finishes.
 assign mem_stall = cache_stall
-        | (vga_stall && (vga_stall_cnt < 3));
+        | (vga_stall && (vga_stall_cnt < 3))
+        | trap_stall;
 
 wire text_mem_clk = ui_clk;  // The clock driving text memory
 
@@ -147,18 +149,21 @@ end
 always @ (*) begin
     // data R/W redirect
     // default value, which have the least effects on the memory system.
-    dc_read_in     = 0;
-    dc_write_in    = 0;
-    dmem_data_out  = 0;
-    vga_stall      = 0;
-    loader_wen     = 0;
-    loader_en      = 0;
+    dc_read_in    = 0;
+    dc_write_in   = 0;
+    dmem_data_out = 0;
+    vga_stall     = 0;
+    loader_wen    = 0;
+    loader_en     = 0;
+    trap_stall    = 0;
 
     if (dmem_addr[29:26] == 4'hc) begin // VMEM
         vga_stall = dmem_write_in;
     end
     if (dmem_addr[29:26] == 4'hd) begin // timer
         // TODO dmem_data_out = timer_data
+        // now use 0xdxxx to trap!
+        trap_stall = 1;
     end
     else if (dmem_addr[29:26] == 4'he) begin //keyborad
         // TODO dmem_data_out = kb_data, and needs further consideration.
