@@ -948,6 +948,16 @@ seg_ctrl seg_ctrl0 (
 );
 
 always @ (*) begin
+    case (SW[2:0])
+        0: part_of_buffer = buffer_of_ddrctrl[1*32-1: 0*32];
+        1: part_of_buffer = buffer_of_ddrctrl[2*32-1: 1*32];
+        2: part_of_buffer = buffer_of_ddrctrl[3*32-1: 2*32];
+        3: part_of_buffer = buffer_of_ddrctrl[4*32-1: 3*32];
+        4: part_of_buffer = buffer_of_ddrctrl[5*32-1: 4*32];
+        5: part_of_buffer = buffer_of_ddrctrl[6*32-1: 5*32];
+        6: part_of_buffer = buffer_of_ddrctrl[7*32-1: 6*32];
+        7: part_of_buffer = buffer_of_ddrctrl[8*32-1: 7*32];
+    endcase
     case (debug_sel)
         4'b0000: hex_to_seg = ifid_instr;
         4'b0001: hex_to_seg = mem_pc;
@@ -958,16 +968,6 @@ always @ (*) begin
         4'b0110: hex_to_seg = data_to_mig[31:0];
         4'b0111: hex_to_seg = part_of_buffer;
         default: hex_to_seg = mem_alu_res;
-    endcase
-    case (SW[2:0])
-        0: part_of_buffer = buffer_of_ddrctrl[1*32-1: 0*32];
-        1: part_of_buffer = buffer_of_ddrctrl[2*32-1: 1*32];
-        2: part_of_buffer = buffer_of_ddrctrl[3*32-1: 2*32];
-        3: part_of_buffer = buffer_of_ddrctrl[4*32-1: 3*32];
-        4: part_of_buffer = buffer_of_ddrctrl[5*32-1: 4*32];
-        5: part_of_buffer = buffer_of_ddrctrl[6*32-1: 5*32];
-        6: part_of_buffer = buffer_of_ddrctrl[7*32-1: 6*32];
-        7: part_of_buffer = buffer_of_ddrctrl[8*32-1: 7*32];
     endcase
 end
 

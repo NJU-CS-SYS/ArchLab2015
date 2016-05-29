@@ -163,7 +163,7 @@ always @ (*) begin
     if (dmem_addr[29:26] == 4'hd) begin // timer
         // TODO dmem_data_out = timer_data
         // now use 0xdxxx to trap!
-        trap_stall = 1;
+        trap_stall = dmem_read_in | dmem_write_in;
     end
     else if (dmem_addr[29:26] == 4'he) begin //keyborad
         // TODO dmem_data_out = kb_data, and needs further consideration.
