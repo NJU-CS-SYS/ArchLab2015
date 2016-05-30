@@ -35,6 +35,7 @@ module cache_manage_unit #(
     // From CPU
     input                        clk,
     input                        rst,
+    input                        ic_read_in,
     input                        dc_read_in,
     input                        dc_write_in,
     input [3 : 0]                dc_byte_w_en_in,
@@ -145,6 +146,7 @@ wire [2:0] word_sel_to_dc;
 // 控制单元，大部分控制信号在这里生成。
 
 cache_control cctrl (
+    .ic_read_in     (ic_read_in         ),
     .dc_read_in     (dc_read_in         ),
     .dc_write_in    (dc_write_in        ),
     .ic_hit_in      (hit_from_ic        ),

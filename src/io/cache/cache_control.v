@@ -23,7 +23,9 @@
 
 module cache_control(/* autoarg */
     //Inputs
-    dc_read_in, dc_write_in, ic_hit_in, ic_valid_in, 
+    ic_read_in,
+    dc_read_in, dc_write_in, 
+    ic_hit_in, ic_valid_in, 
     dc_hit_in, dc_dirty_in, dc_valid_in, 
     status_in, counter_in, ic_word_sel_in, 
     dc_word_sel_in, dc_byte_w_en_in, 
@@ -36,6 +38,7 @@ module cache_control(/* autoarg */
     counter_next_reg, ic_word_sel_reg, dc_word_sel_reg, 
     ic_byte_w_en_reg, dc_byte_w_en_reg
 );
+input ic_read_in;
 input dc_read_in;
 input dc_write_in;
 input ic_hit_in;
@@ -259,7 +262,7 @@ always @(*) begin
         begin
             // Normal 状态下生成最常规的控制信号。
 
-            ic_enable_reg = 1;                         // 由于流水线化，每个 CPU 周期 I-cache 都要被访问，所以 I-cache 持续使能。
+            ic_enable_reg = ic_read_in;
             ic_cmp_reg = 1;
             ic_word_sel_reg = ic_word_sel_in;
             ic_write_reg = 0;                          // I-cache 不会由 CPU 写。

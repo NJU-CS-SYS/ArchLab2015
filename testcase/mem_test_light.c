@@ -40,8 +40,8 @@ int main() {
     int i, j;
     for (j = 0; j < 8; j++) {
         for (i = 0; i < 8; i++) {
-            deref((pointer + j*step + 4*i) | lsb0) = i + j*16;
-            check(deref((pointer + j*step + 4*i) | lsb0), i + j*16);
+            deref((pointer + j*step + 4*i) | lsb0) = ((i + j*16 + 1) | 0xffff0000);
+            check(deref((pointer + j*step + 4*i) | lsb0), ((i + j*16 + 1) | 0xffff0000));
         }
     }
     vga += screen_width;
@@ -50,11 +50,11 @@ int main() {
     // by read them again.
     for (j = 0; j < 8; j++) {
         for (i = 0; i < 8; i++) {
-            if (deref((pointer + j*step + 4*i) | lsb0) != i + j*16) {
+            if (deref((pointer + j*step + 4*i) | lsb0) != ((i + j*16 + 1) | 0xffff0000) ){
                 deref(0xd0001000) = 0;
             }
             else {
-                check(deref((pointer + j*step + 4*i) | lsb0), i + j*16);
+                check(deref((pointer + j*step + 4*i) | lsb0), ((i + j*16 + 1) | 0xffff0000));
             }
         }
     }

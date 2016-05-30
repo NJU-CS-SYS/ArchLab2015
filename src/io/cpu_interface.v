@@ -95,7 +95,7 @@ wire [31:0] loader_data;
 reg [29:0] ic_addr;
 wire cache_stall;
 
-reg dc_read_in, dc_write_in;
+reg ic_read_in, dc_read_in, dc_write_in;
 reg loader_wen;  // accessing loader mapping area & writing request
 reg [14:0] vga_addr; // 2**15 is enough for vga mem
 reg [7:0] char_to_vga;
@@ -112,6 +112,7 @@ reg vga_wen;
 reg vga_stall;
 reg [1:0] vga_stall_cnt;
 reg loader_en;
+reg loaded;
 reg trap_stall;
 
 // As vga_stall is a combinational logic, the pipeline will stall immediately while the vga_wen needs a posedge
@@ -149,6 +150,7 @@ end
 always @ (*) begin
     // data R/W redirect
     // default value, which have the least effects on the memory system.
+    ic_read_in    = 1;
     dc_read_in    = 0;
     dc_write_in   = 0;
     dmem_data_out = 0;
@@ -183,7 +185,8 @@ always @ (*) begin
     ic_addr = instr_addr;
     instr_data_out = ic_data_out;
     if (instr_addr[29:26] == 4'hf) begin
-        ic_addr = 30'h0;
+        loader_en = 1;
+        ic_read_in = 0;
         instr_data_out = loader_instr;
     end
 
@@ -217,6 +220,7 @@ end
 cache_manage_unit u_cm_0 (
     .clk             ( clk_pipeline         ),
     .rst             ( ~rst                 ), // !! make rst seem low active
+    .ic_read_in      ( ic_read_in           ),
     .dc_read_in      ( dc_read_in           ),
     .dc_write_in     ( dc_write_in          ),
     .dc_byte_w_en_in ( dmem_byte_w_en       ),
