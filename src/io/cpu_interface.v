@@ -323,7 +323,7 @@ vga #(
     .DATA_IN    ( char_to_vga    ),
     .WR_EN      ( vga_wen        ),
     .pixel_clk  ( pixel_clk      ),
-    //.cpu_clk    ( text_mem_clk   ),
+    .cpu_clk    ( text_mem_clk   ),
     .VGA_R      ( VGA_R          ),
     .VGA_G      ( VGA_G          ),
     .VGA_B      ( VGA_B          ),
