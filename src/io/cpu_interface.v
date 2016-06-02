@@ -162,7 +162,7 @@ always @ (*) begin
     if (dmem_addr[29:26] == 4'hc) begin // VMEM
         vga_stall = dmem_write_in;
     end
-    if (dmem_addr[29:26] == 4'hd) begin // timer
+    else if (dmem_addr[29:26] == 4'hd) begin // timer
         // TODO dmem_data_out = timer_data
         // now use 0xdxxx to trap!
         trap_stall = dmem_read_in | dmem_write_in;

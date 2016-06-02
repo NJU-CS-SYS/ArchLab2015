@@ -380,9 +380,11 @@ end
 //  GPR
 ////////////////////////////////////////////////////////////////////////////
 
-wire [31:0] s0;
+wire [31:0] dbg_reg;
 
 GPR gpr (
+    .dbg_reg_addr ( SW[4:0]          ),
+    .dbg_reg      ( dbg_reg          ),
     .clk          ( ~clk             ), // write in the wb cycle, not the next cycle
     .reset        ( reset            ),
     .write        ( wb_reg_w         ),
@@ -972,17 +974,18 @@ always @ (*) begin
         4'b0101: hex_to_seg = {5'd0, addr_to_mig};
         4'b0110: hex_to_seg = data_to_mig[31:0];
         4'b0111: hex_to_seg = part_of_buffer;
-        4'b1000: hex_to_seg = s0;
+        4'b1000: hex_to_seg = dbg_reg;
         default: hex_to_seg = mem_alu_res;
     endcase
 end
 
 //assign mem_pc_out = mem_pc;
 assign led[0]       = mem_mem_w;
-assign led[1]       = mem_stall;
-assign led[2]       = cache_stall;
-assign led[3]       = trap_stall;
-assign led[15:4]    = 14'd0;
+assign led[1]       = mem_mem_r;
+assign led[2]       = mem_stall;
+assign led[3]       = cache_stall;
+assign led[4]       = trap_stall;
+assign led[15:5]    = 14'd0;
 
 assign clk = SLOW ? ui_clk_from_ddr : sync_manual_clk; // pipeline clock
 
