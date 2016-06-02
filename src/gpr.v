@@ -8,6 +8,8 @@
 module GPR
 #(parameter ADDR_WIDTH=5, DATA_WIDTH=32)
 (
+    input [ADDR_WIDTH - 1 : 0] dbg_reg_addr,
+    output [DATA_WIDTH - 1 : 0] dbg_reg,
     input clk,
     input reset,
     input write,
@@ -51,4 +53,5 @@ module GPR
     // Read
     assign Rs_out = register[Rs_addr];
     assign Rt_out = register[Rt_addr];
+    assign dbg_reg = register[dbg_reg_addr];
 endmodule

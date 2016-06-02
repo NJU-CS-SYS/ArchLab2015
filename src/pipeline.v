@@ -380,7 +380,11 @@ end
 //  GPR
 ////////////////////////////////////////////////////////////////////////////
 
+wire [31:0] dbg_reg;
+
 GPR gpr (
+    .dbg_reg_addr ( SW[4:0]          ),
+    .dbg_reg      ( dbg_reg          ),
     .clk          ( ~clk             ), // write in the wb cycle, not the next cycle
     .reset        ( reset            ),
     .write        ( wb_reg_w         ),
@@ -957,6 +961,7 @@ always @ (*) begin
         4'b0101: hex_to_seg = {5'd0, addr_to_mig};
         4'b0110: hex_to_seg = data_to_mig[31:0];
         4'b0111: hex_to_seg = part_of_buffer;
+        4'b1000: hex_to_seg = dbg_reg;
         default: hex_to_seg = mem_alu_res;
     endcase
     case (SW[2:0])
