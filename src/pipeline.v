@@ -978,8 +978,9 @@ end
 
 //assign mem_pc_out = mem_pc;
 assign led[0]       = mem_mem_w;
-assign led[1]       = mem_stall;
-assign led[15:2]    = 14'd0;
+assign led[1]       = mem_mem_r;
+assign led[2]       = mem_stall;
+assign led[15:3]    = 14'd0;
 
 assign clk = SLOW ? ui_clk_from_ddr : sync_manual_clk; // pipeline clock
 
