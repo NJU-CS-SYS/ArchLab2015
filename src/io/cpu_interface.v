@@ -112,7 +112,7 @@ reg vga_wen;
 reg vga_stall;
 reg [1:0] vga_stall_cnt;
 reg loader_en;
-reg loaded;
+// reg loaded;
 reg trap_stall;
 
 // As vga_stall is a combinational logic, the pipeline will stall immediately while the vga_wen needs a posedge
