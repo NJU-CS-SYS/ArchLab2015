@@ -17,9 +17,6 @@ module GPR
     input [(DATA_WIDTH-1):0] Rd_in,
     input [3:0] Rd_Byte_w_en,
 
-    // debug
-    output [(DATA_WIDTH-1):0] s0,
-
     output [(DATA_WIDTH-1):0] Rs_out, Rt_out
 );
 

@@ -234,7 +234,9 @@ cache_manage_unit u_cm_0 (
     .mem_stall       ( cache_stall          ),
     .dc_data_out     ( dc_data_out          ),
     .ic_data_out     ( ic_data_out          ),
-
+    
+    .status          (                      ),
+    .counter         (                      ),
     .ram_en_out      ( ram_en               ),
     .ram_write_out   ( ram_write            ),
     .ram_addr_out    ( ram_addr             ),

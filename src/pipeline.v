@@ -393,7 +393,6 @@ GPR gpr (
     .Rd_addr      ( wb_rd_addr       ),
     .Rd_in        ( wb_data_in       ),
     .Rd_Byte_w_en ( wb_reg_byte_w_en ),
-    .s0           ( s0               ),
     .Rs_out       ( id_rs_out        ),
     .Rt_out       ( id_rt_out        )
 );
