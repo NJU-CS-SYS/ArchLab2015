@@ -39,7 +39,7 @@ nice:
     li $v0, 89
     li $v1, 0xc0000000
     addiu $v1, 325
-    sb $v0, 0(v1)
+    sb $v0, 0($v1)
 
 fuck:
     li $v0, 0xd000f000
