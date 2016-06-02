@@ -52,6 +52,12 @@ module cache_manage_unit #(
     output [DATA_WIDTH - 1 : 0]  dc_data_out,
     output [DATA_WIDTH - 1 : 0]  ic_data_out,
 
+    // debug
+    output reg  [2:0] status,
+    // Cache 当前状态，表明 cache 是否*已经*发生缺失以及缺失类型，具体取值参见 status.vh.
+    output reg  [2:0] counter,
+    // 块内偏移指针/迭代器，用于载入块时逐字写入。
+
     // To RAM
     output                       ram_en_out,          // Asserted when we need ram to work (load or writeback)
     output                       ram_write_out,       // RAM write enable
@@ -59,10 +65,8 @@ module cache_manage_unit #(
     output [BLOCK_WIDTH - 1 : 0] dc_data_wb           // Write back block, _wb for `write back'
 );
 
-reg  [2:0] status;       // Cache 当前状态，表明 cache 是否*已经*发生缺失以及缺失类型，具体取值参见 status.vh.
 wire [2:0] status_next;  // 由 cache control 生成的次态信号。
 
-reg  [2:0] counter;      // 块内偏移指针/迭代器，用于载入块时逐字写入。
 wire [2:0] counter_next; // 由 cache control 决定的下一周期迭代器的值。
 
 reg write_after_load;    // 标记导致阻塞的是否是写操作，是的话，要多阻塞一个周期完成写入。

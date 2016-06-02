@@ -49,6 +49,9 @@ module ddr_ctrl(
     output ram_rdy,
     output [255:0] block_out,
     output ui_clk,
+
+    // debug
+    output go,
     output [127:0] data_to_mig,
     output reg [255:0] buffer,
     output [26:0] addr_to_mig
@@ -69,7 +72,6 @@ wire mig_rdy;
 wire mig_data_valid;
 wire mig_wdf_rdy;
 wire init_calib_complete;
-wire go;
 
 assign cur_op[1] = !ram_en;
 assign cur_op[0] = ram_write;
@@ -110,11 +112,11 @@ mig_7series_0 m70(/*autoinst*/
 
     .app_addr                   (addr_to_mig                    ),
     .app_cmd                    (cmd_to_mig                     ),
-    .app_en                     (busy                           ),  
+    .app_en                     (writing | reading              ),
     .app_wdf_data               (data_to_mig                    ),  
-    .app_wdf_end                (go & busy & ram_write          ),
+    .app_wdf_end                (writing                        ),
     .app_wdf_mask               (16'h0                          ),  
-    .app_wdf_wren               (go & busy & ram_write          ),  
+    .app_wdf_wren               (writing                        ),
     .app_rd_data                (data_from_mig                  ),
     .app_rd_data_end            (                               ),  // nosense
     .app_rd_data_valid          (mig_data_valid                 ),  

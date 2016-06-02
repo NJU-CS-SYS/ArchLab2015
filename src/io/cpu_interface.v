@@ -272,6 +272,7 @@ ddr_ctrl ddr_ctrl_0(
     .ddr2_dm        ( ddr2_dm              ),
     .ddr2_odt       ( ddr2_odt             ),
     // debug ports
+    .go             ( go                   ),
     .data_to_mig    ( data_to_mig          ),
     .buffer         ( buffer_of_ddrctrl    ),
     .addr_to_mig    ( addr_to_mig          )
