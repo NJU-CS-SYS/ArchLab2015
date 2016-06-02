@@ -23,19 +23,32 @@ main:
     sw $a3, 0($t5)
 
     lw $t0, 0($t0)
+    li $s0, 1
     bne $t0, $v0, fuck
+
     lw $t1, 0($t1)
+    li $s0, 2
     bne $t1, $v1, fuck
+
     lw $t2, 0($t2)
+    li $s0, 3
     bne $t2, $a0, fuck
+
     lw $t3, 0($t3)
+    li $s0, 4
     bne $t3, $a1, fuck
+
     lw $t4, 0($t4)
+    li $s0, 5
     bne $t4, $a2, fuck
+
     lw $t5, 0($t5)
+    li $s0, 6
     bne $t5, $a3, fuck
 
+
 nice:
+
     li $v0, 89
     li $v1, 0xc0000000
     addiu $v1, 325

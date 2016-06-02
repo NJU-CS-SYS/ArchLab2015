@@ -14,6 +14,10 @@ module GPR
     input [(ADDR_WIDTH-1):0] Rs_addr, Rt_addr, Rd_addr,
     input [(DATA_WIDTH-1):0] Rd_in,
     input [3:0] Rd_Byte_w_en,
+
+    // debug
+    output [(DATA_WIDTH-1):0] s0,
+
     output [(DATA_WIDTH-1):0] Rs_out, Rt_out
 );
 
@@ -51,4 +55,5 @@ module GPR
     // Read
     assign Rs_out = register[Rs_addr];
     assign Rt_out = register[Rt_addr];
+    assign s0 = register[16];
 endmodule
