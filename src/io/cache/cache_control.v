@@ -288,7 +288,7 @@ always @(*) begin
 
             // 根据访问结果，决定下一状态，先判断 D-cache miss, 再判断 I-cache miss, 最后判断 I-cache miss。
             if(dc_enable_reg && !(dc_hit_in && dc_valid_in)) begin //dc miss
-                if(!(ic_hit_in && ic_valid_in)) begin //dc miss & ic miss
+                if(ic_enable_reg && !(ic_hit_in && ic_valid_in)) begin //dc miss & ic miss
                     if(dc_dirty_in) begin //dc miss & ic miss & dc dirty
                         status_next_reg = `STAT_DOUBLE_MISS_D;
                     end
@@ -306,7 +306,7 @@ always @(*) begin
                 end
             end
             else begin //dc hit & ic miss
-                if(!(ic_hit_in && ic_valid_in)) begin
+                if(ic_enable_reg && !(ic_hit_in && ic_valid_in)) begin
                     status_next_reg = `STAT_IC_MISS;
                 end
                 else begin //dc hit & ic hit
