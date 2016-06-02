@@ -919,6 +919,8 @@ cpu_interface inst_ci  (
     .mem_stall         ( mem_stall           ),
 
     //debug
+    .cache_stall       ( cache_stall         ),
+    .trap_stall        ( trap_stall          ),
     .data_to_mig       ( data_to_mig         ),
     .buffer_of_ddrctrl ( buffer_of_ddrctrl   ),
     .addr_to_mig       ( addr_to_mig         )
@@ -974,7 +976,9 @@ end
 //assign mem_pc_out = mem_pc;
 assign led[0]       = mem_mem_w;
 assign led[1]       = mem_stall;
-assign led[15:2]    = 14'd0;
+assign led[2]       = cache_stall;
+assign led[3]       = trap_stall;
+assign led[15:4]    = 14'd0;
 
 assign clk = SLOW ? ui_clk_from_ddr : sync_manual_clk; // pipeline clock
 

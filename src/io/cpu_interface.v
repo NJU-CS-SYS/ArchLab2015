@@ -67,6 +67,8 @@ module cpu_interface(
     output [127:0] data_to_mig,
     output [255:0] buffer_of_ddrctrl,
     output [26:0] addr_to_mig,
+    output cache_stall,
+    output reg trap_stall,
 
     // VGA outputs
     output [3:0] VGA_R,
@@ -93,7 +95,6 @@ wire [31:0] ic_data_out;
 wire [31:0] loader_instr;
 wire [31:0] loader_data;
 reg [29:0] ic_addr;
-wire cache_stall;
 
 reg ic_read_in, dc_read_in, dc_write_in;
 reg loader_wen;  // accessing loader mapping area & writing request
@@ -113,7 +114,6 @@ reg vga_stall;
 reg [1:0] vga_stall_cnt;
 reg loader_en;
 // reg loaded;
-reg trap_stall;
 
 // As vga_stall is a combinational logic, the pipeline will stall immediately while the vga_wen needs a posedge
 // of pixel_clk to become active. At that time, the address and char data are stable.
