@@ -157,7 +157,7 @@ always @ (*) begin
     if (dmem_addr[29:26] == 4'hc) begin // VMEM
         vga_stall = dmem_write_in;
     end
-    if (dmem_addr[29:26] == 4'hd) begin // timer
+    else if (dmem_addr[29:26] == 4'hd) begin // timer
         // TODO dmem_data_out = timer_data
     end
     else if (dmem_addr[29:26] == 4'he) begin //keyborad
