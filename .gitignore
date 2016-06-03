@@ -4,9 +4,13 @@ tags
 !start.S
 *.d
 *.o
-ram_init_gen/
-!ram_init_gen/stdio.*
 !testcase/*.S
 *~
 tags
 note
+
+ram_init_gen/*.c
+ram_init_gen/*.s
+ram_init_gen/*.coe
+ram_init_gen/*.txt
+ram_init_gen/boot*
