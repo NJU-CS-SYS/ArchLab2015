@@ -9,8 +9,8 @@ OBJDUMP = $(CROSS_COMPILE)objdump
 CFLAGS = -MD -fno-pic -static -fno-strict-aliasing -fno-builtin
 CFLAGS += -fno-stack-protector -mno-check-zero-division -fno-delayed-branch
 CFLAGS += -Wall -Werror -EL -march=mips32 -mno-llsc
-# CFLAGS += -mno-imadd 
-CFLAGS += -mno-mad
+# CFLAGS += -mno-imadd
+CFLAGS += -mno-mad -std=gnu99
 CFLAGS += -I./inc -O2 -Wno-unused-function
 CFLAGS += -mno-abicalls -g
 SCFLAGS = -MD -fno-pic -static -fno-strict-aliasing -fno-builtin
@@ -22,9 +22,10 @@ ASFLAGS += -fno-pic -fno-delayed-branch
 LDFLAGS = -EL
 
 
-CSRC = $(shell find . -name "*.c") 
-SSRC = $(shell find . -name "*.S") 
+CSRC = $(shell find . -name "*.c")
+SSRC = $(shell find . -name "*.S")
 OBJECTS = $(SSRC:.S=.o) $(CSRC:.c=.o)
+DOT_D = $(SSRC:.S=.d) $(CSRC:.c=.d)
 ASMS = $(CSRC:.c=.S)
 
 export CROSS_COMPILE
@@ -49,7 +50,7 @@ qemu:
 	gdb-multiarch qemu.bin -ex "set arch mips" -ex "set endian little" \
 		-ex "target remote :1234" -ex "disp /i \$$pc"
 clean:
-	-rm -f boot *.bin *.d *.o *.txt 2> /dev/null
+	-rm -f boot *.bin $(DOT_D) $(OBJECTS) *.txt 2> /dev/null
 
 TOOL_DIR = ../tools
 

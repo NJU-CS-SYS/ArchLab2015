@@ -116,7 +116,7 @@ wire ddr_ctrl_writing;
 reg [127:0] debug_queue [63:0];
 reg [5:0] dbg_que_start;
 reg [5:0] dbg_que_end;
-reg [31:0] dbg_que_valid_width; // tell c/asm program how long an debug entry is
+// reg [31:0] dbg_que_valid_width; // tell c/asm program how long an debug entry is
 reg dbg_status;
 
 wire [127:0] que_input = {
@@ -209,7 +209,15 @@ always @ (*) begin
             trap_stall = dmem_read_in | dmem_write_in;
         end
         else begin
-            dmem_data_out = debug_queue[dmem_addr[9:4]][dmem_addr[3:2]];
+            if (dmem_addr[25:0] == 26'h3000001) begin
+              dmem_data_out = {26'd0, dbg_que_start};
+            end
+            else if (dmem_addr[25:0] == 26'h3000002) begin
+              dmem_data_out = {26'd0, dbg_que_end};
+            end
+            else begin
+              dmem_data_out = debug_queue[dmem_addr[9:4]][dmem_addr[3:2]];
+            end
         end
     end
     else if (dmem_addr[29:26] == 4'he) begin //keyborad
@@ -352,6 +360,8 @@ loader_mem loader (         // use dual port Block RAM
 
 vga #(
     .DATA_ADDR_WIDTH( 15 ),
+
+    /*
     .h_disp         (1280),
     .h_front        ( 48 ),
     .h_sync         (112 ),
@@ -360,8 +370,8 @@ vga #(
     .v_front        ( 1  ),
     .v_sync         ( 3  ),
     .v_back         ( 38 )
+    */
 
-    /*
     .h_disp         (1680),
     .h_front        (104 ),
     .h_sync         (184 ),
@@ -370,7 +380,6 @@ vga #(
     .v_front        ( 1  ),
     .v_sync         ( 3  ),
     .v_back         ( 33 )
-    */
 ) vga0 (
     .RESET      ( rst            ),
     .DATA_ADDR  ( vga_addr[14:0] ),
@@ -391,7 +400,6 @@ always @ (posedge clk_for_ddr) begin
     dbg_status <= 0;
     dbg_que_start <= 0;
     dbg_que_end <= 0;
-    dbg_que_valid_width <= 128;
   end
   else begin
     if (!cache_stall) begin
