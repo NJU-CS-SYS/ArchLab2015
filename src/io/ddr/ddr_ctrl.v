@@ -54,32 +54,34 @@ module ddr_ctrl(
     output go,
     output [127:0] data_to_mig,
     output reg [255:0] buffer,
-    output [26:0] addr_to_mig
+    output [26:0] addr_to_mig,
+
+    output mig_rdy,
+    output mig_wdf_rdy,
+    output init_calib_complete,
+    output mig_data_end,
+    output mig_data_valid,
+    output reg reading,
+    output reg writing
 );
 
-reg reading;
-reg writing;
 reg [29:0] last_addr;
 reg [1:0] last_op; // 11 for NOP, 00 for read, 01 for write
 
 wire [1:0] cur_op;
 wire busy;
 wire buf_w_en_high;
-// wire buf_w_en_low;
 wire [2:0] cmd_to_mig;
 wire [127:0] data_from_mig;
-wire mig_rdy;
-wire mig_data_valid;
-wire mig_wdf_rdy;
-wire init_calib_complete;
 
 assign cur_op[1] = !ram_en;
 assign cur_op[0] = ram_write;
-assign busy = ram_en & ((ram_addr != last_addr) || (cur_op != last_op)); // need to work
+assign busy = ram_en & ((ram_addr != last_addr) || (cur_op != last_op));
+// need to work
 assign buf_w_en_high = ram_addr[2]; // highest bit of block selector
-// assign buf_w_en_low = !ram_addr[4:4]; 
+// assign buf_w_en_low = !ram_addr[4:4];
 assign addr_to_mig = {ram_addr[24:0], 2'b0}; // highest 5 bits was ignored
-assign cmd_to_mig = ram_write ? 3'b000 : 3'b001; 
+assign cmd_to_mig = ram_write ? 3'b000 : 3'b001;
 assign data_to_mig = buf_w_en_high ? data_to_ram[255:128] : data_to_ram[127:0];
 assign go = mig_rdy & mig_wdf_rdy & init_calib_complete; // able to go
 
@@ -89,51 +91,51 @@ assign go = mig_rdy & mig_wdf_rdy & init_calib_complete; // able to go
 
 assign ddr2_cs_n = 0;
 
-mig_7series_0 m70(/*autoinst*/
+mig_7series_0 m70 (
     // Inouts
-    .ddr2_dq                    (ddr2_dq                        ),
-    .ddr2_dqs_n                 (ddr2_dqs_n                     ),
-    .ddr2_dqs_p                 (ddr2_dqs_p                     ),
+    .ddr2_dq             ( ddr2_dq             ),
+    .ddr2_dqs_n          ( ddr2_dqs_n          ),
+    .ddr2_dqs_p          ( ddr2_dqs_p          ),
    // Outputs
-    .ddr2_addr                  (ddr2_addr                      ),
-    .ddr2_ba                    (ddr2_ba                        ),
-    .ddr2_ras_n                 (ddr2_ras_n                     ),
-    .ddr2_cas_n                 (ddr2_cas_n                     ),
-    .ddr2_we_n                  (ddr2_we_n                      ),
-    .ddr2_ck_p                  (ddr2_ck_p                      ),
-    .ddr2_ck_n                  (ddr2_ck_n                      ),
-    .ddr2_cke                   (ddr2_cke                       ),
+    .ddr2_addr           ( ddr2_addr           ),
+    .ddr2_ba             ( ddr2_ba             ),
+    .ddr2_ras_n          ( ddr2_ras_n          ),
+    .ddr2_cas_n          ( ddr2_cas_n          ),
+    .ddr2_we_n           ( ddr2_we_n           ),
+    .ddr2_ck_p           ( ddr2_ck_p           ),
+    .ddr2_ck_n           ( ddr2_ck_n           ),
+    .ddr2_cke            ( ddr2_cke            ),
     //.ddr2_cs_n                  (ddr2_cs_n                      ),
-    .ddr2_dm                    (ddr2_dm                        ),
-    .ddr2_odt                   (ddr2_odt                       ),
+    .ddr2_dm             ( ddr2_dm             ),
+    .ddr2_odt            ( ddr2_odt            ),
 
-    .sys_clk_i                  (clk_from_ip                    ),  
-    .clk_ref_i                  (clk_from_ip                    ),  
+    .sys_clk_i           ( clk_from_ip         ),
+    .clk_ref_i           ( clk_from_ip         ),
 
-    .app_addr                   (addr_to_mig                    ),
-    .app_cmd                    (cmd_to_mig                     ),
-    .app_en                     (writing | reading              ),
-    .app_wdf_data               (data_to_mig                    ),  
-    .app_wdf_end                (writing                        ),
-    .app_wdf_mask               (16'h0                          ),  
-    .app_wdf_wren               (writing                        ),
-    .app_rd_data                (data_from_mig                  ),
-    .app_rd_data_end            (                               ),  // nosense
-    .app_rd_data_valid          (mig_data_valid                 ),  
-    .app_rdy                    (mig_rdy                        ),  
-    .app_wdf_rdy                (mig_wdf_rdy                    ),  
+    .app_addr            ( addr_to_mig         ),
+    .app_cmd             ( cmd_to_mig          ),
+    .app_en              ( writing | reading   ),
+    .app_wdf_data        ( data_to_mig         ),
+    .app_wdf_end         ( writing             ),
+    .app_wdf_mask        ( 16'h0               ),
+    .app_wdf_wren        ( writing             ),
+    .app_rd_data         ( data_from_mig       ),
+    .app_rd_data_end     ( mig_data_end        ),
+    .app_rd_data_valid   ( mig_data_valid      ),
+    .app_rdy             ( mig_rdy             ),
+    .app_wdf_rdy         ( mig_wdf_rdy         ),
 
-    .app_sr_req                 (0                              ),  // nosene    
-    .app_ref_req                (0                              ),  // nosene    
-    .app_zq_req                 (0                              ),  // nosene    
-    .app_sr_active              (                               ),  // nosene
-    .app_ref_ack                (                               ),  // nosene 
-    .app_zq_ack                 (                               ),  // nosene  
+    .app_sr_req          ( 0                   ), // nosene
+    .app_ref_req         ( 0                   ), // nosene
+    .app_zq_req          ( 0                   ), // nosene
+    .app_sr_active       (                     ), // nosene
+    .app_ref_ack         (                     ), // nosene
+    .app_zq_ack          (                     ), // nosene
 
-    .ui_clk                     (ui_clk                         ),  
-    .ui_clk_sync_rst            (                               ),  // nosene    
-    .init_calib_complete        (init_calib_complete            ),  
-    .sys_rst                    (rst                            )   
+    .ui_clk              ( ui_clk              ),
+    .ui_clk_sync_rst     (                     ), // nosene
+    .init_calib_complete ( init_calib_complete ),
+    .sys_rst             ( rst                 )
 );
 
 // control signal generation
@@ -152,7 +154,7 @@ always @(negedge ui_clk) begin
                 last_op <= cur_op;
                 writing <= 0;
             end
-        end 
+        end
         else if (reading) begin
             if(go) begin
                 if(mig_data_valid & ram_en) begin

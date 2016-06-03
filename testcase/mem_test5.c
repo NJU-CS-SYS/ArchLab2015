@@ -25,7 +25,7 @@ void check(unsigned int mem, unsigned int expected_val) {
         vga += screen_width/4;
     }
     else {
-        deref(0xd0001000) = 0;
+        deref(0xddd00000) = 0;
         putc('N', vga);
         put_hex(mem, vga + 2);
         put_hex(expected_val, vga + 14);

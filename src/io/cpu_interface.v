@@ -101,23 +101,62 @@ reg loader_wen;  // accessing loader mapping area & writing request
 reg [14:0] vga_addr; // 2**15 is enough for vga mem
 reg [7:0] char_to_vga;
 
+// debug variables
+
+wire [2:0] cache_status;
+wire [2:0] cache_counter;
+wire mig_rdy;
+wire mig_wdf_rdy;
+wire mig_ddr_inited;
+wire mig_data_end;
+wire mig_data_valid;
+wire ddr_ctrl_reading;
+wire ddr_ctrl_writing;
+
+reg [127:0] debug_queue [63:0];
+reg [5:0] dbg_que_start;
+reg [5:0] dbg_que_end;
+reg [31:0] dbg_que_valid_width; // tell c/asm program how long an debug entry is
+reg dbg_status;
+
+wire [127:0] que_input = {
+  data_to_mig[127:96],
+  data_to_mig[31:0],
+  5'b0,
+  addr_to_mig,
+
+  cache_status,
+  cache_counter,
+  mig_rdy,
+  mig_wdf_rdy,
+  mig_ddr_inited,
+  mig_data_end,
+  mig_data_valid,
+  ddr_ctrl_reading,
+  ddr_ctrl_writing
+};
+
 // vga_wen is synchronized by pixel_clk to avoid race between wen, addr & char.
-// vga_stall is a combinational logic which just indicates the address to write falls in text memory.
-// vga_stall_cnt is used to stall enough pixel cycles, whose value can be considered simply as a
+// vga_stall is a combinational logic which just indicates the address to write
+// falls in text memory.
+// vga_stall_cnt is used to stall enough pixel cycles, whose value can be
+// considered simply as a
 // cycle counter as well as the following semantic meaning:
 //   0 - initial state, nothing happened
 //   1 - starting / during the 1st pixel cycle to write;
 //   2 - starting / during the 2nd pixel cycle to write;
-//   3 - writing finished and the counter will spin on this value to ensure that pipeline retrieves from stalling.
+//   3 - writing finished and the counter will spin on this value to ensure that
+//       pipeline retrieves from stalling.
 reg vga_wen;
 reg vga_stall;
 reg [1:0] vga_stall_cnt;
 reg loader_en;
 // reg loaded;
 
-// As vga_stall is a combinational logic, the pipeline will stall immediately while the vga_wen needs a posedge
-// of pixel_clk to become active. At that time, the address and char data are stable.
-// `vga_stall_cnt < 3' ensures that the pipeline will recover as soon as the writing finishes.
+// As vga_stall is a combinational logic, the pipeline will stall immediately
+// while the vga_wen needs a posedge of pixel_clk to become active.
+// At that time, the address and char data are stable. `vga_stall_cnt < 3'
+// ensures that the pipeline will recover as soon as the writing finishes.
 assign mem_stall = cache_stall
         | (vga_stall && (vga_stall_cnt < 3))
         | trap_stall;
@@ -129,14 +168,15 @@ always @ (posedge ui_clk) begin
 end
 
 always @ (posedge text_mem_clk) begin
-    if (!rst || !vga_stall) begin  // when reseted (low-active) or not accessing vmem, keep this initial state
+    if (!rst || !vga_stall) begin  // when reseted (low-active)
+              //  or not accessing vmem, keep this initial state
         vga_wen <= 0;
         vga_stall_cnt <= 0;
     end
     else if (vga_stall) begin
         if (vga_stall_cnt >= 2) begin
-            // spin state, disabling write enable, allowing the pipeline to go on,
-            // and expecting the pipeline to reset the state.
+            // spin state, disabling write enable, allowing the pipeline to go
+            // on,and expecting the pipeline to reset the state.
             vga_wen <= 0;
             vga_stall_cnt <= 3;
         end
@@ -165,7 +205,12 @@ always @ (*) begin
     else if (dmem_addr[29:26] == 4'hd) begin // timer
         // TODO dmem_data_out = timer_data
         // now use 0xdxxx to trap!
-        trap_stall = dmem_read_in | dmem_write_in;
+        if (dmem_addr[25:18] == 8'hdd) begin
+            trap_stall = dmem_read_in | dmem_write_in;
+        end
+        else begin
+            dmem_data_out = debug_queue[dmem_addr[9:4]][dmem_addr[3:2]];
+        end
     end
     else if (dmem_addr[29:26] == 4'he) begin //keyborad
         // TODO dmem_data_out = kb_data, and needs further consideration.
@@ -234,9 +279,9 @@ cache_manage_unit u_cm_0 (
     .mem_stall       ( cache_stall          ),
     .dc_data_out     ( dc_data_out          ),
     .ic_data_out     ( ic_data_out          ),
-    
-    .status          (                      ),
-    .counter         (                      ),
+
+    .status          ( cache_status         ),
+    .counter         ( cache_counter        ),
     .ram_en_out      ( ram_en               ),
     .ram_write_out   ( ram_write            ),
     .ram_addr_out    ( ram_addr             ),
@@ -246,38 +291,43 @@ cache_manage_unit u_cm_0 (
 ddr_ctrl ddr_ctrl_0(
 
     // Inouts
-    .ddr2_dq        ( ddr2_dq              ),
-    .ddr2_dqs_n     ( ddr2_dqs_n           ),
-    .ddr2_dqs_p     ( ddr2_dqs_p           ),
-
+    .ddr2_dq             ( ddr2_dq              ),
+    .ddr2_dqs_n          ( ddr2_dqs_n           ),
+    .ddr2_dqs_p          ( ddr2_dqs_p           ),
     // original signals
-    .clk_from_ip    ( clk_for_ddr          ),
-    .rst            ( rst                  ),
-    .ram_en         ( ram_en               ),
-    .ram_write      ( ram_write            ),
-    .ram_addr       ( ram_addr[29:0]       ),
-    .data_to_ram    ( block_from_dc_to_ram ),
-
-    .ram_rdy        ( ram_rdy              ),
-    .block_out      ( block_from_ram       ),
-    .ui_clk         ( ui_clk               ),
+    .clk_from_ip         ( clk_for_ddr          ),
+    .rst                 ( rst                  ),
+    .ram_en              ( ram_en               ),
+    .ram_write           ( ram_write            ),
+    .ram_addr            ( ram_addr[29:0]       ),
+    .data_to_ram         ( block_from_dc_to_ram ),
+    .ram_rdy             ( ram_rdy              ),
+    .block_out           ( block_from_ram       ),
+    .ui_clk              ( ui_clk               ),
     // Outputs
-    .ddr2_addr      ( ddr2_addr            ),
-    .ddr2_ba        ( ddr2_ba              ),
-    .ddr2_ras_n     ( ddr2_ras_n           ),
-    .ddr2_cas_n     ( ddr2_cas_n           ),
-    .ddr2_we_n      ( ddr2_we_n            ),
-    .ddr2_ck_p      ( ddr2_ck_p            ),
-    .ddr2_ck_n      ( ddr2_ck_n            ),
-    .ddr2_cke       ( ddr2_cke             ),
-    .ddr2_cs_n      ( ddr2_cs_n            ),
-    .ddr2_dm        ( ddr2_dm              ),
-    .ddr2_odt       ( ddr2_odt             ),
+    .ddr2_addr           ( ddr2_addr            ),
+    .ddr2_ba             ( ddr2_ba              ),
+    .ddr2_ras_n          ( ddr2_ras_n           ),
+    .ddr2_cas_n          ( ddr2_cas_n           ),
+    .ddr2_we_n           ( ddr2_we_n            ),
+    .ddr2_ck_p           ( ddr2_ck_p            ),
+    .ddr2_ck_n           ( ddr2_ck_n            ),
+    .ddr2_cke            ( ddr2_cke             ),
+    .ddr2_cs_n           ( ddr2_cs_n            ),
+    .ddr2_dm             ( ddr2_dm              ),
+    .ddr2_odt            ( ddr2_odt             ),
     // debug ports
-    .go             ( go                   ),
-    .data_to_mig    ( data_to_mig          ),
-    .buffer         ( buffer_of_ddrctrl    ),
-    .addr_to_mig    ( addr_to_mig          )
+    .go                  ( go                   ),
+    .data_to_mig         ( data_to_mig          ),
+    .buffer              ( buffer_of_ddrctrl    ),
+    .addr_to_mig         ( addr_to_mig          ),
+    .mig_rdy             ( mig_rdy              ),
+    .mig_wdf_rdy         ( mig_wdf_rdy          ),
+    .init_calib_complete ( mig_ddr_inited       ),
+    .mig_data_end        ( mig_data_end         ),
+    .mig_data_valid      ( mig_data_valid       ),
+    .reading             ( ddr_ctrl_reading     ),
+    .writing             ( ddr_ctrl_writing     )
 );
 
 assign loader_data_o = loader_data;
@@ -292,7 +342,8 @@ loader_mem loader (         // use dual port Block RAM
     .clka  ( clk_pipeline       ),
     .wea   ( loader_wen         ),
     // Instr port (read-only)
-    .addrb ( instr_addr[12:0]   ), // lower 28 bits of initial address must start at 0
+    .addrb ( instr_addr[12:0]   ), // lower 28 bits of initial address
+                                   // must start at 0
     .dinb  ( 0                  ), // not used
     .doutb ( loader_instr       ),
     .clkb  ( clk_pipeline       ),
@@ -333,5 +384,30 @@ vga #(
     .VGA_HS     ( VGA_HS         ),
     .VGA_VS     ( VGA_VS         )
 );
+
+
+always @ (posedge clk_for_ddr) begin
+  if (!rst) begin
+    dbg_status <= 0;
+    dbg_que_start <= 0;
+    dbg_que_end <= 0;
+    dbg_que_valid_width <= 128;
+  end
+  else begin
+    if (!cache_stall) begin
+      dbg_status <= 0; // update start only if status = 0
+    end
+    else begin
+      if (!dbg_status) begin
+        dbg_status <= 1;
+        dbg_que_start <= dbg_que_end;
+      end
+      debug_queue[dbg_que_end] <= que_input;
+      dbg_que_end <= dbg_que_end + 1;  //warning: always overwrite the last line
+                                       // of last record!!
+    end
+  end
+end
+
 
 endmodule

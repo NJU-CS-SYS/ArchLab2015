@@ -55,5 +55,5 @@ nice:
     sb $v0, 0($v1)
 
 fuck:
-    li $v0, 0xd000f000
+    li $v0, 0xddd0f000
     sw $v0,0($v0)
