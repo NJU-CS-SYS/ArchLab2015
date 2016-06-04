@@ -1000,7 +1000,7 @@ always @ (posedge ui_clk_from_ddr) begin
     end
 end
 
-assign clk = SW[8] ? 
+assign clk = SW[8] ?
     (SW[7] ? ui_clk_from_ddr : sync_manual_clk) :
     (SW[7] ? slow_clk : fast_clk);
 endmodule

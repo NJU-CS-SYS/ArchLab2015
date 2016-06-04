@@ -40,6 +40,7 @@ module ddr_ctrl(
 
     // CPU input and output
     input clk_from_ip,
+    input clk_ci,
     input rst,
     input ram_en,
     input ram_write,

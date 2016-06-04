@@ -121,8 +121,8 @@ reg dbg_status;
 reg [6:0] miss_count;
 
 wire [127:0] que_input = {
-    data_to_mig[31:0],
-    data_from_mig[31:0],
+    data_to_mig[63:32],
+    data_from_mig[63:32],
 
     5'd0,
     addr_to_mig,
@@ -320,6 +320,7 @@ ddr_ctrl ddr_ctrl_0(
     .ddr2_dqs_p          ( ddr2_dqs_p           ),
     // original signals
     .clk_from_ip         ( clk_for_ddr          ),
+    .clk_ci              ( clk_pipeline         ),
     .rst                 ( rst                  ),
     .ram_en              ( ram_en               ),
     .ram_write           ( ram_write            ),
