@@ -55,6 +55,7 @@ module ddr_ctrl(
     output [127:0] data_to_mig,
     output reg [255:0] buffer,
     output [26:0] addr_to_mig,
+    output [127:0] data_from_mig,
 
     output mig_rdy,
     output mig_wdf_rdy,
@@ -72,7 +73,6 @@ wire [1:0] cur_op;
 wire busy;
 wire buf_w_en_high;
 wire [2:0] cmd_to_mig;
-wire [127:0] data_from_mig;
 
 assign cur_op[1] = !ram_en;
 assign cur_op[0] = ram_write;

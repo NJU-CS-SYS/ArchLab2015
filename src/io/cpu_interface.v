@@ -102,6 +102,7 @@ reg [14:0] vga_addr; // 2**15 is enough for vga mem
 reg [7:0] char_to_vga;
 
 // debug variables
+wire [127:0] data_from_mig;
 
 wire [2:0] cache_status;
 wire [2:0] cache_counter;
@@ -116,24 +117,27 @@ wire ddr_ctrl_writing;
 reg [127:0] debug_queue [63:0];
 reg [5:0] dbg_que_start;
 reg [5:0] dbg_que_end;
-// reg [31:0] dbg_que_valid_width; // tell c/asm program how long an debug entry is
 reg dbg_status;
+reg [6:0] miss_count;
 
 wire [127:0] que_input = {
-  data_to_mig[127:96],
-  data_to_mig[31:0],
-  5'b0,
-  addr_to_mig,
+    data_to_mig[31:0],
+    data_from_mig[31:0],
 
-  cache_status,
-  cache_counter,
-  mig_rdy,
-  mig_wdf_rdy,
-  mig_ddr_inited,
-  mig_data_end,
-  mig_data_valid,
-  ddr_ctrl_reading,
-  ddr_ctrl_writing
+    5'd0,
+    addr_to_mig,
+
+    cache_status,
+    cache_counter,
+    mig_rdy,
+    mig_wdf_rdy,
+    mig_ddr_inited,
+    mig_data_end,
+    mig_data_valid,
+    ddr_ctrl_reading,
+    ddr_ctrl_writing,
+    miss_count,
+    12'd0
 };
 
 // vga_wen is synchronized by pixel_clk to avoid race between wen, addr & char.
@@ -338,6 +342,7 @@ ddr_ctrl ddr_ctrl_0(
     // debug ports
     .go                  ( go                   ),
     .data_to_mig         ( data_to_mig          ),
+    .data_from_mig       ( data_from_mig        ),
     .buffer              ( buffer_of_ddrctrl    ),
     .addr_to_mig         ( addr_to_mig          ),
     .mig_rdy             ( mig_rdy              ),
@@ -409,9 +414,14 @@ initial begin
     dbg_status <= 0;
     dbg_que_start <= 0;
     dbg_que_end <= 0;
+    miss_count <= 0;
 end
 
-always @ (posedge clk_for_ddr) begin
+always @ (posedge cache_stall) begin
+    miss_count <= miss_count + 1;
+end
+
+always @ (posedge clk_pipeline) begin
     if (!rst) begin
         dbg_status <= 0;
         dbg_que_start <= 0;
