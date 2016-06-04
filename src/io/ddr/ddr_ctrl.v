@@ -46,13 +46,12 @@ module ddr_ctrl(
     input [29:0] ram_addr, // 4 byte aligned
     input [255:0] data_to_ram,
 
-    output ram_rdy,
-    output [255:0] block_out,
+    output reg ram_rdy,
     output ui_clk,
 
     // debug
     output go,
-    output [127:0] data_to_mig,
+    output reg [127:0] data_to_mig,
     output reg [255:0] buffer,
     output [26:0] addr_to_mig,
     output [127:0] data_from_mig,
@@ -61,36 +60,92 @@ module ddr_ctrl(
     output mig_wdf_rdy,
     output init_calib_complete,
     output mig_data_end,
-    output mig_data_valid,
-    output reg reading,
-    output reg writing
+    output mig_data_valid
 );
 
-reg [29:0] last_addr;
-reg [1:0] last_op; // 11 for NOP, 00 for read, 01 for write
-
-wire [1:0] cur_op;
-wire busy;
-wire buf_w_en_high;
-wire [2:0] cmd_to_mig;
-
-assign cur_op[1] = !ram_en;
-assign cur_op[0] = ram_write;
-assign busy = ram_en & ((ram_addr != last_addr) || (cur_op != last_op));
-// need to work
-assign buf_w_en_high = ram_addr[2]; // highest bit of block selector
-// assign buf_w_en_low = !ram_addr[4:4];
+reg [2:0] cmd_to_mig;
 assign addr_to_mig = {ram_addr[24:0], 2'b0}; // highest 5 bits was ignored
-assign cmd_to_mig = ram_write ? 3'b000 : 3'b001;
-assign data_to_mig = buf_w_en_high ? data_to_ram[255:128] : data_to_ram[127:0];
 assign go = mig_rdy & mig_wdf_rdy & init_calib_complete; // able to go
 
-`define NOP 2'b11
-`define OP_READ 2'b00
-`define OP_WRITE 2'b01
+
+`define DDR_STAT_NORM 3'b000
+`define DDR_STAT_W1 3'b001
+`define DDR_STAT_W2 3'b010
+`define DDR_STAT_R1 3'b011
+`define DDR_STAT_R2 3'b100
+
+reg [2:0] ddr_ctrl_status;
+reg [2:0] ddr_ctrl_status_next;
+reg app_en;
+reg app_wdf_wren;
+reg app_wdf_end;
+
+always @ (*) begin
+    app_en = 1;
+    app_wdf_end = 1;
+    app_wdf_wren = 0;
+    case(ddr_ctrl_status)
+        `DDR_STAT_R1:
+        begin
+            data_to_mig = data_to_ram[127:0];
+
+            cmd_to_mig = 3'b001;
+            ddr_ctrl_status_next = `DDR_STAT_R2;
+            ram_rdy = 0;
+        end
+
+        `DDR_STAT_R2:
+        begin
+            data_to_mig = data_to_ram[127:0];
+
+            cmd_to_mig = 3'b001;
+            ddr_ctrl_status_next = `DDR_STAT_NORM;
+            ram_rdy = 0;
+        end
+
+        `DDR_STAT_W1:
+        begin
+            app_wdf_wren = 1;
+            cmd_to_mig = 3'b000;
+            data_to_mig = data_to_ram[127:0];
+            ddr_ctrl_status_next = `DDR_STAT_W2;
+            ram_rdy = 0;
+        end
+
+        `DDR_STAT_W2:
+        begin
+            app_wdf_wren = 1;
+            cmd_to_mig = 3'b000;
+            data_to_mig = data_to_ram[255:128];
+            ddr_ctrl_status_next = `DDR_STAT_NORM;
+            ram_rdy = 0;
+        end
+
+        default:
+        begin
+            app_en = 0;
+            cmd_to_mig = 3'b001;
+            data_to_mig = data_to_ram[127:0];
+
+            if(ram_en) begin
+                ram_rdy = 0;
+                if(ram_write) begin
+                    ddr_ctrl_status_next = `DDR_STAT_W1;
+                end
+                else begin
+                    ddr_ctrl_status_next = `DDR_STAT_R1;
+                end
+            end
+            else begin
+                ddr_ctrl_status_next = `DDR_STAT_NORM;
+                ram_rdy = 1;
+            end
+        end
+    endcase
+end
+
 
 assign ddr2_cs_n = 0;
-
 mig_7series_0 m70 (
     // Inouts
     .ddr2_dq             ( ddr2_dq             ),
@@ -114,11 +169,11 @@ mig_7series_0 m70 (
 
     .app_addr            ( addr_to_mig         ),
     .app_cmd             ( cmd_to_mig          ),
-    .app_en              ( writing | reading   ),
+    .app_en              ( app_en              ),
     .app_wdf_data        ( data_to_mig         ),
-    .app_wdf_end         ( writing             ),
+    .app_wdf_end         ( app_wdf_end         ),
     .app_wdf_mask        ( 16'h0               ),
-    .app_wdf_wren        ( writing             ),
+    .app_wdf_wren        ( app_wdf_wren        ),
     .app_rd_data         ( data_from_mig       ),
     .app_rd_data_end     ( mig_data_end        ),
     .app_rd_data_valid   ( mig_data_valid      ),
@@ -138,47 +193,41 @@ mig_7series_0 m70 (
     .sys_rst             ( rst                 )
 );
 
-// control signal generation
+initial begin
+    ddr_ctrl_status = `DDR_STAT_NORM;
+end
 
 always @(negedge ui_clk) begin
     if(~rst) begin
-        last_op <= `NOP;
-        last_addr <= 30'h3fffffff;
-        writing <= 0;
-        reading <= 0;
+        ddr_ctrl_status = `DDR_STAT_NORM;
     end
     else begin
-        if(writing) begin
-            if(go) begin
-                last_addr <= ram_addr;
-                last_op <= cur_op;
-                writing <= 0;
-            end
-        end
-        else if (reading) begin
-            if(go) begin
-                if(mig_data_valid & ram_en) begin
-                    if(buf_w_en_high) buffer[255:128] <= data_from_mig;
-                    else buffer[127:0] <= data_from_mig;
-                    last_addr <= ram_addr;
-                    last_op <= cur_op;
-                    reading <= 0;
+        if(go & ram_en) begin
+            case (ddr_ctrl_status)
+
+                `DDR_STAT_R1:
+                begin
+                    if(mig_data_valid) begin
+                        buffer[127:0] <= data_from_mig;
+                        ddr_ctrl_status <= ddr_ctrl_status_next;
+                    end
                 end
-            end
-        end
-        else if (busy) begin
-            if(ram_write) begin
-                writing <= 1;
-            end
-            else begin
-                reading <= 1;
-            end
+
+                `DDR_STAT_R2:
+                begin
+                    if(mig_data_valid) begin
+                        buffer[255:128] <= data_from_mig;
+                        ddr_ctrl_status <= ddr_ctrl_status_next;
+                    end
+                end
+
+                default:
+                begin
+                    ddr_ctrl_status <= ddr_ctrl_status_next;
+                end
+            endcase
         end
     end
 end
-
-assign ram_rdy = (~busy) & (~reading) & (~ writing);
-// assign block_out = buf_w_en_high ? buffer[255:128] : buffer[127:0];
-assign block_out = buffer;
 
 endmodule
