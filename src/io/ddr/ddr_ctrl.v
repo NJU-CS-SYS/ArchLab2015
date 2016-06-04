@@ -84,7 +84,7 @@ always @ (*) begin
     app_en = 1;
     app_wdf_end = 1;
     app_wdf_wren = 0;
-    addr_to_mig = {ram_addr[21:0], 5'b00000};
+    addr_to_mig = {ram_addr[24:3], 5'b00000};
     case(ddr_ctrl_status)
         `DDR_STAT_R1:
         begin
@@ -96,7 +96,7 @@ always @ (*) begin
 
         `DDR_STAT_R2:
         begin
-            addr_to_mig = {ram_addr[21:0], 5'b10000};
+            addr_to_mig = {ram_addr[24:3], 5'b10000};
             data_to_mig = data_to_ram[127:0];
             cmd_to_mig = 3'b001;
             ddr_ctrl_status_next = `DDR_STAT_NORM;
@@ -114,7 +114,7 @@ always @ (*) begin
 
         `DDR_STAT_W2:
         begin
-            addr_to_mig = {ram_addr[21:0], 5'b10000};
+            addr_to_mig = {ram_addr[24:3], 5'b10000};
             app_wdf_wren = 1;
             cmd_to_mig = 3'b000;
             data_to_mig = data_to_ram[255:128];
@@ -226,11 +226,8 @@ always @(negedge ui_clk) begin
 
                 default:
                 begin
-                    if (!((ddr_ctrl_status == `DDR_STAT_NORM) &&
-                            (ddr_ctrl_status_last != `DDR_STAT_NORM))) begin
-                        ddr_ctrl_status_last <= ddr_ctrl_status;
-                        ddr_ctrl_status <= ddr_ctrl_status_next;
-                    end
+                    ddr_ctrl_status_last <= ddr_ctrl_status;
+                    ddr_ctrl_status <= ddr_ctrl_status_next;
                 end
             endcase
         end

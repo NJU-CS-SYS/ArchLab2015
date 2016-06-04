@@ -3,7 +3,7 @@
 
 
 #define deref(x) *((volatile unsigned int *) (x))
-#define screen_width 160
+#define screen_width 210
 #define start_reg (0xdc000004)
 #define end_reg (0xdc000008)
 
@@ -52,13 +52,8 @@ int main() {
         vga += screen_width/10;
         put_hex(dqe.part[3], vga);
         vga += screen_width/10 * 7;
-        if (j%(4 << 4) == 0) {
-          vga += screen_width;
-        }
-        if (j%(8 << 4) == 0) {
-          vga += screen_width;
-        }
-        if (j == (16 << 4)) {
+
+        if (j == (16 << 4) || j == (32 << 4) || j == (48 << 4)) {
           vga += screen_width;
         }
       }
@@ -68,6 +63,10 @@ int main() {
     val += 1;
     addr += addr_step;
   }
+  putc('N', vga++);
+  putc('I', vga++);
+  putc('C', vga++);
+  putc('E', vga++);
   deref(0xdddd0000) = 0;
   return 0;
 }
