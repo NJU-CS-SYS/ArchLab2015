@@ -985,21 +985,22 @@ assign led[3]       = cache_stall;
 assign led[4]       = trap_stall;
 assign led[15:5]    = 14'd0;
 
-reg slow_clk_1;
-reg slow_clk_2;
-reg [22:0] slow_clk_counter_1;
+reg slow_clk;
+reg fast_clk;  // 32 times slow than ui_clk_from_ddr
+reg [21:0] slow_clk_counter;
+reg [4:0] fast_clk_counter;
 always @ (posedge ui_clk_from_ddr) begin
-    slow_clk_counter_1 <= slow_clk_counter_1 + 1;
-    if (slow_clk_counter_1 == 23'd0) begin
-        slow_clk_1 <= ~slow_clk_1;
-        slow_clk_2 <= ~slow_clk_2;
+    slow_clk_counter <= slow_clk_counter + 1;
+    fast_clk_counter <= fast_clk_counter + 1;
+    if (slow_clk_counter == 0) begin
+        slow_clk <= ~slow_clk;
     end
-    if (slow_clk_counter_1 == 23'h400000) begin
-        slow_clk_1 <= ~slow_clk_1;
+    if (fast_clk_counter == 0) begin
+        fast_clk <= ~fast_clk;
     end
 end
 
 assign clk = SW[8] ? 
     (SW[7] ? ui_clk_from_ddr : sync_manual_clk) :
-    (SW[7] ? slow_clk_1 : slow_clk_2);
+    (SW[7] ? slow_clk : fast_clk);
 endmodule

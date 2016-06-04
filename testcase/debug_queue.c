@@ -46,7 +46,7 @@ int main() {
         put_hex(dqe.part[2], vga);
         vga += screen_width/10;
         put_hex(dqe.part[3], vga);
-        vga += screen_width/10;
+        vga += screen_width/10 * 7;
       }
       vga += screen_width*2;
       break;
