@@ -83,7 +83,6 @@ localparam TIMER_START  = 32'hd0000000;
 localparam KBD_START    = 32'he0000000;
 localparam LOADER_START = 32'hf0000000;
 
-wire [255:0] block_from_ram;
 wire ram_rdy;
 wire ram_en;
 wire ram_write;
@@ -111,8 +110,9 @@ wire mig_wdf_rdy;
 wire mig_ddr_inited;
 wire mig_data_end;
 wire mig_data_valid;
-wire ddr_ctrl_reading;
-wire ddr_ctrl_writing;
+wire mig_en;
+wire mig_wren;
+wire [2:0] ddr_ctrl_status;
 
 reg [127:0] debug_queue [63:0];
 reg [5:0] dbg_que_start;
@@ -134,10 +134,11 @@ wire [127:0] que_input = {
     mig_ddr_inited,
     mig_data_end,
     mig_data_valid,
-    ddr_ctrl_reading,
-    ddr_ctrl_writing,
+    mig_en,
+    mig_wren,
     miss_count,
-    12'd0
+    ddr_ctrl_status,
+    9'd0
 };
 
 // vga_wen is synchronized by pixel_clk to avoid race between wen, addr & char.
@@ -297,7 +298,7 @@ cache_manage_unit u_cm_0 (
     .data_from_reg   ( data_from_reg        ),
 
     .ram_ready       ( ram_rdy              ),
-    .block_from_ram  ( block_from_ram       ),
+    .block_from_ram  ( buffer_of_ddrctrl    ),
 
     .mem_stall       ( cache_stall          ),
     .dc_data_out     ( dc_data_out          ),
@@ -325,7 +326,6 @@ ddr_ctrl ddr_ctrl_0(
     .ram_addr            ( ram_addr[29:0]       ),
     .data_to_ram         ( block_from_dc_to_ram ),
     .ram_rdy             ( ram_rdy              ),
-    .block_out           ( block_from_ram       ),
     .ui_clk              ( ui_clk               ),
     // Outputs
     .ddr2_addr           ( ddr2_addr            ),
@@ -350,8 +350,9 @@ ddr_ctrl ddr_ctrl_0(
     .init_calib_complete ( mig_ddr_inited       ),
     .mig_data_end        ( mig_data_end         ),
     .mig_data_valid      ( mig_data_valid       ),
-    .reading             ( ddr_ctrl_reading     ),
-    .writing             ( ddr_ctrl_writing     )
+    .app_en              ( mig_en               ),
+    .app_wdf_wren        ( mig_wren             ),
+    .ddr_ctrl_status     ( ddr_ctrl_status      )
 );
 
 assign loader_data_o = loader_data;
@@ -377,6 +378,7 @@ loader_mem loader (         // use dual port Block RAM
 vga #(
     .DATA_ADDR_WIDTH( 15 ),
 
+    /*
     .h_disp         (1280),
     .h_front        ( 48 ),
     .h_sync         (112 ),
@@ -385,8 +387,8 @@ vga #(
     .v_front        ( 1  ),
     .v_sync         ( 3  ),
     .v_back         ( 38 )
+    */
 
-    /*
     .h_disp         (1680),
     .h_front        (104 ),
     .h_sync         (184 ),
@@ -395,7 +397,6 @@ vga #(
     .v_front        ( 1  ),
     .v_sync         ( 3  ),
     .v_back         ( 33 )
-    */
 ) vga0 (
     .RESET      ( rst            ),
     .DATA_ADDR  ( vga_addr[14:0] ),

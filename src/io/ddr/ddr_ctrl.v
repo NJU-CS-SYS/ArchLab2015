@@ -53,18 +53,20 @@ module ddr_ctrl(
     output go,
     output reg [127:0] data_to_mig,
     output reg [255:0] buffer,
-    output [26:0] addr_to_mig,
+    output reg [26:0] addr_to_mig,
     output [127:0] data_from_mig,
 
     output mig_rdy,
     output mig_wdf_rdy,
     output init_calib_complete,
     output mig_data_end,
-    output mig_data_valid
+    output mig_data_valid,
+    output reg app_en,
+    output reg app_wdf_wren,
+    output reg [2:0] ddr_ctrl_status
 );
 
 reg [2:0] cmd_to_mig;
-assign addr_to_mig = {ram_addr[24:0], 2'b0}; // highest 5 bits was ignored
 assign go = mig_rdy & mig_wdf_rdy & init_calib_complete; // able to go
 
 
@@ -74,21 +76,19 @@ assign go = mig_rdy & mig_wdf_rdy & init_calib_complete; // able to go
 `define DDR_STAT_R1 3'b011
 `define DDR_STAT_R2 3'b100
 
-reg [2:0] ddr_ctrl_status;
 reg [2:0] ddr_ctrl_status_next;
-reg app_en;
-reg app_wdf_wren;
+reg [2:0] ddr_ctrl_status_last;
 reg app_wdf_end;
 
 always @ (*) begin
     app_en = 1;
     app_wdf_end = 1;
     app_wdf_wren = 0;
+    addr_to_mig = {ram_addr[21:0], 5'b00000};
     case(ddr_ctrl_status)
         `DDR_STAT_R1:
         begin
             data_to_mig = data_to_ram[127:0];
-
             cmd_to_mig = 3'b001;
             ddr_ctrl_status_next = `DDR_STAT_R2;
             ram_rdy = 0;
@@ -96,8 +96,8 @@ always @ (*) begin
 
         `DDR_STAT_R2:
         begin
+            addr_to_mig = {ram_addr[21:0], 5'b10000};
             data_to_mig = data_to_ram[127:0];
-
             cmd_to_mig = 3'b001;
             ddr_ctrl_status_next = `DDR_STAT_NORM;
             ram_rdy = 0;
@@ -114,6 +114,7 @@ always @ (*) begin
 
         `DDR_STAT_W2:
         begin
+            addr_to_mig = {ram_addr[21:0], 5'b10000};
             app_wdf_wren = 1;
             cmd_to_mig = 3'b000;
             data_to_mig = data_to_ram[255:128];
@@ -127,7 +128,7 @@ always @ (*) begin
             cmd_to_mig = 3'b001;
             data_to_mig = data_to_ram[127:0];
 
-            if(ram_en) begin
+            if(ram_en && (ddr_ctrl_status_last == `DDR_STAT_NORM)) begin
                 ram_rdy = 0;
                 if(ram_write) begin
                     ddr_ctrl_status_next = `DDR_STAT_W1;
@@ -195,6 +196,7 @@ mig_7series_0 m70 (
 
 initial begin
     ddr_ctrl_status = `DDR_STAT_NORM;
+    ddr_ctrl_status_last = `DDR_STAT_NORM;
 end
 
 always @(negedge ui_clk) begin
@@ -204,11 +206,11 @@ always @(negedge ui_clk) begin
     else begin
         if(go & ram_en) begin
             case (ddr_ctrl_status)
-
                 `DDR_STAT_R1:
                 begin
                     if(mig_data_valid) begin
                         buffer[127:0] <= data_from_mig;
+                        ddr_ctrl_status_last <= ddr_ctrl_status;
                         ddr_ctrl_status <= ddr_ctrl_status_next;
                     end
                 end
@@ -217,13 +219,18 @@ always @(negedge ui_clk) begin
                 begin
                     if(mig_data_valid) begin
                         buffer[255:128] <= data_from_mig;
+                        ddr_ctrl_status_last <= ddr_ctrl_status;
                         ddr_ctrl_status <= ddr_ctrl_status_next;
                     end
                 end
 
                 default:
                 begin
-                    ddr_ctrl_status <= ddr_ctrl_status_next;
+                    if (!((ddr_ctrl_status == `DDR_STAT_NORM) &&
+                            (ddr_ctrl_status_last != `DDR_STAT_NORM))) begin
+                        ddr_ctrl_status_last <= ddr_ctrl_status;
+                        ddr_ctrl_status <= ddr_ctrl_status_next;
+                    end
                 end
             endcase
         end
