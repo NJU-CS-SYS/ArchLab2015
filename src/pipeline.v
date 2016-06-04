@@ -11,8 +11,7 @@ module pipeline (
     inout [1:0] ddr2_dqs_n,
     inout [1:0] ddr2_dqs_p,
     // Just to simpilfy RTL generation,
-    input [7:0] SW,
-    input SLOW,
+    input [8:0] SW,
     input clk_from_board,         // the global clock
     input manual_clk,
     input reset,       // the global reset
@@ -918,7 +917,7 @@ cpu_interface inst_ci  (
     .sync_manual_clk   ( sync_manual_clk     ),
     .instr_data_out    ( ic_data_out         ),
     .dmem_data_out     ( mem_data            ),
-    .loader_addr       ( {5'd0, SW }         ),
+    .loader_addr       ( {4'd0, SW }         ),
     .loader_data_o     ( loader_data         ),
     .mem_stall         ( mem_stall           ),
 
@@ -986,6 +985,21 @@ assign led[3]       = cache_stall;
 assign led[4]       = trap_stall;
 assign led[15:5]    = 14'd0;
 
-assign clk = SLOW ? ui_clk_from_ddr : sync_manual_clk; // pipeline clock
+reg slow_clk_1;
+reg slow_clk_2;
+reg [22:0] slow_clk_counter_1;
+always @ (posedge ui_clk_from_ddr) begin
+    slow_clk_counter_1 <= slow_clk_counter_1 + 1;
+    if (slow_clk_counter_1 == 23'd0) begin
+        slow_clk_1 <= ~slow_clk_1;
+        slow_clk_2 <= ~slow_clk_2;
+    end
+    if (slow_clk_counter_1 == 23'h400000) begin
+        slow_clk_1 <= ~slow_clk_1;
+    end
+end
 
+assign clk = SW[8] ? 
+    (SW[7] ? ui_clk_from_ddr : sync_manual_clk) :
+    (SW[7] ? slow_clk_1 : slow_clk_2);
 endmodule

@@ -1,4 +1,4 @@
-void put_hex(unsigned int x, char *addr) {
+__attribute__((noinline)) void put_hex(unsigned int x, char *addr) {
     int i;
     *addr++ = '0';
     *addr++ = 'x';

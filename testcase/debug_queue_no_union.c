@@ -13,7 +13,7 @@ int main() {
   unsigned val = 0xffff0001;
   unsigned addr = 0;
   unsigned addr_step = 0x800;
-  union debug_que_entry dqe;
+  unsigned K0, K1, K2, K3;
   for (int i = 0; i < 6; ++i) {
     deref(addr) = val;
     val += 1;
@@ -34,18 +34,18 @@ int main() {
       put_hex(end, vga + 16);
       vga += screen_width/5;
       for (unsigned j = (start << 4); j <= (end << 4); j += 16) {
-        dqe.part[0] = deref(0xd0000000 | j | (0 << 2));
-        dqe.part[1] = deref(0xd0000000 | j | (1 << 2));
-        dqe.part[2] = deref(0xd0000000 | j | (2 << 2));
-        dqe.part[3] = deref(0xd0000000 | j | (3 << 2));
+        K0 = deref(0xd0000000 | j | (0 << 2));
+        K1 = deref(0xd0000000 | j | (1 << 2));
+        K2 = deref(0xd0000000 | j | (2 << 2));
+        K3 = deref(0xd0000000 | j | (3 << 2));
 
-        put_hex(dqe.part[0], vga);
+        put_hex(K0, vga);
         vga += screen_width/10;
-        put_hex(dqe.part[1], vga);
+        put_hex(K1, vga);
         vga += screen_width/10;
-        put_hex(dqe.part[2], vga);
+        put_hex(K2, vga);
         vga += screen_width/10;
-        put_hex(dqe.part[3], vga);
+        put_hex(K3, vga);
         vga += screen_width/10;
       }
       vga += screen_width*2;

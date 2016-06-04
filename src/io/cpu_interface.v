@@ -210,13 +210,24 @@ always @ (*) begin
         end
         else begin
             if (dmem_addr[25:0] == 26'h3000001) begin
-              dmem_data_out = {26'd0, dbg_que_start};
+                dmem_data_out = {26'd0, dbg_que_start};
             end
             else if (dmem_addr[25:0] == 26'h3000002) begin
-              dmem_data_out = {26'd0, dbg_que_end};
+                dmem_data_out = {26'd0, dbg_que_end};
             end
             else begin
-              dmem_data_out = debug_queue[dmem_addr[9:4]][dmem_addr[3:2]];
+                if (dmem_addr[1:0] == 0) begin
+                    dmem_data_out = debug_queue[dmem_addr[7:2]][31:0];
+                end
+                else if (dmem_addr[1:0] == 1) begin
+                    dmem_data_out = debug_queue[dmem_addr[7:2]][63:32];
+                end
+                else if (dmem_addr[1:0] == 2) begin
+                    dmem_data_out = debug_queue[dmem_addr[7:2]][95:64];
+                end
+                else begin
+                    dmem_data_out = debug_queue[dmem_addr[7:2]][127:96];
+                end
             end
         end
     end
@@ -361,7 +372,6 @@ loader_mem loader (         // use dual port Block RAM
 vga #(
     .DATA_ADDR_WIDTH( 15 ),
 
-    /*
     .h_disp         (1280),
     .h_front        ( 48 ),
     .h_sync         (112 ),
@@ -370,8 +380,8 @@ vga #(
     .v_front        ( 1  ),
     .v_sync         ( 3  ),
     .v_back         ( 38 )
-    */
 
+    /*
     .h_disp         (1680),
     .h_front        (104 ),
     .h_sync         (184 ),
@@ -380,6 +390,7 @@ vga #(
     .v_front        ( 1  ),
     .v_sync         ( 3  ),
     .v_back         ( 33 )
+    */
 ) vga0 (
     .RESET      ( rst            ),
     .DATA_ADDR  ( vga_addr[14:0] ),
@@ -394,27 +405,32 @@ vga #(
     .VGA_VS     ( VGA_VS         )
 );
 
-
-always @ (posedge clk_for_ddr) begin
-  if (!rst) begin
+initial begin
     dbg_status <= 0;
     dbg_que_start <= 0;
     dbg_que_end <= 0;
-  end
-  else begin
-    if (!cache_stall) begin
-      dbg_status <= 0; // update start only if status = 0
+end
+
+always @ (posedge clk_for_ddr) begin
+    if (!rst) begin
+        dbg_status <= 0;
+        dbg_que_start <= 0;
+        dbg_que_end <= 0;
     end
     else begin
-      if (!dbg_status) begin
-        dbg_status <= 1;
-        dbg_que_start <= dbg_que_end;
-      end
-      debug_queue[dbg_que_end] <= que_input;
-      dbg_que_end <= dbg_que_end + 1;  //warning: always overwrite the last line
-                                       // of last record!!
+        if (!cache_stall) begin
+            dbg_status <= 0; // update start only if status = 0
+        end
+        else begin
+            if (!dbg_status) begin
+                dbg_status <= 1;
+                dbg_que_start <= dbg_que_end;
+            end
+            debug_queue[dbg_que_end] <= que_input;
+            dbg_que_end <= dbg_que_end + 1;  //warning: always overwrite the last line
+            // of last record!!
+        end
     end
-  end
 end
 
 
