@@ -19,6 +19,7 @@ int main() {
     val += 1;
     addr += addr_step;
   }
+  deref(0xdddd0000) = 0;
 
   addr = 20;
   val = 0xffff0001;
@@ -67,6 +68,5 @@ int main() {
   putc('I', vga++);
   putc('C', vga++);
   putc('E', vga++);
-  deref(0xdddd0000) = 0;
   return 0;
 }

@@ -69,6 +69,7 @@ module cpu_interface(
     output [26:0] addr_to_mig,
     output cache_stall,
     output reg trap_stall,
+    output [31:0] dbg_que_low,
 
     // VGA outputs
     output [3:0] VGA_R,
@@ -112,17 +113,21 @@ wire mig_data_end;
 wire mig_data_valid;
 wire mig_en;
 wire mig_wren;
-wire [2:0] ddr_ctrl_status;
 
 reg [127:0] debug_queue [63:0];
 reg [5:0] dbg_que_start;
 reg [5:0] dbg_que_end;
 reg dbg_status;
 reg [6:0] miss_count;
+wire [2:0] ddr_ctrl_status;
 
 wire [127:0] que_input = {
+    /*
     data_to_mig[63:32],
     data_from_mig[63:32],
+    */
+    data_to_mig[31:0],
+    data_from_mig[31:0],
 
     5'd0,
     addr_to_mig,
@@ -140,6 +145,8 @@ wire [127:0] que_input = {
     ddr_ctrl_status,
     9'd0
 };
+
+assign dbg_que_low = que_input[31:0];
 
 // vga_wen is synchronized by pixel_clk to avoid race between wen, addr & char.
 // vga_stall is a combinational logic which just indicates the address to write
@@ -423,7 +430,7 @@ always @ (posedge cache_stall) begin
     miss_count <= miss_count + 1;
 end
 
-always @ (posedge clk_pipeline) begin
+always @ (negedge clk_pipeline) begin
     if (!rst) begin
         dbg_status <= 0;
         dbg_que_start <= 0;

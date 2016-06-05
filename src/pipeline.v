@@ -874,6 +874,7 @@ wire [26:0] addr_to_mig;
 wire [255:0] buffer_of_ddrctrl;
 wire [127:0] data_to_mig;
 reg [31:0] part_of_buffer;
+wire [31:0] ci_dbg_status;
 
 cpu_interface inst_ci  (
     // DDR Inouts
@@ -921,7 +922,8 @@ cpu_interface inst_ci  (
     .loader_data_o     ( loader_data         ),
     .mem_stall         ( mem_stall           ),
 
-    //debug
+    // debug
+    .dbg_que_low       ( ci_dbg_status       ),
     .cache_stall       ( cache_stall         ),
     .trap_stall        ( trap_stall          ),
     .data_to_mig       ( data_to_mig         ),
@@ -973,6 +975,7 @@ always @ (*) begin
         4'b0110: hex_to_seg = data_to_mig[31:0];
         4'b0111: hex_to_seg = part_of_buffer;
         4'b1000: hex_to_seg = dbg_reg;
+        4'b1001: hex_to_seg = ci_dbg_status;
         default: hex_to_seg = mem_alu_res;
     endcase
 end
