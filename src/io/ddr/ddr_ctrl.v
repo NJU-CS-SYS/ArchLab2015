@@ -80,6 +80,7 @@ assign go = mig_rdy & mig_wdf_rdy & init_calib_complete; // able to go
 reg [2:0] ddr_ctrl_status_next;
 reg [2:0] ddr_ctrl_status_last;
 reg app_wdf_end;
+reg [26:0] last_addr;
 
 always @ (*) begin
     app_en = 1;
@@ -129,7 +130,7 @@ always @ (*) begin
             cmd_to_mig = 3'b001;
             data_to_mig = data_to_ram[127:0];
 
-            if(ram_en && (ddr_ctrl_status_last == `DDR_STAT_NORM)) begin
+            if(ram_en && (last_addr != ram_addr)) begin
                 ram_rdy = 0;
                 if(ram_write) begin
                     ddr_ctrl_status_next = `DDR_STAT_W1;
@@ -196,16 +197,19 @@ mig_7series_0 m70 (
 );
 
 initial begin
-    ddr_ctrl_status = `DDR_STAT_NORM;
-    ddr_ctrl_status_last = `DDR_STAT_NORM;
+    ddr_ctrl_status <= `DDR_STAT_NORM;
+    ddr_ctrl_status_last <= `DDR_STAT_NORM;
+    last_addr <= 27'h7ffffff;
 end
 
 always @(negedge ui_clk) begin
     if(~rst) begin
-        ddr_ctrl_status = `DDR_STAT_NORM;
+        ddr_ctrl_status <= `DDR_STAT_NORM;
+        last_addr <= 27'h7ffffff;
     end
     else begin
         if(go & ram_en) begin
+            last_addr <= ram_addr;
             case (ddr_ctrl_status)
                 `DDR_STAT_R1:
                 begin
