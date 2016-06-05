@@ -23,6 +23,18 @@ int main() {
     addr += addr_step;
   }
 
+  addr = 0;
+  for (int i = 0; i < 2; ++i) {
+    put_hex(deref(addr+16), vga);
+    vga += screen_width/10;
+    put_hex(deref(addr), vga);
+    vga += screen_width/10;
+
+    vga += screen_width/10 * 8;
+    addr += addr_step;
+  }
+  vga += screen_width*2;
+
 
   for (unsigned j = 0; j < (64 << 4); j += 16) {
     dqe.part[3] = deref(0xd0000000 | j | (0 << 2));
