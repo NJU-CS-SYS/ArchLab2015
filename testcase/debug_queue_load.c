@@ -11,12 +11,15 @@
 int main() {
   char* vga = VMEM + screen_width*2 + 5;
   unsigned val = 0xffff0001;
+  unsigned val2 = 0xaaaa0001;
   unsigned addr = 0;
   unsigned addr_step = 0x800;
   union debug_que_entry dqe;
   for (int i = 0; i < 6; ++i) {
     deref(addr) = val;
+    deref(addr+16) = val2;
     val += 1;
+    val2 += 1;
     addr += addr_step;
   }
 
