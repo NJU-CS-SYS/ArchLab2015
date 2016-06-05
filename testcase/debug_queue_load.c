@@ -24,7 +24,7 @@ int main() {
   }
 
   addr = 0;
-  for (int i = 0; i < 2; ++i) {
+  for (int i = 0; i < 6; ++i) {
     put_hex(deref(addr+16), vga);
     vga += screen_width/10;
     put_hex(deref(addr), vga);

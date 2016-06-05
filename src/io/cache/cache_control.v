@@ -114,7 +114,7 @@ always @(*) begin
             ram_addr_sel_reg = 2'b00;  // 高位表示是否写回，低位表示是 ic 还是 dc
             ram_write_out = 0;
 
-            if(counter_in ==  `COUNT_FINISH) begin
+            if(counter_in ==  3'd4) begin
                 status_next_reg = `STAT_NORMAL;
                 counter_next_reg = 0;
             end
@@ -146,7 +146,7 @@ always @(*) begin
             ram_en_out = 1;
             ram_write_out = 0;
 
-            if(counter_in == `COUNT_FINISH) begin
+            if(counter_in ==  3'd4) begin
                 status_next_reg = `STAT_NORMAL;
                 counter_next_reg = 0;
             end
@@ -216,7 +216,7 @@ always @(*) begin
             else begin
                 ram_en_out = 1;
             end
-            if(counter_in == `COUNT_FINISH) begin
+            if(counter_in ==  3'd4) begin
                 status_next_reg = `STAT_DC_MISS;
                 counter_next_reg = 0;  // Restart counter for D-cache loading
             end
