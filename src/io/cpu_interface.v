@@ -154,7 +154,7 @@ wire [127:0] que_input = {
 //       pipeline retrieves from stalling.
 reg vga_wen;
 reg vga_stall;
-reg [1:0] vga_stall_cnt;
+reg [2:0] vga_stall_cnt;
 reg loader_en;
 // reg loaded;
 
@@ -163,7 +163,7 @@ reg loader_en;
 // At that time, the address and char data are stable. `vga_stall_cnt < 3'
 // ensures that the pipeline will recover as soon as the writing finishes.
 assign mem_stall = cache_stall
-        | (vga_stall && (vga_stall_cnt < 3))
+        | (vga_stall && (vga_stall_cnt < 7))
         | trap_stall;
 
 wire text_mem_clk = ui_clk;  // The clock driving text memory
@@ -179,11 +179,11 @@ always @ (posedge text_mem_clk) begin
         vga_stall_cnt <= 0;
     end
     else if (vga_stall) begin
-        if (vga_stall_cnt >= 2) begin
+        if (vga_stall_cnt >= 6) begin
             // spin state, disabling write enable, allowing the pipeline to go
             // on,and expecting the pipeline to reset the state.
             vga_wen <= 0;
-            vga_stall_cnt <= 3;
+            vga_stall_cnt <= 7;
         end
         else begin
             vga_wen <= 1;
@@ -379,7 +379,6 @@ loader_mem loader (         // use dual port Block RAM
 vga #(
     .DATA_ADDR_WIDTH( 15 ),
 
-    /*
     .h_disp         (1280),
     .h_front        ( 48 ),
     .h_sync         (112 ),
@@ -388,8 +387,8 @@ vga #(
     .v_front        ( 1  ),
     .v_sync         ( 3  ),
     .v_back         ( 38 )
-    */
 
+    /*
     .h_disp         (1680),
     .h_front        (104 ),
     .h_sync         (184 ),
@@ -398,6 +397,7 @@ vga #(
     .v_front        ( 1  ),
     .v_sync         ( 3  ),
     .v_back         ( 33 )
+    */
 ) vga0 (
     .RESET      ( rst            ),
     .DATA_ADDR  ( vga_addr[14:0] ),

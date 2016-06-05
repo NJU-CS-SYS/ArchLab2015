@@ -3,7 +3,7 @@
 
 
 #define deref(x) *((volatile unsigned int *) (x))
-#define screen_width 210
+#define screen_width 160
 #define start_reg (0xdc000004)
 #define end_reg (0xdc000008)
 
