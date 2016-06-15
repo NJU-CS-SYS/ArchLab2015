@@ -50,7 +50,7 @@ qemu:
 	gdb-multiarch qemu.bin -ex "set arch mips" -ex "set endian little" \
 		-ex "target remote :1234" -ex "disp /i \$$pc"
 clean:
-	-rm -f boot *.bin $(DOT_D) $(OBJECTS) *.txt 2> /dev/null
+	-rm -f boot *.bin $(DOT_D) $(OBJECTS) main.c *.txt 2> /dev/null
 
 TOOL_DIR = ../tools
 

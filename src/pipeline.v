@@ -853,7 +853,7 @@ cp0 inst_cp0 (
     .Ex_data         ( wb_ex_data      ),
     .Cu_exec_code    ( cu_exec_code    ),
     //.Interrupt       ( intr            ),
-    .Interrupt       ( 8'd0            ),
+    .Interrupt       ( {7'd0, SW[3]}   ),
     .Clk             ( clk             ),
     .Cp0_data        ( cp0_data        ),
     .Cp0_epc         ( epc             ),
