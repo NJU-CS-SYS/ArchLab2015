@@ -918,8 +918,6 @@ cpu_interface inst_ci  (
     .sync_manual_clk   ( sync_manual_clk     ),
     .instr_data_out    ( ic_data_out         ),
     .dmem_data_out     ( mem_data            ),
-    .loader_addr       ( {4'd0, SW }         ),
-    .loader_data_o     ( loader_data         ),
     .mem_stall         ( mem_stall           ),
 
     // debug
@@ -970,7 +968,7 @@ always @ (*) begin
         4'b0001: hex_to_seg = mem_pc;
         4'b0010: hex_to_seg = mem_alu_res;
         4'b0011: hex_to_seg = mem_aligned_rt_data;
-        4'b0100: hex_to_seg = loader_data;
+        4'b0100: hex_to_seg = 32'd0;
         4'b0101: hex_to_seg = {5'd0, addr_to_mig};
         4'b0110: hex_to_seg = data_to_mig[31:0];
         4'b0111: hex_to_seg = part_of_buffer;

@@ -60,9 +60,6 @@ module cpu_interface(
     output [1:0] ddr2_dm,
     output [0:0] ddr2_odt,
 
-    input  [12:0] loader_addr,
-    output [31:0] loader_data_o,
-
     //debug:
     output [127:0] data_to_mig,
     output [255:0] buffer_of_ddrctrl,
@@ -363,13 +360,10 @@ ddr_ctrl ddr_ctrl_0(
     .ddr_ctrl_status     ( ddr_ctrl_status      )
 );
 
-assign loader_data_o = loader_data;
-
-wire [12:0] ld_real_addr = loader_en ? dmem_addr[12:0] : loader_addr[12:0];
 
 loader_mem loader (         // use dual port Block RAM
     // Data port
-    .addra ( ld_real_addr       ),
+    .addra ( dmem_addr[12:0]    ),
     .dina  ( data_from_reg      ),
     .douta ( loader_data        ),
     .clka  ( clk_pipeline       ),
@@ -427,7 +421,12 @@ initial begin
 end
 
 always @ (posedge cache_stall) begin
-    miss_count <= miss_count + 1;
+    if (!rst) begin
+        miss_count <= 0;
+    end
+    else begin
+        miss_count <= miss_count + 1;
+    end
 end
 
 always @ (negedge clk_pipeline) begin
