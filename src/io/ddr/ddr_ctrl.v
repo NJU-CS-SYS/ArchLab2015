@@ -84,8 +84,8 @@ reg [25:0] last_addr;
 reg app_en_next;
 reg [1:0] load_counter;
 reg [1:0] load_counter_next;
-reg store_counter;
-reg store_counter_next;
+reg [1:0] store_counter;
+reg [1:0] store_counter_next;
 
 always @ (*) begin
     app_wdf_end = 0;
@@ -98,7 +98,7 @@ always @ (*) begin
         begin
             app_en_next = 0;
             if (go & mig_data_valid) begin
-                load_counter_next = 3;
+                load_counter_next = 0;
             end
             else begin
                 if (load_counter == 3) app_en_next = 1;
@@ -120,6 +120,8 @@ always @ (*) begin
 
             addr_to_mig = {ram_addr[25:3], 5'b10000};
             cmd_to_mig = 3'b001;
+            ddr_ctrl_status_next = `DDR_STAT_NORM;
+            /*
             if (buffer[127:0] == data_from_mig) begin
                 ddr_ctrl_status_next = ddr_ctrl_status;
                 app_en_next = 1;
@@ -127,6 +129,7 @@ always @ (*) begin
             else begin
                 ddr_ctrl_status_next = `DDR_STAT_NORM;
             end
+            */
             ram_rdy = 0;
             data_to_mig = 128'd0;
         end
@@ -139,23 +142,25 @@ always @ (*) begin
             app_wdf_end = 1;
             cmd_to_mig = 3'b000;
             data_to_mig = data_to_ram[127:0];
-            if (store_counter == 1) begin
-                store_counter_next = 0;
-                ddr_ctrl_status_next = `DDR_STAT_W2;
-                app_en_next = 0;
-            end
+            ddr_ctrl_status_next = `DDR_STAT_W2;
+            store_counter_next = 0;
+            app_en_next = 0;
             ram_rdy = 0;
         end
 
         `DDR_STAT_W2:
         begin
-            app_en_next = 1;
+            app_en_next = 0;
             addr_to_mig = {ram_addr[25:3], 5'b10000};
             app_wdf_wren = 0;
             app_wdf_end = 0;
-            cmd_to_mig = 3'b000;
+            cmd_to_mig = 3'b001;
             data_to_mig = data_to_ram[255:128];
-            if (store_counter == 1) begin
+            if (store_counter == 2) begin
+                app_en_next = 1;
+            end
+            if (store_counter == 3) begin
+                cmd_to_mig = 3'b000;
                 app_wdf_wren = 1;
                 app_wdf_end = 1;
                 ddr_ctrl_status_next = `DDR_STAT_NORM;
