@@ -117,6 +117,7 @@ reg [5:0] dbg_que_end;
 reg dbg_status;
 reg [6:0] miss_count;
 wire [2:0] ddr_ctrl_status;
+wire [255:0] wb_buffer;
 
 wire [127:0] que_input = {
     /*
@@ -224,7 +225,7 @@ always @ (*) begin
             else if (dmem_addr[25:0] == 26'h3000002) begin
                 dmem_data_out = {26'd0, dbg_que_end};
             end
-            else if (dmem_addr[25:22] == 4'hb)begin
+            else if (dmem_addr[25:18] == 8'hb0)begin
                 case(dmem_addr[2:0])
                     0: dmem_data_out = buffer_of_ddrctrl[0*32 + 31 : 0*32];
                     1: dmem_data_out = buffer_of_ddrctrl[1*32 + 31 : 1*32];
@@ -234,6 +235,18 @@ always @ (*) begin
                     5: dmem_data_out = buffer_of_ddrctrl[5*32 + 31 : 5*32];
                     6: dmem_data_out = buffer_of_ddrctrl[6*32 + 31 : 6*32];
                     7: dmem_data_out = buffer_of_ddrctrl[7*32 + 31 : 7*32];
+                endcase
+            end
+            else if (dmem_addr[25:18] == 8'hb1)begin
+                case(dmem_addr[2:0])
+                    0: dmem_data_out = wb_buffer[0*32 + 31 : 0*32];
+                    1: dmem_data_out = wb_buffer[1*32 + 31 : 1*32];
+                    2: dmem_data_out = wb_buffer[2*32 + 31 : 2*32];
+                    3: dmem_data_out = wb_buffer[3*32 + 31 : 3*32];
+                    4: dmem_data_out = wb_buffer[4*32 + 31 : 4*32];
+                    5: dmem_data_out = wb_buffer[5*32 + 31 : 5*32];
+                    6: dmem_data_out = wb_buffer[6*32 + 31 : 6*32];
+                    7: dmem_data_out = wb_buffer[7*32 + 31 : 7*32];
                 endcase
             end
             else begin
@@ -361,6 +374,7 @@ ddr_ctrl ddr_ctrl_0(
     .data_to_mig         ( data_to_mig          ),
     .data_from_mig       ( data_from_mig        ),
     .buffer              ( buffer_of_ddrctrl    ),
+    .wb_buffer           ( wb_buffer            ),
     .addr_to_mig         ( addr_to_mig          ),
     .mig_rdy             ( mig_rdy              ),
     .mig_wdf_rdy         ( mig_wdf_rdy          ),

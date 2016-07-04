@@ -54,6 +54,7 @@ module ddr_ctrl(
     output go,
     output reg [127:0] data_to_mig,
     output reg [255:0] buffer,
+    output reg [255:0] wb_buffer,
     output reg [26:0] addr_to_mig,
     output [127:0] data_from_mig,
 
@@ -83,6 +84,7 @@ reg [24:0] last_addr;
 reg app_en_next;
 reg [1:0] load_counter;
 reg [1:0] load_counter_next;
+reg wb_buffer_wen;
 
 always @ (*) begin
     app_wdf_end = 1;
@@ -105,6 +107,7 @@ always @ (*) begin
             ddr_ctrl_status_next = `DDR_STAT_R2;
             ram_rdy = 0;
             data_to_mig = 128'd0;
+            wb_buffer_wen = 0;
         end
 
         `DDR_STAT_R2:
@@ -122,6 +125,7 @@ always @ (*) begin
             ddr_ctrl_status_next = `DDR_STAT_NORM;
             ram_rdy = 0;
             data_to_mig = 128'd0;
+            wb_buffer_wen = 0;
         end
 
         `DDR_STAT_W1:
@@ -133,6 +137,7 @@ always @ (*) begin
             data_to_mig = data_to_ram[127:0];
             ddr_ctrl_status_next = `DDR_STAT_W2;
             ram_rdy = 0;
+            wb_buffer_wen = 1;
         end
 
         `DDR_STAT_W2:
@@ -144,6 +149,7 @@ always @ (*) begin
             data_to_mig = data_to_ram[255:128];
             ddr_ctrl_status_next = `DDR_STAT_NORM;
             ram_rdy = 0;
+            wb_buffer_wen = 1;
         end
 
         default:
@@ -153,6 +159,7 @@ always @ (*) begin
             data_to_mig = data_to_ram[127:0];
             app_en_next = 0;
             load_counter_next = 0;
+            wb_buffer_wen = 0;
 
             if(ram_en && (last_addr[24:3] != ram_addr[24:3])) begin
                 ram_rdy = 0;
@@ -232,6 +239,7 @@ always @(posedge ui_clk) begin
         ddr_ctrl_status <= `DDR_STAT_NORM;
         last_addr <= 24'hffffff;
         load_counter <= 0;
+        wb_buffer <= 0;
     end
     else begin
         if (ram_en) begin
@@ -254,6 +262,22 @@ always @(posedge ui_clk) begin
                     if(mig_data_valid) begin
                         buffer[255:128] <= data_from_mig;
                         ddr_ctrl_status <= ddr_ctrl_status_next;
+                    end
+                end
+
+                `DDR_STAT_W1: 
+                begin
+                    ddr_ctrl_status <= ddr_ctrl_status_next;
+                    if (wb_buffer_wen) begin
+                        wb_buffer[127:0] <= data_to_mig;
+                    end
+                end
+
+                `DDR_STAT_W2: 
+                begin
+                    ddr_ctrl_status <= ddr_ctrl_status_next;
+                    if (wb_buffer_wen) begin
+                        wb_buffer[255:128] <= data_to_mig;
                     end
                 end
 
