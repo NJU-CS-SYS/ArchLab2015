@@ -85,11 +85,15 @@ reg app_en_next;
 reg [1:0] load_counter;
 reg [1:0] load_counter_next;
 reg wb_buffer_wen;
+reg store_counter;
+reg store_counter_next;
 
 always @ (*) begin
-    app_wdf_end = 1;
+    app_wdf_end = 0;
     app_wdf_wren = 0;
     load_counter_next = load_counter + 1;
+    store_counter_next = store_counter + 1;
+    ddr_ctrl_status_next = ddr_ctrl_status;
     case(ddr_ctrl_status)
         `DDR_STAT_R1:
         begin
@@ -133,9 +137,11 @@ always @ (*) begin
             app_en_next = 1;
             addr_to_mig = {ram_addr[24:3], 5'b00000};
             app_wdf_wren = 1;
+            app_wdf_end = 1;
             cmd_to_mig = 3'b000;
             data_to_mig = data_to_ram[127:0];
-            ddr_ctrl_status_next = `DDR_STAT_W2;
+            if (store_counter == 1)
+                ddr_ctrl_status_next = `DDR_STAT_W2;
             ram_rdy = 0;
             wb_buffer_wen = 1;
         end
@@ -145,9 +151,11 @@ always @ (*) begin
             app_en_next = 0;
             addr_to_mig = {ram_addr[24:3], 5'b10000};
             app_wdf_wren = 1;
+            app_wdf_end = 1;
             cmd_to_mig = 3'b000;
             data_to_mig = data_to_ram[255:128];
-            ddr_ctrl_status_next = `DDR_STAT_NORM;
+            if (store_counter == 1)
+                ddr_ctrl_status_next = `DDR_STAT_NORM;
             ram_rdy = 0;
             wb_buffer_wen = 1;
         end
@@ -159,6 +167,7 @@ always @ (*) begin
             data_to_mig = data_to_ram[127:0];
             app_en_next = 0;
             load_counter_next = 0;
+            store_counter_next = 0;
             wb_buffer_wen = 0;
 
             if(ram_en && (last_addr[24:3] != ram_addr[24:3])) begin
@@ -239,6 +248,7 @@ always @(posedge ui_clk) begin
         ddr_ctrl_status <= `DDR_STAT_NORM;
         last_addr <= 24'hffffff;
         load_counter <= 0;
+        store_counter <= 0;
         wb_buffer <= 0;
     end
     else begin
@@ -247,6 +257,7 @@ always @(posedge ui_clk) begin
         end
         if (go & ram_en) begin
             load_counter <= load_counter_next;
+            store_counter <= store_counter_next;
             last_addr <= {ram_addr[24:3], 3'd0};
             case (ddr_ctrl_status)
                 `DDR_STAT_R1:

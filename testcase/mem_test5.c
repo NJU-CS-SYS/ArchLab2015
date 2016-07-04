@@ -54,6 +54,7 @@ int main() {
       check(deref((pointer + j*step + 4*i) | lsb0), i + j*16);
     }
     output_buffer(0xdb100000);
+    output_buffer(0xdb200000);
   }
   vga += screen_width;
   // when j become 2 or 3 above, first two data blocks are written back;

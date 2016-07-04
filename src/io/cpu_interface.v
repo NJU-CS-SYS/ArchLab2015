@@ -118,6 +118,7 @@ reg dbg_status;
 reg [6:0] miss_count;
 wire [2:0] ddr_ctrl_status;
 wire [255:0] wb_buffer;
+reg [255:0] wb_buffer_local;
 
 wire [127:0] que_input = {
     /*
@@ -247,6 +248,18 @@ always @ (*) begin
                     5: dmem_data_out = wb_buffer[5*32 + 31 : 5*32];
                     6: dmem_data_out = wb_buffer[6*32 + 31 : 6*32];
                     7: dmem_data_out = wb_buffer[7*32 + 31 : 7*32];
+                endcase
+            end
+            else if (dmem_addr[25:18] == 8'hb2)begin
+                case(dmem_addr[2:0])
+                    0: dmem_data_out = wb_buffer_local[0*32 + 31 : 0*32];
+                    1: dmem_data_out = wb_buffer_local[1*32 + 31 : 1*32];
+                    2: dmem_data_out = wb_buffer_local[2*32 + 31 : 2*32];
+                    3: dmem_data_out = wb_buffer_local[3*32 + 31 : 3*32];
+                    4: dmem_data_out = wb_buffer_local[4*32 + 31 : 4*32];
+                    5: dmem_data_out = wb_buffer_local[5*32 + 31 : 5*32];
+                    6: dmem_data_out = wb_buffer_local[6*32 + 31 : 6*32];
+                    7: dmem_data_out = wb_buffer_local[7*32 + 31 : 7*32];
                 endcase
             end
             else begin
@@ -460,6 +473,7 @@ always @ (negedge clk_pipeline) begin
         dbg_status <= 0;
         dbg_que_start <= 0;
         dbg_que_end <= 0;
+        wb_buffer_local <= 0;
     end
     else begin
         if (!cache_stall) begin
@@ -473,6 +487,9 @@ always @ (negedge clk_pipeline) begin
             debug_queue[dbg_que_end] <= que_input;
             dbg_que_end <= dbg_que_end + 1;  //warning: always overwrite the last line
             // of last record!!
+        end
+        if (ram_en && ram_write) begin
+            wb_buffer_local <= block_from_dc_to_ram;
         end
     end
 end
