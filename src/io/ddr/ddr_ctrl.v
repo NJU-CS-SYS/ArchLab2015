@@ -87,14 +87,17 @@ reg [1:0] load_counter_next;
 always @ (*) begin
     app_wdf_end = 1;
     app_wdf_wren = 0;
+    load_counter_next = load_counter + 1;
     case(ddr_ctrl_status)
         `DDR_STAT_R1:
         begin
             if (go & mig_data_valid) begin
                 app_en_next = 1;
+                load_counter_next = 3;
             end
             else begin
                 app_en_next = 0;
+                if (load_counter == 3) app_en_next = 1;
             end
 
             addr_to_mig = {ram_addr[24:3], 5'b00000};
@@ -110,7 +113,8 @@ always @ (*) begin
                 app_en_next = 0;
             end
             else begin
-                app_en_next = 1;
+                app_en_next = 0;
+                if (load_counter == 3) app_en_next = 1;
             end
 
             addr_to_mig = {ram_addr[24:3], 5'b10000};
@@ -148,6 +152,7 @@ always @ (*) begin
             cmd_to_mig = 3'b001;
             data_to_mig = data_to_ram[127:0];
             app_en_next = 0;
+            load_counter_next = 0;
 
             if(ram_en && (last_addr[24:3] != ram_addr[24:3])) begin
                 ram_rdy = 0;
@@ -226,12 +231,14 @@ always @(posedge ui_clk) begin
     if(~rst) begin
         ddr_ctrl_status <= `DDR_STAT_NORM;
         last_addr <= 24'hffffff;
+        load_counter <= 0;
     end
     else begin
         if (ram_en) begin
             app_en <= app_en_next;
         end
         if (go & ram_en) begin
+            load_counter <= load_counter_next;
             last_addr <= {ram_addr[24:3], 3'd0};
             case (ddr_ctrl_status)
                 `DDR_STAT_R1:
