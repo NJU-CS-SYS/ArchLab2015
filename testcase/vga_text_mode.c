@@ -1,10 +1,15 @@
 #define VMEM ((char *)0xc0000000)
-#define HEIGHT 160
-#define WIDTH 128
-#define SCROLL_SIZE  21504 // WIDTH * (HEIGHT - 1)
+
+#define HEIGHT 128
+#define WIDTH 160
+#define SCROLL_SIZE  20320 // WIDTH * (HEIGHT - 1)
 
 static int curr_line = 0;
 static int curr_col = 0;
+
+// Record all characters in text buffer in favor of scrolling.
+// 160 * 128 = 20KB
+static char scroll_buffer[WIDTH * HEIGHT];
 
 void npc_putc(char ch)
 {
@@ -16,7 +21,7 @@ void npc_putc(char ch)
     if (local_line == HEIGHT) {
         // No line for print, it is time to scroll ;-)
         char *dst = VMEM;
-        char *src = VMEM + WIDTH;
+        char *src = scroll_buffer + WIDTH;
         for (int i = 0; i < SCROLL_SIZE; i++) {
             *dst++ = *src++;
         }
@@ -28,15 +33,16 @@ void npc_putc(char ch)
 
     char *ws_pos = VMEM + local_col;
     for (int i = 0; i < local_line; i++) ws_pos += WIDTH;
+    char *bk_pos = scroll_buffer + (ws_pos - VMEM);
     if (ch == '\n') {
         // Use space to mimic new line
         while (local_col < WIDTH) {
-            *ws_pos++ = ' ';
+            *ws_pos++ = ' '; *bk_pos++ = ' ';
             local_col++;
         }
     }
     else {
-        *ws_pos = ch;
+        *ws_pos = ch; *bk_pos = ch;
         local_col++;
     }
 
@@ -60,5 +66,18 @@ int main()
 {
     npc_puts("Hello, World!\n");
     npc_puts("Foo Bar\n");
+    npc_puts("Foo Bar\n");
+    npc_puts("Foo Bar\n");
+    npc_puts("jdslfkjdslkjf\n");
+    npc_puts("Foo Bar\n");
+    npc_puts("Foo Bar\n");
+    npc_puts("ACBDEFD\n");
+    npc_puts("Misaki\n");
+    npc_puts("123456789\n");
+    npc_puts("2333333333333333333\n");
+    npc_puts("computer comprehensive lab\n");
+    npc_puts("thinkpad\n");
+    npc_puts("3ds\n");
+    npc_puts("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n");
     return 0;
 }
