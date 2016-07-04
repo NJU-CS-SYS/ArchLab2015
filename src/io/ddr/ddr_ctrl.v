@@ -80,11 +80,10 @@ assign go = mig_rdy & mig_wdf_rdy & init_calib_complete; // able to go
 
 reg [2:0] ddr_ctrl_status_next;
 reg app_wdf_end;
-reg [24:0] last_addr;
+reg [25:0] last_addr;
 reg app_en_next;
 reg [1:0] load_counter;
 reg [1:0] load_counter_next;
-reg wb_buffer_wen;
 reg store_counter;
 reg store_counter_next;
 
@@ -97,67 +96,66 @@ always @ (*) begin
     case(ddr_ctrl_status)
         `DDR_STAT_R1:
         begin
+            app_en_next = 0;
             if (go & mig_data_valid) begin
-                app_en_next = 1;
                 load_counter_next = 3;
             end
             else begin
-                app_en_next = 0;
                 if (load_counter == 3) app_en_next = 1;
             end
 
-            addr_to_mig = {ram_addr[24:3], 5'b00000};
+            addr_to_mig = {ram_addr[25:3], 5'b00000};
             cmd_to_mig = 3'b001;
             ddr_ctrl_status_next = `DDR_STAT_R2;
             ram_rdy = 0;
             data_to_mig = 128'd0;
-            wb_buffer_wen = 0;
         end
 
         `DDR_STAT_R2:
         begin
-            if (go & mig_data_valid) begin
-                app_en_next = 0;
-            end
-            else begin
-                app_en_next = 0;
+            app_en_next = 0;
+            if (!(go & mig_data_valid)) begin
                 if (load_counter == 3) app_en_next = 1;
             end
 
-            addr_to_mig = {ram_addr[24:3], 5'b10000};
+            addr_to_mig = {ram_addr[25:3], 5'b10000};
             cmd_to_mig = 3'b001;
             ddr_ctrl_status_next = `DDR_STAT_NORM;
             ram_rdy = 0;
             data_to_mig = 128'd0;
-            wb_buffer_wen = 0;
         end
 
         `DDR_STAT_W1:
         begin
             app_en_next = 1;
-            addr_to_mig = {ram_addr[24:3], 5'b00000};
+            addr_to_mig = {ram_addr[25:3], 5'b00000};
             app_wdf_wren = 1;
             app_wdf_end = 1;
             cmd_to_mig = 3'b000;
             data_to_mig = data_to_ram[127:0];
-            if (store_counter == 1)
+            if (store_counter == 1) begin
+                store_counter_next = 0;
                 ddr_ctrl_status_next = `DDR_STAT_W2;
+                app_en_next = 0;
+            end
             ram_rdy = 0;
-            wb_buffer_wen = 1;
         end
 
         `DDR_STAT_W2:
         begin
-            app_en_next = 0;
-            addr_to_mig = {ram_addr[24:3], 5'b10000};
-            app_wdf_wren = 1;
-            app_wdf_end = 1;
+            app_en_next = 1;
+            addr_to_mig = {ram_addr[25:3], 5'b10000};
+            app_wdf_wren = 0;
+            app_wdf_end = 0;
             cmd_to_mig = 3'b000;
             data_to_mig = data_to_ram[255:128];
-            if (store_counter == 1)
+            if (store_counter == 1) begin
+                app_wdf_wren = 1;
+                app_wdf_end = 1;
                 ddr_ctrl_status_next = `DDR_STAT_NORM;
+                app_en_next = 0;
+            end
             ram_rdy = 0;
-            wb_buffer_wen = 1;
         end
 
         default:
@@ -168,9 +166,8 @@ always @ (*) begin
             app_en_next = 0;
             load_counter_next = 0;
             store_counter_next = 0;
-            wb_buffer_wen = 0;
 
-            if(ram_en && (last_addr[24:3] != ram_addr[24:3])) begin
+            if(ram_en && (last_addr[25:3] != ram_addr[25:3])) begin
                 ram_rdy = 0;
                 if(ram_write) begin
                     app_en_next = 1;
@@ -189,8 +186,66 @@ always @ (*) begin
     endcase
 end
 
+initial begin
+    ddr_ctrl_status <= `DDR_STAT_NORM;
+    last_addr <= 25'h1ffffff;
+    load_counter <= 0;
+    store_counter <= 0;
+    wb_buffer <= 0;
+end
+
+always @(posedge ui_clk) begin
+    if(~rst) begin
+        ddr_ctrl_status <= `DDR_STAT_NORM;
+        last_addr <= 25'h1ffffff;
+        load_counter <= 0;
+        store_counter <= 0;
+        wb_buffer <= 0;
+    end
+    else begin
+        if (app_en && (cmd_to_mig == 3'b000) && app_wdf_end && app_wdf_wren) begin
+            if (ddr_ctrl_status == `DDR_STAT_W1) begin
+                wb_buffer[127:0] <= data_to_mig;
+            end
+            else if (ddr_ctrl_status == `DDR_STAT_W2) begin
+                wb_buffer[255:128] <= data_to_mig;
+            end
+        end
+        if (ram_en) begin
+            app_en <= app_en_next;
+        end
+        if (go & ram_en) begin
+            load_counter <= load_counter_next;
+            store_counter <= store_counter_next;
+            last_addr <= {ram_addr[25:3], 3'd0};
+            case (ddr_ctrl_status)
+                `DDR_STAT_R1:
+                begin
+                    if(mig_data_valid) begin
+                        buffer[127:0] <= data_from_mig;
+                        ddr_ctrl_status <= ddr_ctrl_status_next;
+                    end
+                end
+
+                `DDR_STAT_R2:
+                begin
+                    if(mig_data_valid && (load_counter != 3)) begin
+                        buffer[255:128] <= data_from_mig;
+                        ddr_ctrl_status <= ddr_ctrl_status_next;
+                    end
+                end
+
+                default:
+                begin
+                    ddr_ctrl_status <= ddr_ctrl_status_next;
+                end
+            endcase
+        end
+    end
+end
 
 assign ddr2_cs_n = 0;
+
 mig_7series_0 m70 (
     // Inouts
     .ddr2_dq             ( ddr2_dq             ),
@@ -237,68 +292,5 @@ mig_7series_0 m70 (
     .init_calib_complete ( init_calib_complete ),
     .sys_rst             ( rst                 )
 );
-
-initial begin
-    ddr_ctrl_status <= `DDR_STAT_NORM;
-    last_addr <= 24'hffffff;
-end
-
-always @(posedge ui_clk) begin
-    if(~rst) begin
-        ddr_ctrl_status <= `DDR_STAT_NORM;
-        last_addr <= 24'hffffff;
-        load_counter <= 0;
-        store_counter <= 0;
-        wb_buffer <= 0;
-    end
-    else begin
-        if (ram_en) begin
-            app_en <= app_en_next;
-        end
-        if (go & ram_en) begin
-            load_counter <= load_counter_next;
-            store_counter <= store_counter_next;
-            last_addr <= {ram_addr[24:3], 3'd0};
-            case (ddr_ctrl_status)
-                `DDR_STAT_R1:
-                begin
-                    if(mig_data_valid) begin
-                        buffer[127:0] <= data_from_mig;
-                        ddr_ctrl_status <= ddr_ctrl_status_next;
-                    end
-                end
-
-                `DDR_STAT_R2:
-                begin
-                    if(mig_data_valid) begin
-                        buffer[255:128] <= data_from_mig;
-                        ddr_ctrl_status <= ddr_ctrl_status_next;
-                    end
-                end
-
-                `DDR_STAT_W1: 
-                begin
-                    ddr_ctrl_status <= ddr_ctrl_status_next;
-                    if (wb_buffer_wen) begin
-                        wb_buffer[127:0] <= data_to_mig;
-                    end
-                end
-
-                `DDR_STAT_W2: 
-                begin
-                    ddr_ctrl_status <= ddr_ctrl_status_next;
-                    if (wb_buffer_wen) begin
-                        wb_buffer[255:128] <= data_to_mig;
-                    end
-                end
-
-                default:
-                begin
-                    ddr_ctrl_status <= ddr_ctrl_status_next;
-                end
-            endcase
-        end
-    end
-end
 
 endmodule

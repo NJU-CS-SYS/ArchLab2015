@@ -7,7 +7,7 @@
  * 0x0          : cache + ddr
  */
 
-#define lsb0 0x10
+#define lsb0 0x0
 #define lsb1 0x2b0
 #define lsb2 0x7f0
 
