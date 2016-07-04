@@ -224,6 +224,18 @@ always @ (*) begin
             else if (dmem_addr[25:0] == 26'h3000002) begin
                 dmem_data_out = {26'd0, dbg_que_end};
             end
+            else if (dmem_addr[25:22] == 4'hb)begin
+                case(dmem_addr[2:0])
+                    0: dmem_data_out = buffer_of_ddrctrl[0*32 + 31 : 0*32];
+                    1: dmem_data_out = buffer_of_ddrctrl[1*32 + 31 : 1*32];
+                    2: dmem_data_out = buffer_of_ddrctrl[2*32 + 31 : 2*32];
+                    3: dmem_data_out = buffer_of_ddrctrl[3*32 + 31 : 3*32];
+                    4: dmem_data_out = buffer_of_ddrctrl[4*32 + 31 : 4*32];
+                    5: dmem_data_out = buffer_of_ddrctrl[5*32 + 31 : 5*32];
+                    6: dmem_data_out = buffer_of_ddrctrl[6*32 + 31 : 6*32];
+                    7: dmem_data_out = buffer_of_ddrctrl[7*32 + 31 : 7*32];
+                endcase
+            end
             else begin
                 if (dmem_addr[1:0] == 0) begin
                     dmem_data_out = debug_queue[dmem_addr[7:2]][31:0];

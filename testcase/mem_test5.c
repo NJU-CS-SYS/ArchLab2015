@@ -32,6 +32,16 @@ void check(unsigned int mem, unsigned int expected_val) {
   }
 }
 
+void output_buffer() {
+  unsigned int x;
+  vga += screen_width;
+  for (x = 0xdb000000; x < 0xdb000020; x += 4) {
+    put_hex(deref(x), vga);
+    vga += screen_width/8;
+  }
+  vga += screen_width;
+}
+
 int main() {
   unsigned int pointer = 0x0;
   unsigned int step = 0x800;
@@ -48,15 +58,24 @@ int main() {
   // when j become 2 or 3 above, first two data blocks are written back;
   // so codes below will test whether they have been written back correctly
   // by read them again.
+  /*
   for (j = 0; j < 8; j++) {
     for (i = 0; i < 8; i++) {
       check(deref((pointer + j*step + 4*i) | lsb0), i + j*16);
     }
+    output_buffer();
   }
   vga += screen_width;
 
-  //deref(0xddd00000) = 0;
+  */
+  j = 0;
+  for (i = 0; i < 8; i++) {
+    check(deref((pointer + j*step + 4*i) | lsb0), i + j*16);
+  }
+  output_buffer();
 
+  //deref(0xddd00000) = 0;
+  /*
   for (j = 0; j < 8; j++) {
     for (i = 0; i < 8; i++) {
       deref((pointer + j*step + 4*i) | lsb1) = i + j*16;
@@ -83,6 +102,7 @@ int main() {
       check(deref((pointer + j*step + 4*i) | lsb2), i + j*16);
     }
   }
+  */
   good();
   return 0;
 }
