@@ -120,14 +120,20 @@ always @ (*) begin
 
             addr_to_mig = {ram_addr[25:3], 5'b10000};
             cmd_to_mig = 3'b001;
-            ddr_ctrl_status_next = `DDR_STAT_NORM;
+            if (buffer[127:0] == data_from_mig) begin
+                ddr_ctrl_status_next = ddr_ctrl_status;
+                app_en_next = 1;
+            end
+            else begin
+                ddr_ctrl_status_next = `DDR_STAT_NORM;
+            end
             ram_rdy = 0;
             data_to_mig = 128'd0;
         end
 
         `DDR_STAT_W1:
         begin
-            app_en_next = 1;
+            app_en_next = 0;
             addr_to_mig = {ram_addr[25:3], 5'b00000};
             app_wdf_wren = 1;
             app_wdf_end = 1;
