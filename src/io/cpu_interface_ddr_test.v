@@ -23,7 +23,7 @@
 // 0xe000000~ : keyboard
 //////////////////////////////////////////////////////////////////////////////////
 
-module cpu_interface(
+module cpu_interface_x(
     // ddr Inouts
     inout [15:0] ddr2_dq,
     inout [1:0] ddr2_dqs_n,
@@ -88,12 +88,10 @@ wire [29:0] ram_addr;
 wire [255:0] block_from_dc_to_ram;
 
 wire [31:0] dc_data_out;
-wire [31:0] ic_data_out;
 wire [31:0] loader_instr;
 wire [31:0] loader_data;
-reg [29:0] ic_addr;
 
-reg ic_read_in, dc_read_in, dc_write_in;
+reg dc_read_in, dc_write_in;
 reg loader_wen;  // accessing loader mapping area & writing request
 reg [14:0] vga_addr; // 2**15 is enough for vga mem
 reg [7:0] char_to_vga;
@@ -116,7 +114,7 @@ reg [5:0] dbg_que_start;
 reg [5:0] dbg_que_end;
 reg dbg_status;
 reg [6:0] miss_count;
-wire [3:0] ddr_ctrl_status;
+wire [2:0] ddr_ctrl_status;
 wire [255:0] wb_buffer;
 reg [255:0] wb_buffer_local;
 
@@ -142,7 +140,7 @@ wire [127:0] que_input = {
     mig_wren,
     miss_count,
     ddr_ctrl_status,
-    8'd0
+    9'd0
 };
 
 assign dbg_que_low = que_input[31:0];
@@ -201,7 +199,6 @@ end
 always @ (*) begin
     // data R/W redirect
     // default value, which have the least effects on the memory system.
-    ic_read_in    = 1;
     dc_read_in    = 0;
     dc_write_in   = 0;
     dmem_data_out = 0;
@@ -293,12 +290,9 @@ always @ (*) begin
     end
 
     // instruction fetch redirect
-    ic_addr = instr_addr;
-    instr_data_out = ic_data_out;
+    instr_data_out = loader_instr;
     if (instr_addr[29:26] == 4'hf) begin
         loader_en = 1;
-        ic_read_in = 0;
-        instr_data_out = loader_instr;
     end
 
     // vga ddr calculate
@@ -327,78 +321,6 @@ always @ (*) begin
         end
     endcase
 end
-
-cache_manage_unit u_cm_0 (
-    .clk             ( clk_pipeline         ),
-    .rst             ( ~rst                 ), // !! make rst seem low active
-    .ic_read_in      ( ic_read_in           ),
-    .dc_read_in      ( dc_read_in           ),
-    .dc_write_in     ( dc_write_in          ),
-    .dc_byte_w_en_in ( dmem_byte_w_en       ),
-    .ic_addr         ( ic_addr              ),
-    .dc_addr         ( dmem_addr            ),
-    .data_from_reg   ( data_from_reg        ),
-
-    .ram_ready       ( ram_rdy              ),
-    .block_from_ram  ( buffer_of_ddrctrl    ),
-
-    .mem_stall       ( cache_stall          ),
-    .dc_data_out     ( dc_data_out          ),
-    .ic_data_out     ( ic_data_out          ),
-
-    .status          ( cache_status         ),
-    .counter         ( cache_counter        ),
-    .ram_en_out      ( ram_en               ),
-    .ram_write_out   ( ram_write            ),
-    .ram_addr_out    ( ram_addr             ),
-    .dc_data_wb      ( block_from_dc_to_ram )
-);
-
-ddr_ctrl ddr_ctrl_0(
-
-    // Inouts
-    .ddr2_dq             ( ddr2_dq              ),
-    .ddr2_dqs_n          ( ddr2_dqs_n           ),
-    .ddr2_dqs_p          ( ddr2_dqs_p           ),
-    // original signals
-    .clk_from_ip         ( clk_for_ddr          ),
-    .clk_ci              ( clk_pipeline         ),
-    .rst                 ( rst                  ),
-    .ram_en              ( ram_en               ),
-    .ram_write           ( ram_write            ),
-    .ram_addr            ( ram_addr[29:0]       ),
-    .data_to_ram         ( block_from_dc_to_ram ),
-    .ram_rdy             ( ram_rdy              ),
-    .ui_clk              ( ui_clk               ),
-    // Outputs
-    .ddr2_addr           ( ddr2_addr            ),
-    .ddr2_ba             ( ddr2_ba              ),
-    .ddr2_ras_n          ( ddr2_ras_n           ),
-    .ddr2_cas_n          ( ddr2_cas_n           ),
-    .ddr2_we_n           ( ddr2_we_n            ),
-    .ddr2_ck_p           ( ddr2_ck_p            ),
-    .ddr2_ck_n           ( ddr2_ck_n            ),
-    .ddr2_cke            ( ddr2_cke             ),
-    .ddr2_cs_n           ( ddr2_cs_n            ),
-    .ddr2_dm             ( ddr2_dm              ),
-    .ddr2_odt            ( ddr2_odt             ),
-    // debug ports
-    .go                  ( go                   ),
-    .data_to_mig         ( data_to_mig          ),
-    .data_from_mig       ( data_from_mig        ),
-    .buffer              ( buffer_of_ddrctrl    ),
-    .wb_buffer           ( wb_buffer            ),
-    .addr_to_mig         ( addr_to_mig          ),
-    .mig_rdy             ( mig_rdy              ),
-    .mig_wdf_rdy         ( mig_wdf_rdy          ),
-    .init_calib_complete ( mig_ddr_inited       ),
-    .mig_data_end        ( mig_data_end         ),
-    .mig_data_valid      ( mig_data_valid       ),
-    .app_en              ( mig_en               ),
-    .app_wdf_wren        ( mig_wren             ),
-    .ddr_ctrl_status     ( ddr_ctrl_status      )
-);
-
 
 loader_mem loader (         // use dual port Block RAM
     // Data port
