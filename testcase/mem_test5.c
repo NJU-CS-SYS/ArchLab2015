@@ -50,8 +50,8 @@ int main() {
   int i, j;
   for (j = 0; j < 8; j++) {
     for (i = 0; i < 8; i++) {
-      deref((pointer + j*step + 4*i) | lsb0) = i + j*16;
-      check(deref((pointer + j*step + 4*i) | lsb0), i + j*16);
+      deref((pointer + j*step + 4*i) | lsb2) = i + j*16;
+      check(deref((pointer + j*step + 4*i) | lsb2), i + j*16);
     }
     output_buffer(0xdb100000);
     output_buffer(0xdb200000);
@@ -63,7 +63,7 @@ int main() {
 
   for (j = 0; j < 8; j++) {
     for (i = 0; i < 8; i++) {
-      check(deref((pointer + j*step + 4*i) | lsb0), i + j*16);
+      check(deref((pointer + j*step + 4*i) | lsb2), i + j*16);
     }
     output_buffer(0xdb000000);
   }

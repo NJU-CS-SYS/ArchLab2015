@@ -11,7 +11,7 @@ module pipeline (
     inout [1:0] ddr2_dqs_n,
     inout [1:0] ddr2_dqs_p,
     // Just to simpilfy RTL generation,
-    input [8:0] SW,
+    input [7:0] SW,
     input clk_from_board,         // the global clock
     input manual_clk,
     input reset,       // the global reset
@@ -1001,7 +1001,7 @@ always @ (posedge ui_clk_from_ddr) begin
     end
 end
 
-assign clk = SW[8] ?
+assign clk = SW[6] ?
     (SW[7] ? ui_clk_from_ddr : sync_manual_clk) :
     (SW[7] ? slow_clk : fast_clk);
 endmodule

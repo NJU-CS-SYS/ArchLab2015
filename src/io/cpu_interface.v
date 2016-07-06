@@ -115,10 +115,12 @@ reg [127:0] debug_queue [63:0];
 reg [5:0] dbg_que_start;
 reg [5:0] dbg_que_end;
 reg dbg_status;
-reg [6:0] miss_count;
+wire [6:0] miss_count;
 wire [3:0] ddr_ctrl_status;
 wire [255:0] wb_buffer;
 reg [255:0] wb_buffer_local;
+
+assign miss_count = 0;
 
 wire [127:0] que_input = {
     /*
@@ -456,16 +458,6 @@ initial begin
     dbg_status <= 0;
     dbg_que_start <= 0;
     dbg_que_end <= 0;
-    miss_count <= 0;
-end
-
-always @ (posedge cache_stall) begin
-    if (!rst) begin
-        miss_count <= 0;
-    end
-    else begin
-        miss_count <= miss_count + 1;
-    end
 end
 
 always @ (negedge clk_pipeline) begin
