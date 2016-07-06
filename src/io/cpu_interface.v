@@ -36,13 +36,12 @@ module cpu_interface(
     input [29:0] dmem_addr,
     input [31:0] data_from_reg,
     input [3:0] dmem_byte_w_en,
-    input clk_for_ddr,
-    input pixel_clk,
-    input manual_clk,
+    input clk_to_ddr_pass,
+    input clk_to_pixel_pass,
     input clk_pipeline,
+    input sync_manual_clk,
 
-    output ui_clk,
-    output reg sync_manual_clk,
+    output ui_clk_from_ddr,
     output reg [31:0] instr_data_out,
     output reg [31:0] dmem_data_out,
     output mem_stall,
@@ -174,11 +173,7 @@ assign mem_stall = cache_stall
         | (vga_stall && (vga_stall_cnt < 7))
         | trap_stall;
 
-wire text_mem_clk = ui_clk;  // The clock driving text memory
-
-always @ (posedge ui_clk) begin
-    sync_manual_clk <= manual_clk;
-end
+wire text_mem_clk = ui_clk_from_ddr;  // The clock driving text memory
 
 always @ (posedge text_mem_clk) begin
     if (!rst || !vga_stall) begin  // when reseted (low-active)
@@ -363,7 +358,7 @@ ddr_ctrl ddr_ctrl_0(
     .ddr2_dqs_n          ( ddr2_dqs_n           ),
     .ddr2_dqs_p          ( ddr2_dqs_p           ),
     // original signals
-    .clk_from_ip         ( clk_for_ddr          ),
+    .clk_from_ip         ( clk_to_ddr_pass      ),
     .clk_ci              ( clk_pipeline         ),
     .rst                 ( rst                  ),
     .ram_en              ( ram_en               ),
@@ -371,7 +366,7 @@ ddr_ctrl ddr_ctrl_0(
     .ram_addr            ( ram_addr[29:0]       ),
     .data_to_ram         ( block_from_dc_to_ram ),
     .ram_rdy             ( ram_rdy              ),
-    .ui_clk              ( ui_clk               ),
+    .ui_clk              ( ui_clk_from_ddr      ),
     // Outputs
     .ddr2_addr           ( ddr2_addr            ),
     .ddr2_ba             ( ddr2_ba              ),
@@ -445,7 +440,7 @@ vga #(
     .DATA_ADDR  ( vga_addr[14:0] ),
     .DATA_IN    ( char_to_vga    ),
     .WR_EN      ( vga_wen        ),
-    .pixel_clk  ( pixel_clk      ),
+    .pixel_clk  ( clk_to_pixel_pass),
     .cpu_clk    ( text_mem_clk   ),
     .VGA_R      ( VGA_R          ),
     .VGA_G      ( VGA_G          ),

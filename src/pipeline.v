@@ -12,7 +12,7 @@ module pipeline (
     inout [1:0] ddr2_dqs_p,
     // Just to simpilfy RTL generation,
     input [7:0] SW,
-    input clk_from_board,         // the global clock
+    input clk_in1,         // the global clock
     input manual_clk,
     input reset,       // the global reset
     input [3:0] debug_sel,
@@ -875,6 +875,19 @@ wire [255:0] buffer_of_ddrctrl;
 wire [127:0] data_to_mig;
 reg [31:0] part_of_buffer;
 wire [31:0] ci_dbg_status;
+wire clk_to_ddr_pass;
+wire clk_to_pipixel_pass;
+
+clock_control cc0(
+    .clk_in1(clk_in1),
+    .ui_clk_from_ddr(ui_clk_from_ddr),
+    .SW(SW[7:6]),
+    .manual_clk(manual_clk),
+    .clk_to_ddr(clk_to_ddr_pass),
+    .clk_to_pixel(clk_to_pixel_pass),
+    .ui_clk_used(clk),
+    .sync_manual_clk(sync_manual_clk)
+);
 
 cpu_interface inst_ci  (
     // DDR Inouts
@@ -909,12 +922,11 @@ cpu_interface inst_ci  (
     .dmem_addr         ( mem_alu_res[31:2]   ),
     .data_from_reg     ( mem_aligned_rt_data ),
     .dmem_byte_w_en    ( mem_mem_byte_w_en   ),
-    .clk_for_ddr       ( clk_from_board      ), // 100 MHz
-    .pixel_clk         ( clk_pixel           ),
-    .manual_clk        ( manual_clk          ),
+    .clk_to_ddr_pass   ( clk_to_ddr_pass     ), // 100 MHz
+    .clk_to_pixel_pass ( clk_to_pixel_pass   ),
     .clk_pipeline      ( clk                 ),
 
-    .ui_clk            ( ui_clk_from_ddr     ),
+    .ui_clk_from_ddr   ( ui_clk_from_ddr     ),
     .sync_manual_clk   ( sync_manual_clk     ),
     .instr_data_out    ( ic_data_out         ),
     .dmem_data_out     ( mem_data            ),
@@ -929,17 +941,11 @@ cpu_interface inst_ci  (
     .addr_to_mig       ( addr_to_mig         )
 );
 
-ddr_clock_gen dcg0 (
-    .clk_in1    (clk_from_board),
-    .clk_out1   (clk_from_ip),
-    .clk_out2   (clk_pixel)
-);
-
 reg [31:0] hex_to_seg;
 // segs used to output instruction
 
 seg_ctrl seg_ctrl0 (
-    .clk           ( clk_from_board    ),
+    .clk           ( clk_in1           ),
     .hex1          ( hex_to_seg[3:0]   ),
     .hex2          ( hex_to_seg[7:4]   ),
     .hex3          ( hex_to_seg[11:8]  ),
@@ -986,22 +992,4 @@ assign led[3]       = cache_stall;
 assign led[4]       = trap_stall;
 assign led[15:5]    = 14'd0;
 
-reg slow_clk;
-reg fast_clk;  // 32 times slow than ui_clk_from_ddr
-reg [21:0] slow_clk_counter;
-reg [1:0] fast_clk_counter;
-always @ (posedge ui_clk_from_ddr) begin
-    slow_clk_counter <= slow_clk_counter + 1;
-    fast_clk_counter <= fast_clk_counter + 1;
-    if (slow_clk_counter == 0) begin
-        slow_clk <= ~slow_clk;
-    end
-    if (fast_clk_counter == 0) begin
-        fast_clk <= ~fast_clk;
-    end
-end
-
-assign clk = SW[6] ?
-    (SW[7] ? ui_clk_from_ddr : sync_manual_clk) :
-    (SW[7] ? slow_clk : fast_clk);
 endmodule
