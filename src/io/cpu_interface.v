@@ -169,11 +169,14 @@ reg loader_en;
 // while the vga_wen needs a posedge of pixel_clk to become active.
 // At that time, the address and char data are stable. `vga_stall_cnt < 3'
 // ensures that the pipeline will recover as soon as the writing finishes.
+`define num_vga_wait_cycle 2
+
 assign mem_stall = cache_stall
-        | (vga_stall && (vga_stall_cnt < 7))
+        | (vga_stall && (vga_stall_cnt <= `num_vga_wait_cycle))
         | trap_stall;
 
-wire text_mem_clk = ui_clk_from_ddr;  // The clock driving text memory
+
+wire text_mem_clk = clk_to_ddr_pass;  // The clock driving text memory
 
 always @ (posedge text_mem_clk) begin
     if (!rst || !vga_stall) begin  // when reseted (low-active)
@@ -182,15 +185,14 @@ always @ (posedge text_mem_clk) begin
         vga_stall_cnt <= 0;
     end
     else if (vga_stall) begin
-        if (vga_stall_cnt >= 6) begin
+        vga_stall_cnt <= vga_stall_cnt + 1;
+        if (vga_stall_cnt > `num_vga_wait_cycle) begin
             // spin state, disabling write enable, allowing the pipeline to go
             // on,and expecting the pipeline to reset the state.
             vga_wen <= 0;
-            vga_stall_cnt <= 7;
         end
         else begin
             vga_wen <= 1;
-            vga_stall_cnt <= vga_stall_cnt + 1;
         end
     end
 end
