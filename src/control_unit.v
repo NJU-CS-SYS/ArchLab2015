@@ -102,7 +102,12 @@ module control_unit(
         cu_cp0_w_en = 1'b0;
         cu_exec_code = 5'b00000;
         cu_epc = 32'h00000000;
-        cu_vector = 32'h80000180;
+        // This value must be corresponded with `do_irq'
+        // procedure address defined in `lib/start.S'.
+        // As the start point of `_reset' in `lib/start.S' is 0xf00000,
+        // and the code between `do_irq' and `_reset' is stable,
+        // the address of `do_irq' might be fixed as assigned here.
+        cu_vector = 32'hf000002c;
         bpu_write_en = 1'b0;
 
         // load_use  handle

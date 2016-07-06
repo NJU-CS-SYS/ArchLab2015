@@ -1,5 +1,6 @@
 .global _reset
 .global _qemu
+.global do_irq
 
 _reset:
   li $sp, 0xf0008000
@@ -13,3 +14,9 @@ _qemu:
   jal main
 $L_LOOP:
   b $L_LOOP
+
+.extern irq_handle
+
+do_irq:
+  jal irq_handle
+  eret
