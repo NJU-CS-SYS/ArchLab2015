@@ -81,3 +81,18 @@ __attribute__((noinline)) void put_hex(unsigned int x, char *addr) {
         }
     }
 }
+
+static char hex_literals[] = "0123456789abcdef";
+#define digit(val, offset) (((val) & (0xfu << (offset))) >> (offset))
+
+void print_hex(unsigned int x)
+{
+    npc_putc(hex_literals[ digit(x, 7) ]);
+    npc_putc(hex_literals[ digit(x, 6) ]);
+    npc_putc(hex_literals[ digit(x, 5) ]);
+    npc_putc(hex_literals[ digit(x, 4) ]);
+    npc_putc(hex_literals[ digit(x, 3) ]);
+    npc_putc(hex_literals[ digit(x, 2) ]);
+    npc_putc(hex_literals[ digit(x, 1) ]);
+    npc_putc(hex_literals[ digit(x, 0) ]);
+}
