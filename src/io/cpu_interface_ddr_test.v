@@ -23,7 +23,7 @@
 // 0xe000000~ : keyboard
 //////////////////////////////////////////////////////////////////////////////////
 
-module cpu_interface(
+module cpu_interface_x(
     // ddr Inouts
     inout [15:0] ddr2_dq,
     inout [1:0] ddr2_dqs_n,
@@ -36,12 +36,13 @@ module cpu_interface(
     input [29:0] dmem_addr,
     input [31:0] data_from_reg,
     input [3:0] dmem_byte_w_en,
-    input clk_to_ddr_pass,
-    input clk_to_pixel_pass,
+    input clk_for_ddr,
+    input pixel_clk,
+    input manual_clk,
     input clk_pipeline,
-    input sync_manual_clk,
 
-    output ui_clk_from_ddr,
+    output ui_clk,
+    output reg sync_manual_clk,
     output reg [31:0] instr_data_out,
     output reg [31:0] dmem_data_out,
     output mem_stall,
@@ -87,13 +88,11 @@ wire [29:0] ram_addr;
 wire [255:0] block_from_dc_to_ram;
 
 wire [31:0] dc_data_out;
-wire [31:0] ic_data_out;
 wire [31:0] loader_instr;
 wire [31:0] loader_data;
-reg [29:0] ic_addr;
 
-reg ic_read_in, dc_read_in, dc_write_in;
-reg [3:0] loader_wen;  // accessing loader mapping area & writing request
+reg dc_read_in, dc_write_in;
+reg loader_wen;  // accessing loader mapping area & writing request
 reg [14:0] vga_addr; // 2**15 is enough for vga mem
 reg [7:0] char_to_vga;
 
@@ -114,12 +113,10 @@ reg [127:0] debug_queue [63:0];
 reg [5:0] dbg_que_start;
 reg [5:0] dbg_que_end;
 reg dbg_status;
-wire [6:0] miss_count;
-wire [3:0] ddr_ctrl_status;
+reg [6:0] miss_count;
+wire [2:0] ddr_ctrl_status;
 wire [255:0] wb_buffer;
 reg [255:0] wb_buffer_local;
-
-assign miss_count = 0;
 
 wire [127:0] que_input = {
     /*
@@ -143,7 +140,7 @@ wire [127:0] que_input = {
     mig_wren,
     miss_count,
     ddr_ctrl_status,
-    8'd0
+    9'd0
 };
 
 assign dbg_que_low = que_input[31:0];
@@ -169,14 +166,15 @@ reg loader_en;
 // while the vga_wen needs a posedge of pixel_clk to become active.
 // At that time, the address and char data are stable. `vga_stall_cnt < 3'
 // ensures that the pipeline will recover as soon as the writing finishes.
-`define num_vga_wait_cycle 2
-
 assign mem_stall = cache_stall
-        | (vga_stall && (vga_stall_cnt <= `num_vga_wait_cycle))
+        | (vga_stall && (vga_stall_cnt < 7))
         | trap_stall;
 
+wire text_mem_clk = ui_clk;  // The clock driving text memory
 
-wire text_mem_clk = clk_to_ddr_pass;  // The clock driving text memory
+always @ (posedge ui_clk) begin
+    sync_manual_clk <= manual_clk;
+end
 
 always @ (posedge text_mem_clk) begin
     if (!rst || !vga_stall) begin  // when reseted (low-active)
@@ -185,14 +183,15 @@ always @ (posedge text_mem_clk) begin
         vga_stall_cnt <= 0;
     end
     else if (vga_stall) begin
-        vga_stall_cnt <= vga_stall_cnt + 1;
-        if (vga_stall_cnt > `num_vga_wait_cycle) begin
+        if (vga_stall_cnt >= 6) begin
             // spin state, disabling write enable, allowing the pipeline to go
             // on,and expecting the pipeline to reset the state.
             vga_wen <= 0;
+            vga_stall_cnt <= 7;
         end
         else begin
             vga_wen <= 1;
+            vga_stall_cnt <= vga_stall_cnt + 1;
         end
     end
 end
@@ -200,7 +199,6 @@ end
 always @ (*) begin
     // data R/W redirect
     // default value, which have the least effects on the memory system.
-    ic_read_in    = 1;
     dc_read_in    = 0;
     dc_write_in   = 0;
     dmem_data_out = 0;
@@ -282,17 +280,7 @@ always @ (*) begin
     end
     else if (dmem_addr[29:26] == 4'hf) begin  // loader
         loader_en = 1;
-        if (dmem_write_in) begin
-            // TODO add short byte enable
-            case (dmem_byte_w_en)
-                4'b0001: loader_wen = 4'b1000;
-                4'b0010: loader_wen = 4'b0100;
-                4'b0100: loader_wen = 4'b0010;
-                4'b1000: loader_wen = 4'b0001;
-                default: loader_wen = 4'b1111;
-            endcase
-        end
-        else loader_wen = 4'b0000;
+        loader_wen  = dmem_write_in;
         dmem_data_out = loader_data;
     end
     else begin  // data cache
@@ -302,12 +290,9 @@ always @ (*) begin
     end
 
     // instruction fetch redirect
-    ic_addr = instr_addr;
-    instr_data_out = ic_data_out;
+    instr_data_out = loader_instr;
     if (instr_addr[29:26] == 4'hf) begin
         loader_en = 1;
-        ic_read_in = 0;
-        instr_data_out = loader_instr;
     end
 
     // vga ddr calculate
@@ -336,78 +321,6 @@ always @ (*) begin
         end
     endcase
 end
-
-cache_manage_unit u_cm_0 (
-    .clk             ( clk_pipeline         ),
-    .rst             ( ~rst                 ), // !! make rst seem low active
-    .ic_read_in      ( ic_read_in           ),
-    .dc_read_in      ( dc_read_in           ),
-    .dc_write_in     ( dc_write_in          ),
-    .dc_byte_w_en_in ( dmem_byte_w_en       ),
-    .ic_addr         ( ic_addr              ),
-    .dc_addr         ( dmem_addr            ),
-    .data_from_reg   ( data_from_reg        ),
-
-    .ram_ready       ( ram_rdy              ),
-    .block_from_ram  ( buffer_of_ddrctrl    ),
-
-    .mem_stall       ( cache_stall          ),
-    .dc_data_out     ( dc_data_out          ),
-    .ic_data_out     ( ic_data_out          ),
-
-    .status          ( cache_status         ),
-    .counter         ( cache_counter        ),
-    .ram_en_out      ( ram_en               ),
-    .ram_write_out   ( ram_write            ),
-    .ram_addr_out    ( ram_addr             ),
-    .dc_data_wb      ( block_from_dc_to_ram )
-);
-
-ddr_ctrl ddr_ctrl_0(
-
-    // Inouts
-    .ddr2_dq             ( ddr2_dq              ),
-    .ddr2_dqs_n          ( ddr2_dqs_n           ),
-    .ddr2_dqs_p          ( ddr2_dqs_p           ),
-    // original signals
-    .clk_from_ip         ( clk_to_ddr_pass      ),
-    .clk_ci              ( clk_pipeline         ),
-    .rst                 ( rst                  ),
-    .ram_en              ( ram_en               ),
-    .ram_write           ( ram_write            ),
-    .ram_addr            ( ram_addr[29:0]       ),
-    .data_to_ram         ( block_from_dc_to_ram ),
-    .ram_rdy             ( ram_rdy              ),
-    .ui_clk              ( ui_clk_from_ddr      ),
-    // Outputs
-    .ddr2_addr           ( ddr2_addr            ),
-    .ddr2_ba             ( ddr2_ba              ),
-    .ddr2_ras_n          ( ddr2_ras_n           ),
-    .ddr2_cas_n          ( ddr2_cas_n           ),
-    .ddr2_we_n           ( ddr2_we_n            ),
-    .ddr2_ck_p           ( ddr2_ck_p            ),
-    .ddr2_ck_n           ( ddr2_ck_n            ),
-    .ddr2_cke            ( ddr2_cke             ),
-    .ddr2_cs_n           ( ddr2_cs_n            ),
-    .ddr2_dm             ( ddr2_dm              ),
-    .ddr2_odt            ( ddr2_odt             ),
-    // debug ports
-    .go                  ( go                   ),
-    .data_to_mig         ( data_to_mig          ),
-    .data_from_mig       ( data_from_mig        ),
-    .buffer              ( buffer_of_ddrctrl    ),
-    .wb_buffer           ( wb_buffer            ),
-    .addr_to_mig         ( addr_to_mig          ),
-    .mig_rdy             ( mig_rdy              ),
-    .mig_wdf_rdy         ( mig_wdf_rdy          ),
-    .init_calib_complete ( mig_ddr_inited       ),
-    .mig_data_end        ( mig_data_end         ),
-    .mig_data_valid      ( mig_data_valid       ),
-    .app_en              ( mig_en               ),
-    .app_wdf_wren        ( mig_wren             ),
-    .ddr_ctrl_status     ( ddr_ctrl_status      )
-);
-
 
 loader_mem loader (         // use dual port Block RAM
     // Data port
@@ -452,7 +365,7 @@ vga #(
     .DATA_ADDR  ( vga_addr[14:0] ),
     .DATA_IN    ( char_to_vga    ),
     .WR_EN      ( vga_wen        ),
-    .pixel_clk  ( clk_to_pixel_pass),
+    .pixel_clk  ( pixel_clk      ),
     .cpu_clk    ( text_mem_clk   ),
     .VGA_R      ( VGA_R          ),
     .VGA_G      ( VGA_G          ),
@@ -465,6 +378,16 @@ initial begin
     dbg_status <= 0;
     dbg_que_start <= 0;
     dbg_que_end <= 0;
+    miss_count <= 0;
+end
+
+always @ (posedge cache_stall) begin
+    if (!rst) begin
+        miss_count <= 0;
+    end
+    else begin
+        miss_count <= miss_count + 1;
+    end
 end
 
 always @ (negedge clk_pipeline) begin

@@ -34,9 +34,8 @@ int main() {
     char* vga = VMEM + 320 + 80;
 	volatile int arr[100];
 	int j;
-	for(j = 0; j < 100; j += 2) {
-		arr[j] = 12;  
-		arr[j + 1] = 55; 
+	for(j = 0; j < 100; j += 1) {
+		arr[j] = 200 - j;  
 	}
 	quickSort3Ways(arr, 0, 99);
 

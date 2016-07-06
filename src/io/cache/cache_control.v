@@ -23,7 +23,9 @@
 
 module cache_control(/* autoarg */
     //Inputs
-    dc_read_in, dc_write_in, ic_hit_in, ic_valid_in, 
+    ic_read_in,
+    dc_read_in, dc_write_in, 
+    ic_hit_in, ic_valid_in, 
     dc_hit_in, dc_dirty_in, dc_valid_in, 
     status_in, counter_in, ic_word_sel_in, 
     dc_word_sel_in, dc_byte_w_en_in, 
@@ -36,6 +38,7 @@ module cache_control(/* autoarg */
     counter_next_reg, ic_word_sel_reg, dc_word_sel_reg, 
     ic_byte_w_en_reg, dc_byte_w_en_reg
 );
+input ic_read_in;
 input dc_read_in;
 input dc_write_in;
 input ic_hit_in;
@@ -111,7 +114,8 @@ always @(*) begin
             ram_addr_sel_reg = 2'b00;  // 高位表示是否写回，低位表示是 ic 还是 dc
             ram_write_out = 0;
 
-            if(counter_in ==  `COUNT_FINISH) begin
+            if(counter_in ==  3'd4) begin
+                ram_en_out = 0;
                 status_next_reg = `STAT_NORMAL;
                 counter_next_reg = 0;
             end
@@ -143,7 +147,8 @@ always @(*) begin
             ram_en_out = 1;
             ram_write_out = 0;
 
-            if(counter_in == `COUNT_FINISH) begin
+            if(counter_in ==  3'd4) begin
+                ram_en_out = 0;
                 status_next_reg = `STAT_NORMAL;
                 counter_next_reg = 0;
             end
@@ -213,7 +218,8 @@ always @(*) begin
             else begin
                 ram_en_out = 1;
             end
-            if(counter_in == `COUNT_FINISH) begin
+            if(counter_in ==  3'd4) begin
+                ram_en_out = 0;
                 status_next_reg = `STAT_DC_MISS;
                 counter_next_reg = 0;  // Restart counter for D-cache loading
             end
@@ -259,7 +265,7 @@ always @(*) begin
         begin
             // Normal 状态下生成最常规的控制信号。
 
-            ic_enable_reg = 1;                         // 由于流水线化，每个 CPU 周期 I-cache 都要被访问，所以 I-cache 持续使能。
+            ic_enable_reg = ic_read_in;
             ic_cmp_reg = 1;
             ic_word_sel_reg = ic_word_sel_in;
             ic_write_reg = 0;                          // I-cache 不会由 CPU 写。
@@ -285,7 +291,7 @@ always @(*) begin
 
             // 根据访问结果，决定下一状态，先判断 D-cache miss, 再判断 I-cache miss, 最后判断 I-cache miss。
             if(dc_enable_reg && !(dc_hit_in && dc_valid_in)) begin //dc miss
-                if(!(ic_hit_in && ic_valid_in)) begin //dc miss & ic miss
+                if(ic_enable_reg && !(ic_hit_in && ic_valid_in)) begin //dc miss & ic miss
                     if(dc_dirty_in) begin //dc miss & ic miss & dc dirty
                         status_next_reg = `STAT_DOUBLE_MISS_D;
                     end
@@ -303,7 +309,7 @@ always @(*) begin
                 end
             end
             else begin //dc hit & ic miss
-                if(!(ic_hit_in && ic_valid_in)) begin
+                if(ic_enable_reg && !(ic_hit_in && ic_valid_in)) begin
                     status_next_reg = `STAT_IC_MISS;
                 end
                 else begin //dc hit & ic hit

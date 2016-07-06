@@ -16,6 +16,7 @@ module GPR
     input [(ADDR_WIDTH-1):0] Rs_addr, Rt_addr, Rd_addr,
     input [(DATA_WIDTH-1):0] Rd_in,
     input [3:0] Rd_Byte_w_en,
+
     output [(DATA_WIDTH-1):0] Rs_out, Rt_out
 );
 

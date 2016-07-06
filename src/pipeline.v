@@ -12,8 +12,7 @@ module pipeline (
     inout [1:0] ddr2_dqs_p,
     // Just to simpilfy RTL generation,
     input [7:0] SW,
-    input SLOW,
-    input clk_from_board,         // the global clock
+    input clk_in1,         // the global clock
     input manual_clk,
     input reset,       // the global reset
     input [3:0] debug_sel,
@@ -854,7 +853,7 @@ cp0 inst_cp0 (
     .Ex_data         ( wb_ex_data      ),
     .Cu_exec_code    ( cu_exec_code    ),
     //.Interrupt       ( intr            ),
-    .Interrupt       ( 8'd0            ),
+    .Interrupt       ( {7'd0, SW[3]}   ),
     .Clk             ( clk             ),
     .Cp0_data        ( cp0_data        ),
     .Cp0_epc         ( epc             ),
@@ -875,6 +874,20 @@ wire [26:0] addr_to_mig;
 wire [255:0] buffer_of_ddrctrl;
 wire [127:0] data_to_mig;
 reg [31:0] part_of_buffer;
+wire [31:0] ci_dbg_status;
+wire clk_to_ddr_pass;
+wire clk_to_pipixel_pass;
+
+clock_control cc0(
+    .clk_in1(clk_in1),
+    .ui_clk_from_ddr(ui_clk_from_ddr),
+    .SW(SW[7:6]),
+    .manual_clk(manual_clk),
+    .clk_to_ddr(clk_to_ddr_pass),
+    .clk_to_pixel(clk_to_pixel_pass),
+    .ui_clk_used(clk),
+    .sync_manual_clk(sync_manual_clk)
+);
 
 cpu_interface inst_ci  (
     // DDR Inouts
@@ -909,36 +922,30 @@ cpu_interface inst_ci  (
     .dmem_addr         ( mem_alu_res[31:2]   ),
     .data_from_reg     ( mem_aligned_rt_data ),
     .dmem_byte_w_en    ( mem_mem_byte_w_en   ),
-    .clk_for_ddr       ( clk_from_board      ), // 100 MHz
-    .pixel_clk         ( clk_pixel           ),
-    .manual_clk        ( manual_clk          ),
+    .clk_to_ddr_pass   ( clk_to_ddr_pass     ), // 100 MHz
+    .clk_to_pixel_pass ( clk_to_pixel_pass   ),
     .clk_pipeline      ( clk                 ),
 
-    .ui_clk            ( ui_clk_from_ddr     ),
+    .ui_clk_from_ddr   ( ui_clk_from_ddr     ),
     .sync_manual_clk   ( sync_manual_clk     ),
     .instr_data_out    ( ic_data_out         ),
     .dmem_data_out     ( mem_data            ),
-    .loader_addr       ( {5'b00001, SW }         ), // for test onlyv
-    .loader_data_o     ( loader_data         ),
     .mem_stall         ( mem_stall           ),
 
-    //debug
+    // debug
+    .dbg_que_low       ( ci_dbg_status       ),
+    .cache_stall       ( cache_stall         ),
+    .trap_stall        ( trap_stall          ),
     .data_to_mig       ( data_to_mig         ),
     .buffer_of_ddrctrl ( buffer_of_ddrctrl   ),
     .addr_to_mig       ( addr_to_mig         )
-);
-
-ddr_clock_gen dcg0 (
-    .clk_in1    (clk_from_board),
-    .clk_out1   (clk_from_ip),
-    .clk_out2   (clk_pixel)
 );
 
 reg [31:0] hex_to_seg;
 // segs used to output instruction
 
 seg_ctrl seg_ctrl0 (
-    .clk           ( clk_from_board    ),
+    .clk           ( clk_in1           ),
     .hex1          ( hex_to_seg[3:0]   ),
     .hex2          ( hex_to_seg[7:4]   ),
     .hex3          ( hex_to_seg[11:8]  ),
@@ -952,18 +959,6 @@ seg_ctrl seg_ctrl0 (
 );
 
 always @ (*) begin
-    case (debug_sel)
-        4'b0000: hex_to_seg = ifid_instr;
-        4'b0001: hex_to_seg = mem_pc;
-        4'b0010: hex_to_seg = mem_alu_res;
-        4'b0011: hex_to_seg = mem_aligned_rt_data;
-        4'b0100: hex_to_seg = loader_data;
-        4'b0101: hex_to_seg = {5'd0, addr_to_mig};
-        4'b0110: hex_to_seg = data_to_mig[31:0];
-        4'b0111: hex_to_seg = part_of_buffer;
-        4'b1000: hex_to_seg = dbg_reg;
-        default: hex_to_seg = mem_alu_res;
-    endcase
     case (SW[2:0])
         0: part_of_buffer = buffer_of_ddrctrl[1*32-1: 0*32];
         1: part_of_buffer = buffer_of_ddrctrl[2*32-1: 1*32];
@@ -974,22 +969,27 @@ always @ (*) begin
         6: part_of_buffer = buffer_of_ddrctrl[7*32-1: 6*32];
         7: part_of_buffer = buffer_of_ddrctrl[8*32-1: 7*32];
     endcase
+    case (debug_sel)
+        4'b0000: hex_to_seg = ifid_instr;
+        4'b0001: hex_to_seg = mem_pc;
+        4'b0010: hex_to_seg = mem_alu_res;
+        4'b0011: hex_to_seg = mem_aligned_rt_data;
+        4'b0100: hex_to_seg = 32'd0;
+        4'b0101: hex_to_seg = {5'd0, addr_to_mig};
+        4'b0110: hex_to_seg = data_to_mig[31:0];
+        4'b0111: hex_to_seg = part_of_buffer;
+        4'b1000: hex_to_seg = dbg_reg;
+        4'b1001: hex_to_seg = ci_dbg_status;
+        default: hex_to_seg = mem_alu_res;
+    endcase
 end
 
 //assign mem_pc_out = mem_pc;
 assign led[0]       = mem_mem_w;
 assign led[1]       = mem_mem_r;
 assign led[2]       = mem_stall;
-assign led[6:3]     = mem_mem_byte_w_en;
-assign led[15:7]    = 0;
-
-reg [1:0] delay_cnt;
-always @(posedge ui_clk_from_ddr) begin
-    delay_cnt <= delay_cnt + 1;
-end
-
-wire slow_clk = delay_cnt == 0;
-
-assign clk = SLOW ? slow_clk : ui_clk_from_ddr; // pipeline clock
+assign led[3]       = cache_stall;
+assign led[4]       = trap_stall;
+assign led[15:5]    = 14'd0;
 
 endmodule
