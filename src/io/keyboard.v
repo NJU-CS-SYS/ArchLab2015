@@ -24,7 +24,7 @@ always @ (B)
   8'h4b: H = 7'b1000111; // L
   8'h4d: H = 7'b0001100; // P
   8'h3c: H = 7'b1000001; // U
-  default: H = 7'b1111111;  
+  default: H = 7'b1111111;
   endcase
 endmodule
 
@@ -53,15 +53,13 @@ end
 // TODO only use 2 bits of ps2_clk_sync to achieve the same result?
 wire sampling = ps2_clk_sync[2] & ~ps2_clk_sync[1];
 
-assign overflow = (r_ptr == (w_ptr + 1));
+assign overflow = r_ptr == (w_ptr + 3'd1);
 
 // Write logic
 always @(posedge clk) begin
     if (clrn == 0) begin
         count <= 0;
         w_ptr <= 0;
-        r_ptr <= 0;
-        overflow <= 0;
     end
     else if (sampling) begin
         if (count == 10) begin
@@ -85,7 +83,10 @@ assign ready = (r_ptr != w_ptr);
 
 // Read logic
 always @(posedge clk) begin
-    if (cpu_read && ready) begin
+    if (clrn == 0) begin
+        r_ptr <= 0;
+    end
+    else if (cpu_read && ready) begin
         r_ptr <= r_ptr + 1;
     end
 end

@@ -24,6 +24,14 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module cpu_interface(
+    // ps2 interfaces
+    input ps2_clk,
+    input ps2_data,
+    output [7:0] kb_keycode,
+    output kb_ready,
+    output kb_overflow,
+    output kb_read,
+
     // ddr Inouts
     inout [15:0] ddr2_dq,
     inout [1:0] ddr2_dqs_n,
@@ -171,8 +179,22 @@ reg loader_en;
 // ensures that the pipeline will recover as soon as the writing finishes.
 `define num_vga_wait_cycle 2
 
+//==-------------------------------==
+// Keyboard signal definitions
+//==-------------------------------==
+wire       kb_ready;
+reg        kb_cpu_read;
+wire       kb_overflow;
+wire [7:0] kb_keycode;
+
+assign ready    = kb_ready;
+assign overflow = kb_overflow;
+assign keycode  = kb_keycode;
+assign read = kb_cpu_read;
+
 assign mem_stall = cache_stall
         | (vga_stall && (vga_stall_cnt <= `num_vga_wait_cycle))
+        | (kb_cpu_read & ~kb_ready)
         | trap_stall;
 
 
@@ -208,6 +230,7 @@ always @ (*) begin
     loader_wen    = 0;
     loader_en     = 0;
     trap_stall    = 0;
+    kb_cpu_read   = 0;
 
     if (dmem_addr[29:26] == 4'hc) begin // VMEM
         vga_stall = dmem_write_in;
@@ -278,7 +301,8 @@ always @ (*) begin
         end
     end
     else if (dmem_addr[29:26] == 4'he) begin //keyborad
-        // TODO dmem_data_out = kb_data, and needs further consideration.
+        kb_cpu_read = 1;
+        dmem_data_out = { 24'd0, kb_keycode };
     end
     else if (dmem_addr[29:26] == 4'hf) begin  // loader
         loader_en = 1;
@@ -492,6 +516,17 @@ always @ (negedge clk_pipeline) begin
         end
     end
 end
+
+Keyboard kb (
+    .clk      ( clk_pipeline ),
+    .clrn     ( rst          ),
+    .ps2_clk  ( ps2_clk      ),
+    .ps2_data ( ps2_data     ),
+    .cpu_read ( kb_cpu_read  ),
+    .ready    ( kb_ready     ),
+    .overflow ( kb_overflow  ),
+    .keycode  ( kb_keycode   )
+);
 
 
 endmodule

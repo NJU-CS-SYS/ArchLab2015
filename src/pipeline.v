@@ -6,6 +6,10 @@
 `include "common.vh"
 
 module pipeline (
+    // PS2 Keyboard
+    input PS2_CLK,
+    input PS2_DATA,
+
     // ddr Inouts
     inout [15:0] ddr2_dq,
     inout [1:0] ddr2_dqs_n,
@@ -889,7 +893,13 @@ clock_control cc0(
     .sync_manual_clk(sync_manual_clk)
 );
 
+wire kb_overflow, kb_ready, kb_cpu_read;
+wire [7:0] kb_keycode;
+
 cpu_interface inst_ci  (
+    // PS2
+    .ps2_clk           ( PS2_CLK             ),
+    .ps2_data          ( PS2_DATA            ),
     // DDR Inouts
     .ddr2_dq           ( ddr2_dq             ),
     .ddr2_dqs_n        ( ddr2_dqs_n          ),
@@ -933,6 +943,10 @@ cpu_interface inst_ci  (
     .mem_stall         ( mem_stall           ),
 
     // debug
+    .kb_overflow       ( kb_overflow         ),
+    .kb_ready          ( kb_ready            ),
+    .kb_keycode        ( kb_keycode          ),
+    .kb_read           ( kb_cpu_read         ),
     .dbg_que_low       ( ci_dbg_status       ),
     .cache_stall       ( cache_stall         ),
     .trap_stall        ( trap_stall          ),
@@ -990,6 +1004,9 @@ assign led[1]       = mem_mem_r;
 assign led[2]       = mem_stall;
 assign led[3]       = cache_stall;
 assign led[4]       = trap_stall;
-assign led[15:5]    = 14'd0;
+assign led[5]       = kb_overflow;
+assign led[6]       = kb_ready;
+assign led[7]       = kb_cpu_read;
+assign led[15:8]    = kb_keycode;
 
 endmodule
