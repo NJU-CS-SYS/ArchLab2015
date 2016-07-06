@@ -39,7 +39,7 @@ export CROSS_COMPILE
 all:$(OBJECTS)
 	$(LD) $(LDFLAGS) -T ram-board.ld $(OBJECTS) -o boot
 	$(OBJCOPY) -O binary boot boot.bin
-	$(OBJDUMP) -D boot  > code.txt
+	$(OBJDUMP) -d boot  > code.txt
 	python python/bin2text.py boot.bin ram.txt
 	python python/load_coe_gen.py
 
