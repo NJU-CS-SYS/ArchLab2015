@@ -45,7 +45,7 @@ all:$(OBJECTS)
 
 qemu:
 	$(LD) $(LDFLAGS) -T qemu.ld $(OBJECTS) -o qemu.bin
-	$(OBJDUMP) -D qemu.bin > qemu.txt
+	$(OBJDUMP) -d qemu.bin > qemu.txt
 	qemu-mipsel-static -g 1234 qemu.bin &
 	gdb-multiarch qemu.bin -ex "set arch mips" -ex "set endian little" \
 		-ex "target remote :1234" -ex "disp /i \$$pc"
