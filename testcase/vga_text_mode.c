@@ -21,9 +21,11 @@ void npc_putc(char ch)
     if (local_line == HEIGHT) {
         // No line for print, it is time to scroll ;-)
         char *dst = VMEM;
+        char *buf = scroll_buffer;
         char *src = scroll_buffer + WIDTH;
         for (int i = 0; i < SCROLL_SIZE; i++) {
-            *dst++ = *src++;
+            *dst++ = *src;
+            *buf++ = *src++;
         }
         for (int i = 0; i < WIDTH; i++) {
             *dst++ = ' ';
@@ -79,5 +81,9 @@ int main()
     npc_puts("thinkpad\n");
     npc_puts("3ds\n");
     npc_puts("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n");
+    for (;;) {
+        npc_puts("11111111111111111111111111111111111111111111111\n");
+        npc_puts("---------------------------\n");
+    }
     return 0;
 }

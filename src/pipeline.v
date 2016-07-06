@@ -918,7 +918,7 @@ cpu_interface inst_ci  (
     .sync_manual_clk   ( sync_manual_clk     ),
     .instr_data_out    ( ic_data_out         ),
     .dmem_data_out     ( mem_data            ),
-    .loader_addr       ( {5'b00101, SW }         ), // for test onlyv
+    .loader_addr       ( {5'b00001, SW }         ), // for test onlyv
     .loader_data_o     ( loader_data         ),
     .mem_stall         ( mem_stall           ),
 
@@ -980,8 +980,16 @@ end
 assign led[0]       = mem_mem_w;
 assign led[1]       = mem_mem_r;
 assign led[2]       = mem_stall;
-assign led[15:3]    = 14'd0;
+assign led[6:3]     = mem_mem_byte_w_en;
+assign led[15:7]    = 0;
 
-assign clk = SLOW ? ui_clk_from_ddr : sync_manual_clk; // pipeline clock
+reg [1:0] delay_cnt;
+always @(posedge ui_clk_from_ddr) begin
+    delay_cnt <= delay_cnt + 1;
+end
+
+wire slow_clk = delay_cnt == 0;
+
+assign clk = SLOW ? slow_clk : ui_clk_from_ddr; // pipeline clock
 
 endmodule

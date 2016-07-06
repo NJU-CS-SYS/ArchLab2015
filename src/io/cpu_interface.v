@@ -96,7 +96,7 @@ reg [29:0] ic_addr;
 wire cache_stall;
 
 reg dc_read_in, dc_write_in;
-reg loader_wen;  // accessing loader mapping area & writing request
+reg [3:0] loader_wen;  // accessing loader mapping area & writing request
 reg [14:0] vga_addr; // 2**15 is enough for vga mem
 reg [7:0] char_to_vga;
 
@@ -165,7 +165,17 @@ always @ (*) begin
     end
     else if (dmem_addr[29:26] == 4'hf) begin  // loader
         loader_en = 1;
-        loader_wen  = dmem_write_in;
+        if (dmem_write_in) begin
+            // TODO add short byte enable
+            case (dmem_byte_w_en)
+                4'b0001: loader_wen = 4'b1000;
+                4'b0010: loader_wen = 4'b0100;
+                4'b0100: loader_wen = 4'b0010;
+                4'b1000: loader_wen = 4'b0001;
+                default: loader_wen = 4'b1111;
+            endcase
+        end
+        else loader_wen = 4'b0000;
         dmem_data_out = loader_data;
     end
     else begin  // data cache
