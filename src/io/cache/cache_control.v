@@ -115,6 +115,7 @@ always @(*) begin
             ram_write_out = 0;
 
             if(counter_in ==  3'd4) begin
+                ram_en_out = 0;
                 status_next_reg = `STAT_NORMAL;
                 counter_next_reg = 0;
             end
@@ -147,6 +148,7 @@ always @(*) begin
             ram_write_out = 0;
 
             if(counter_in ==  3'd4) begin
+                ram_en_out = 0;
                 status_next_reg = `STAT_NORMAL;
                 counter_next_reg = 0;
             end
@@ -217,6 +219,7 @@ always @(*) begin
                 ram_en_out = 1;
             end
             if(counter_in ==  3'd4) begin
+                ram_en_out = 0;
                 status_next_reg = `STAT_DC_MISS;
                 counter_next_reg = 0;  // Restart counter for D-cache loading
             end

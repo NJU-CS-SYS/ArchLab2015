@@ -989,7 +989,7 @@ assign led[15:5]    = 14'd0;
 reg slow_clk;
 reg fast_clk;  // 32 times slow than ui_clk_from_ddr
 reg [21:0] slow_clk_counter;
-reg [2:0] fast_clk_counter;
+reg [1:0] fast_clk_counter;
 always @ (posedge ui_clk_from_ddr) begin
     slow_clk_counter <= slow_clk_counter + 1;
     fast_clk_counter <= fast_clk_counter + 1;
