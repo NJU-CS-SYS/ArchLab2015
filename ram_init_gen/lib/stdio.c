@@ -83,7 +83,7 @@ __attribute__((noinline)) void put_hex(unsigned int x, char *addr) {
 }
 
 static char hex_literals[] = "0123456789abcdef";
-#define digit(val, offset) (((val) & (0xfu << (offset))) >> (offset))
+#define digit(val, offset) (((val) & (0xfu << ((offset) << 2))) >> ((offset) << 2))
 
 void print_hex(unsigned int x)
 {
