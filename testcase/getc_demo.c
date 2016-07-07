@@ -3,11 +3,16 @@
 int main()
 {
     for (;;) {
-        npc_puts("cmd> ");
-        char ch = npc_getc();
-        npc_putc(ch);
-        if (ch == 'q') {
-            break;
+        npc_puts("nemu> ");
+        for (;;) {
+            char ch = npc_getc();
+            npc_putc(ch);
+            if (ch == 'q') {
+                return 0;
+            } else if (ch == '\n') {
+                break;
+            }
         }
     }
+    return 0;
 }
