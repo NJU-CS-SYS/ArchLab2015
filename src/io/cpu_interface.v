@@ -301,7 +301,7 @@ always @ (*) begin
         end
     end
     else if (dmem_addr[29:26] == 4'he) begin //keyborad
-        kb_cpu_read = 1;
+        kb_cpu_read = dmem_read_in;
         dmem_data_out = { 24'd0, kb_keycode };
     end
     else if (dmem_addr[29:26] == 4'hf) begin  // loader
