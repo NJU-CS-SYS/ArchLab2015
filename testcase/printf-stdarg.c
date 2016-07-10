@@ -101,8 +101,8 @@ static int printi(char **out, int i, int b, int sg, int width, int pad, int letb
 
 	while (u) {
         //==-- software sim of u /= b --==
-        int quotient = 0;
-        int remain = u;
+        unsigned quotient = 0;
+        unsigned remain = u;
         while (remain > b) {
             quotient++;
             remain -= b;
@@ -223,7 +223,6 @@ int main(void)
 	char buf[80];
 
 	mi = (1 << (bs-1)) + 1;
-	printf("%04d zero padded\n", 3);
 	printf("%s\n", ptr);
 	printf("printf test\n");
 	printf("%s is null pointer\n", np);
