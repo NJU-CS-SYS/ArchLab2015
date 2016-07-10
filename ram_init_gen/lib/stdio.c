@@ -11,7 +11,7 @@ static int curr_col = 0;
 // 160 * 128 = 20KB
 static char scroll_buffer[WIDTH * HEIGHT];
 
-void npc_putc(char ch)
+int npc_putc(char ch)
 {
     // Backup the global vars to avoid async side-effects,
     // which may make (line * WIDTH + col) exceed buffer boundary.
@@ -55,6 +55,8 @@ void npc_putc(char ch)
 
     curr_line = local_line;
     curr_col = local_col;
+
+    return (unsigned char)ch;
 }
 
 void npc_puts(const char *s)
