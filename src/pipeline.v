@@ -519,9 +519,13 @@ always @(*) begin
 end
 
 // If the instruction is branch or lui, this operand should be immediate.
+// When the instruction is `movn(z)' or `movz', RT, a.k.a ope_B acts as a conditon,
+// while RS, a.k.a ope_A is where the data to be transfered from.
+// As move operation is ADD RD <- RS, 0, the ope_B should be selected as constant zero.
 always @(*) begin
     case (ex_B_sel)
-    1'b0: operand_B_after_selection = operand_B_after_forwarding;
+    1'b0: operand_B_after_selection = (ex_movz || ex_movn) ? operand_A_after_forwarding
+                                                           : operand_B_after_forwarding;
     1'b1: operand_B_after_selection = ex_imm_ext;
     endcase
 end
@@ -599,10 +603,16 @@ muldiv mul_div (
 
 wire ex_reg_w_gened;  // The handled reg_w, often disenable for special cases
 
+// When the instruction is `movn(z)' or `movn', the real RT data
+// is not sent to ALU to get the ZF. So we should change the input
+// ZF to generate exact write enable.
+// zf_if_cond_mov := the zero flag if condtitional move
+wire zf_if_cond_mov = (ex_movz || ex_movn) ? (operand_B_after_forwarding == 32'd0)
+                                           : ex_zero;
 reg_w_gen reg_w_gen (
     // Input
     .of              ( ex_overflow    ),
-    .zf              ( ex_zero        ),
+    .zf              ( zf_if_cond_mov ),
     .idex_movz       ( ex_movz        ),
     .idex_movnz      ( ex_movn        ),
     .idex_reg_w      ( ex_reg_w       ),
