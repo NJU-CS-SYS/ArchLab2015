@@ -24,10 +24,7 @@
 	replace outbyte(c) by your own function call.
 */
 
-#include <stdio.h>
-
 #define putchar(c) npc_putc(c)
-#define TEST_PRINTF
 
 #include <stdarg.h>
 
@@ -276,5 +273,4 @@ int main(void)
  * -3: -3   left justif.
  * -3:   -3 right justif.
  */
-
 #endif

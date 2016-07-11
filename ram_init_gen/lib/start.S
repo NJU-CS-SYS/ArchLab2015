@@ -4,6 +4,9 @@
 .globl _qemu
 .type _qemu, @function
 
+.globl _bad
+.type _bad, @function
+
 _reset:
   li $sp, 0xf0008000
   # li $sp, 0x8000
@@ -16,3 +19,7 @@ _qemu:
   jal main
 $L_LOOP:
   b $L_LOOP
+
+_bad:
+$L_BAD:
+  b $L_BAD

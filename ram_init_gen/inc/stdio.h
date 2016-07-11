@@ -10,14 +10,36 @@ int npc_putc(char ch);
 
 void npc_puts(const char *s);
 
-inline void putc(char c, char *addr) {
-    *addr = c;
-}
-
 void put_hex(unsigned int x, char *addr);
 
 void print_hex(unsigned int x);
 
 char npc_getc();
+
+int printf(const char *format, ...);
+
+int sprintf(char *out, const char *format, ...);
+
+#define snprintf(out, n, fmt, ...) \
+    sprintf(out, fmt, ## __VA_ARGS__)
+
+#define fprintf(fd, fmt, ...) \
+    printf(fmt, ## __VA_ARGS__)
+
+#define fflush(...)
+
+#define getchar npc_getc
+
+#define puts npc_puts
+
+#define putc(ch, file) npc_putc(ch)
+
+#define putchar npc_putc
+
+void npc_gets(char *buf);
+
+#define fgets(buf, ...) npc_gets(buf)
+
+#define NULL ((void *)0)
 
 #endif
