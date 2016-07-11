@@ -4,6 +4,9 @@
 .globl _qemu
 .type _qemu, @function
 
+.globl do_irq
+.type do_irq, @function
+
 .globl _bad
 .type _bad, @function
 
