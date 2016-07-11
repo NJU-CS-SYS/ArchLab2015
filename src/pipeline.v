@@ -6,6 +6,10 @@
 `include "common.vh"
 
 module pipeline (
+    // PS2 Keyboard
+    input PS2_CLK,
+    input PS2_DATA,
+
     // ddr Inouts
     inout [15:0] ddr2_dq,
     inout [1:0] ddr2_dqs_n,
@@ -39,6 +43,12 @@ module pipeline (
     output [3:0] VGA_B,
     output VGA_HS,
     output VGA_VS,
+
+    //flash
+    output flash_s,
+    inout [3:0] flash_dq,
+
+    //debug
     output [6:0] seg_out,
     output [7:0] seg_ctrl
 );
@@ -515,9 +525,13 @@ always @(*) begin
 end
 
 // If the instruction is branch or lui, this operand should be immediate.
+// When the instruction is `movn(z)' or `movz', RT, a.k.a ope_B acts as a conditon,
+// while RS, a.k.a ope_A is where the data to be transfered from.
+// As move operation is ADD RD <- RS, 0, the ope_B should be selected as constant zero.
 always @(*) begin
     case (ex_B_sel)
-    1'b0: operand_B_after_selection = operand_B_after_forwarding;
+    1'b0: operand_B_after_selection = (ex_movz || ex_movn) ? operand_A_after_forwarding
+                                                           : operand_B_after_forwarding;
     1'b1: operand_B_after_selection = ex_imm_ext;
     endcase
 end
@@ -595,10 +609,16 @@ muldiv mul_div (
 
 wire ex_reg_w_gened;  // The handled reg_w, often disenable for special cases
 
+// When the instruction is `movn(z)' or `movn', the real RT data
+// is not sent to ALU to get the ZF. So we should change the input
+// ZF to generate exact write enable.
+// zf_if_cond_mov := the zero flag if condtitional move
+wire zf_if_cond_mov = (ex_movz || ex_movn) ? (operand_B_after_forwarding == 32'd0)
+                                           : ex_zero;
 reg_w_gen reg_w_gen (
     // Input
     .of              ( ex_overflow    ),
-    .zf              ( ex_zero        ),
+    .zf              ( zf_if_cond_mov ),
     .idex_movz       ( ex_movz        ),
     .idex_movnz      ( ex_movn        ),
     .idex_reg_w      ( ex_reg_w       ),
@@ -889,7 +909,16 @@ clock_control cc0(
     .sync_manual_clk(sync_manual_clk)
 );
 
+wire kb_overflow, kb_ready, kb_cpu_read;
+wire [7:0] kb_keycode;
+
+wire flash_read_done;
+wire [2:0] flash_state;
+
 cpu_interface inst_ci  (
+    // PS2
+    .ps2_clk           ( PS2_CLK             ),
+    .ps2_data          ( PS2_DATA            ),
     // DDR Inouts
     .ddr2_dq           ( ddr2_dq             ),
     .ddr2_dqs_n        ( ddr2_dqs_n          ),
@@ -933,12 +962,23 @@ cpu_interface inst_ci  (
     .mem_stall         ( mem_stall           ),
 
     // debug
+    .kb_overflow       ( kb_overflow         ),
+    .kb_ready          ( kb_ready            ),
+    .kb_keycode        ( kb_keycode          ),
+    .kb_read           ( kb_cpu_read         ),
     .dbg_que_low       ( ci_dbg_status       ),
     .cache_stall       ( cache_stall         ),
     .trap_stall        ( trap_stall          ),
     .data_to_mig       ( data_to_mig         ),
     .buffer_of_ddrctrl ( buffer_of_ddrctrl   ),
-    .addr_to_mig       ( addr_to_mig         )
+    .addr_to_mig       ( addr_to_mig         ),
+    // flash
+    .flash_s(flash_s),
+    .flash_dq(flash_dq),
+    .flash_state(flash_state),
+    .flash_cnt_begin(flash_cnt_begin),
+    .flash_reading(flash_reading),
+    .flash_read_done(flash_read_done)
 );
 
 reg [31:0] hex_to_seg;
@@ -989,7 +1029,13 @@ assign led[0]       = mem_mem_w;
 assign led[1]       = mem_mem_r;
 assign led[2]       = mem_stall;
 assign led[3]       = cache_stall;
-assign led[4]       = trap_stall;
-assign led[15:5]    = 14'd0;
+assign led[4]       = flash_read_done;
+assign led[5]       = kb_overflow;
+assign led[6]       = kb_ready;
+assign led[7]       = kb_cpu_read;
+assign led[10:8]    = kb_keycode;
+assign led[15:13]   = flash_state;
+assign led[12]      = flash_cnt_begin;
+assign led[11]      = flash_reading;
 
 endmodule
