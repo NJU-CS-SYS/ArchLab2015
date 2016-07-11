@@ -1,5 +1,8 @@
-.global _reset
-.global _qemu
+.globl _reset
+.type _reset, @function
+
+.globl _qemu
+.type _qemu, @function
 
 _reset:
   li $sp, 0xf0008000
