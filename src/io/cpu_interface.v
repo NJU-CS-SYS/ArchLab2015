@@ -414,14 +414,14 @@ loader_mem loader (         // use dual port Block RAM
     .addra ( dmem_addr[12:0]    ),
     .dina  ( data_from_reg      ),
     .douta ( loader_data        ),
-    .clka  ( clk_to_ddr_pass    ),
+    .clka  ( clk_pipeline    ),
     .wea   ( loader_wen         ),
     // Instr port (read-only)
     .addrb ( instr_addr[12:0]   ), // lower 28 bits of initial address
                                    // must start at 0
     .dinb  ( 0                  ), // not used
     .doutb ( loader_instr       ),
-    .clkb  ( clk_to_ddr_pass    ),
+    .clkb  ( clk_pipeline    ),
     .web   ( 0                  )  // not used
 );
 
