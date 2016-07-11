@@ -977,6 +977,7 @@ cpu_interface inst_ci  (
     .flash_dq(flash_dq),
     .flash_state(flash_state),
     .flash_cnt_begin(flash_cnt_begin),
+    .flash_reading(flash_reading),
     .flash_read_done(flash_read_done)
 );
 
@@ -1032,8 +1033,9 @@ assign led[4]       = flash_read_done;
 assign led[5]       = kb_overflow;
 assign led[6]       = kb_ready;
 assign led[7]       = kb_cpu_read;
-assign led[11:8]    = kb_keycode;
+assign led[10:8]    = kb_keycode;
 assign led[15:13]   = flash_state;
 assign led[12]      = flash_cnt_begin;
+assign led[11]      = flash_reading;
 
 endmodule

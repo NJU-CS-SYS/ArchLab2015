@@ -114,50 +114,61 @@ module spi_flash(
 	
 //------------------------------------------------------------------------------------------------
 //-------------button process
-	reg button_r0,button_r1;
-	always@(posedge clk or posedge rst)
-	if(rst)begin
-		button_r0 <= 0;
-		button_r1 <= 0;
-	end
-	else begin
-		button_r0 <= button;
-		button_r1 <= button_r0;
-	end
-	wire pos_button = button_r0 & (~button_r1);
+reg button_r0,button_r1;
+always@(posedge clk or posedge rst) begin
+    if(rst)begin
+        button_r0 <= 0;
+        button_r1 <= 0;
+    end
+    else begin
+        button_r0 <= button;
+        button_r1 <= button_r0;
+    end
+end
+wire pos_button = button_r0 & (~button_r1);
 
-	reg [10:0] cnt;
-	reg start;
+reg [10:0] cnt;
+reg start;
 
-	always @ (posedge clk or posedge rst)
-	if(rst)begin
-		start <= 0;
-		cnt_begin <=0;
-		cnt<=0;
-	end
-	else begin
-		start <= 0;
+always @ (posedge clk or posedge rst) begin
+    if(rst)begin
+        start <= 0;
+        cnt_begin <=0;
+        cnt<=0;
+        debug_state <= 3'b100;
+    end
+    else begin
+        start <= 0;
+        debug_state <= 3'b000;
+        if(pos_button) begin
+            debug_state <= 3'b001;
+            start <= 1;
+        end
+        /*
         if(pos_button) begin
             debug_state <= 3'b000;
-			cnt_begin <= 1'b1;
+            cnt_begin <= 1'b1;
         end
-		if(cnt < 11'd2)begin  //delay
+
+        if(cnt < 11'd2)begin  //delay
             debug_state <= 3'b001;
             if(cnt_begin) begin
                 debug_state <= 3'b010;
-				cnt <= cnt + 1'b1;
+                cnt <= cnt + 1'b1;
             end
-		end
-		else begin
+        end
+        else begin
             debug_state <= 3'b011;
-			start <= 1;
-			cnt <= 0;
-			cnt_begin <= 0;
-		end
-	end
+            start <= 1;
+            cnt <= 0;
+            cnt_begin <= 0;
+        end
+        */
+    end
+end
 
-    assign dout2 = address[1] ? (address[0] ? word[31:24] : word[23:16]) :
-    (address[0] ? word[15:8] : word[7:0]);
+assign dout2 = address[1] ? (address[0] ? word[31:24] : word[23:16]) :
+(address[0] ? word[15:8] : word[7:0]);
 //------------------------------------------------------------------------------------------------
 //---------------main FSM
 	always @(posedge clk or posedge rst)
