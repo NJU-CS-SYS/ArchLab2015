@@ -16,3 +16,7 @@ ram_init_gen/*.txt
 ram_init_gen/boot*
 
 .clang_complete
+
+src/chisel
+!src/chisel/build.sbt
+!src/chisel/*.scala
