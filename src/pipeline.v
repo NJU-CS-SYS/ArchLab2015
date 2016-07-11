@@ -46,7 +46,6 @@ module pipeline (
 
     //flash
     output flash_s,
-    output flash_c,
     inout [3:0] flash_dq,
 
     //debug
@@ -971,7 +970,6 @@ cpu_interface inst_ci  (
     .buffer_of_ddrctrl ( buffer_of_ddrctrl   ),
     .addr_to_mig       ( addr_to_mig         ),
     .flash_s(flash_s),
-    .flash_c(flash_c),
     .flash_dq(flash_dq)
 );
 

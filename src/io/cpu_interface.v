@@ -84,7 +84,6 @@ module cpu_interface(
 
     //flash i/o:
     output flash_s,
-    output flash_c,
     inout [3:0] flash_dq
 );
 
@@ -227,7 +226,8 @@ end
 reg [23:0] flash_addr;
 reg flash_en;
 wire flash_read_done;
-reg [31:0] flash_data;
+wire [31:0] flash_data;
+reg flash_reading;
 
 reg [5:0] flash_counter;
 reg read_finished;
@@ -246,7 +246,7 @@ spi_flash sf0(
     .dout2(),
     .word(flash_data),
     .s(flash_s),
-    .c(flash_c),
+    .c(),
     .DQ(flash_dq)
 );
 
@@ -256,14 +256,14 @@ always @ (posedge clk_pipeline) begin
         read_finished <= 1'b0;
     end
     if (flash_reading) begin
-        if (flash_reading && counter == 5'd31) begin
+        if (flash_reading && flash_counter == 5'd31) begin
             flash_counter <= 5'd0;
             read_finished <= 1'b0;
         end
         else if (flash_counter > 5'd10) begin
             if (flash_read_done) begin
                 read_finished <= 1'b1;
-                counter <= 5'd31;
+                flash_counter <= 5'd31;
             end
         end
         else begin
