@@ -80,7 +80,12 @@ module cpu_interface(
     output [3:0] VGA_G,
     output [3:0] VGA_B,
     output VGA_HS,
-    output VGA_VS
+    output VGA_VS,
+
+    //flash i/o:
+    output flash_s,
+    output flash_c,
+    inout [3:0] flash_dq
 );
 
 localparam VMEM_START   = 32'hc0000000;
@@ -219,6 +224,59 @@ always @ (posedge text_mem_clk) begin
     end
 end
 
+reg [23:0] flash_addr;
+reg flash_en;
+wire flash_read_done;
+reg [31:0] flash_data;
+
+reg [5:0] flash_counter;
+reg read_finished;
+
+spi_flash sf0(
+    .clk(clk_pipeline),
+    .rst(~rst),
+    .send_dummy(1'b0),
+    .spi_mode(2'b00),
+    .read_or_write_sel(1'b1), // read
+    .addr_in(flash_addr),
+    .button(flash_en), // posedge to evoke a read
+    .read_done(flash_read_done),
+    .write_done(),
+    .EOS(),
+    .dout2(),
+    .word(flash_data),
+    .s(flash_s),
+    .c(flash_c),
+    .DQ(flash_dq)
+);
+
+always @ (posedge clk_pipeline) begin
+    if (rst) begin
+        flash_counter <= 5'd31;
+        read_finished <= 1'b0;
+    end
+    if (flash_reading) begin
+        if (flash_reading && counter == 5'd31) begin
+            flash_counter <= 5'd0;
+            read_finished <= 1'b0;
+        end
+        else if (flash_counter > 5'd10) begin
+            if (flash_read_done) begin
+                read_finished <= 1'b1;
+                counter <= 5'd31;
+            end
+        end
+        else begin
+            flash_counter <= flash_counter + 5'd1;
+        end
+    end
+    else begin
+        read_finished <= 0;
+    end
+end
+
+wire flash_stall = flash_reading && ~read_finished;
+
 always @ (*) begin
     // data R/W redirect
     // default value, which have the least effects on the memory system.
@@ -231,8 +289,17 @@ always @ (*) begin
     loader_en     = 0;
     trap_stall    = 0;
     kb_cpu_read   = 0;
+    flash_en = 1'b0;
+    flash_addr = 0;
+    flash_reading = 1'b0;
 
-    if (dmem_addr[29:26] == 4'hc) begin // VMEM
+    if (dmem_addr[29:26] == 4'hb) begin
+        flash_reading = 1'b1;
+        dmem_data_out = flash_data;
+        flash_en = 1'b1;
+        flash_addr = {dmem_addr[21:0], 2'b00};
+    end
+    else if (dmem_addr[29:26] == 4'hc) begin // VMEM
         vga_stall = dmem_write_in;
     end
     else if (dmem_addr[29:26] == 4'hd) begin // timer

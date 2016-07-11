@@ -43,6 +43,13 @@ module pipeline (
     output [3:0] VGA_B,
     output VGA_HS,
     output VGA_VS,
+
+    //flash
+    output flash_s,
+    output flash_c,
+    inout [3:0] flash_dq,
+
+    //debug
     output [6:0] seg_out,
     output [7:0] seg_ctrl
 );
@@ -962,7 +969,10 @@ cpu_interface inst_ci  (
     .trap_stall        ( trap_stall          ),
     .data_to_mig       ( data_to_mig         ),
     .buffer_of_ddrctrl ( buffer_of_ddrctrl   ),
-    .addr_to_mig       ( addr_to_mig         )
+    .addr_to_mig       ( addr_to_mig         ),
+    .flash_s(flash_s),
+    .flash_c(flash_c),
+    .flash_dq(flash_dq)
 );
 
 reg [31:0] hex_to_seg;
