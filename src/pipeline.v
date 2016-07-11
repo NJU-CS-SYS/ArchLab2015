@@ -912,6 +912,9 @@ clock_control cc0(
 wire kb_overflow, kb_ready, kb_cpu_read;
 wire [7:0] kb_keycode;
 
+wire flash_read_done;
+wire [2:0] flash_state;
+
 cpu_interface inst_ci  (
     // PS2
     .ps2_clk           ( PS2_CLK             ),
@@ -969,8 +972,12 @@ cpu_interface inst_ci  (
     .data_to_mig       ( data_to_mig         ),
     .buffer_of_ddrctrl ( buffer_of_ddrctrl   ),
     .addr_to_mig       ( addr_to_mig         ),
+    // flash
     .flash_s(flash_s),
-    .flash_dq(flash_dq)
+    .flash_dq(flash_dq),
+    .flash_state(flash_state),
+    .flash_cnt_begin(flash_cnt_begin),
+    .flash_read_done(flash_read_done)
 );
 
 reg [31:0] hex_to_seg;
@@ -1021,10 +1028,12 @@ assign led[0]       = mem_mem_w;
 assign led[1]       = mem_mem_r;
 assign led[2]       = mem_stall;
 assign led[3]       = cache_stall;
-assign led[4]       = trap_stall;
+assign led[4]       = flash_read_done;
 assign led[5]       = kb_overflow;
 assign led[6]       = kb_ready;
 assign led[7]       = kb_cpu_read;
-assign led[15:8]    = kb_keycode;
+assign led[11:8]    = kb_keycode;
+assign led[15:13]   = flash_state;
+assign led[12]      = flash_cnt_begin;
 
 endmodule

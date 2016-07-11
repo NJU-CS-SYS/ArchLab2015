@@ -11,12 +11,14 @@ module spi_flash(
 	output EOS,
     output [7:0] dout2,
     output [31:0] word,
-	
+    output reg [2:0] debug_state,
+	output reg cnt_begin,
+
 	//flash memory device
 	output s,
 	output c,
 	inout [3:0] DQ
-	
+
 	//test tri
 	/*output [3:0] dq_o,
 	output [3:0] dq_t,
@@ -123,11 +125,10 @@ module spi_flash(
 		button_r1 <= button_r0;
 	end
 	wire pos_button = button_r0 & (~button_r1);
-	
-	reg [24:0] cnt;
-	reg cnt_begin;
+
+	reg [10:0] cnt;
 	reg start;
-	
+
 	always @ (posedge clk or posedge rst)
 	if(rst)begin
 		start <= 0;
@@ -136,19 +137,25 @@ module spi_flash(
 	end
 	else begin
 		start <= 0;
-		if(pos_button)
+        if(pos_button) begin
+            debug_state <= 3'b000;
 			cnt_begin <= 1'b1;
-		if(cnt < 25'd1)begin  //delay
-			if(cnt_begin)
+        end
+		if(cnt < 11'd2)begin  //delay
+            debug_state <= 3'b001;
+            if(cnt_begin) begin
+                debug_state <= 3'b010;
 				cnt <= cnt + 1'b1;
+            end
 		end
 		else begin
+            debug_state <= 3'b011;
 			start <= 1;
 			cnt <= 0;
 			cnt_begin <= 0;
 		end
 	end
-	
+
     assign dout2 = address[1] ? (address[0] ? word[31:24] : word[23:16]) :
     (address[0] ? word[15:8] : word[7:0]);
 //------------------------------------------------------------------------------------------------

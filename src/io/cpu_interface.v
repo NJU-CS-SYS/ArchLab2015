@@ -83,6 +83,9 @@ module cpu_interface(
     output VGA_VS,
 
     //flash i/o:
+    output [2:0] flash_state,
+    output flash_cnt_begin,
+    output flash_read_done,
     output flash_s,
     inout [3:0] flash_dq
 );
@@ -196,10 +199,6 @@ assign overflow = kb_overflow;
 assign keycode  = kb_keycode;
 assign read = kb_cpu_read;
 
-assign mem_stall = cache_stall
-        | (vga_stall && (vga_stall_cnt <= `num_vga_wait_cycle))
-        | (kb_cpu_read & ~kb_ready)
-        | trap_stall;
 
 
 wire text_mem_clk = clk_to_ddr_pass;  // The clock driving text memory
@@ -225,7 +224,6 @@ end
 
 reg [23:0] flash_addr;
 reg flash_en;
-wire flash_read_done;
 wire [31:0] flash_data;
 reg flash_reading;
 
@@ -233,7 +231,7 @@ reg [5:0] flash_counter;
 reg read_finished;
 
 spi_flash sf0(
-    .clk(clk_pipeline),
+    .clk(ui_clk_from_ddr),
     .rst(~rst),
     .send_dummy(1'b0),
     .spi_mode(2'b00),
@@ -245,13 +243,15 @@ spi_flash sf0(
     .EOS(),
     .dout2(),
     .word(flash_data),
+    .debug_state(flash_state),
+    .cnt_begin(flash_cnt_begin),
     .s(flash_s),
     .c(),
     .DQ(flash_dq)
 );
 
 always @ (posedge clk_pipeline) begin
-    if (rst) begin
+    if (~rst) begin
         flash_counter <= 5'd31;
         read_finished <= 1'b0;
     end
@@ -293,7 +293,7 @@ always @ (*) begin
     flash_addr = 0;
     flash_reading = 1'b0;
 
-    if (dmem_addr[29:26] == 4'hb) begin
+    if (dmem_addr[29:26] == 4'hb && dmem_read_in) begin
         flash_reading = 1'b1;
         dmem_data_out = flash_data;
         flash_en = 1'b1;
@@ -595,5 +595,10 @@ Keyboard kb (
     .keycode  ( kb_keycode   )
 );
 
+assign mem_stall = cache_stall
+        | (vga_stall && (vga_stall_cnt <= `num_vga_wait_cycle))
+        | (kb_cpu_read & ~kb_ready)
+        | trap_stall
+        | flash_stall;
 
 endmodule
