@@ -81,8 +81,9 @@ reg [6:0] init_counter;
 reg reset_done;
 reg reset_sel;
 initial begin
-    reset_done <= 0;
+    reset_done <= 1;
     init_counter <= 0;
+    reset_sel <= 0; //selected reset_button
 end
 
 always @(posedge clk) begin

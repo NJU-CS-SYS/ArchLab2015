@@ -227,7 +227,6 @@ end
 
 reg [23:0] flash_addr;
 wire [31:0] flash_data;
-wire flash_initiating;
 reg [5:0] flash_counter;
 reg read_finished;
 
