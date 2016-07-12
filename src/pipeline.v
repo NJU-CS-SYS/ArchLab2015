@@ -445,7 +445,6 @@ idex_reg idex_reg (
     .id_jr                ( id_jr           ),
     .cu_stall             ( cu_idex_stall   ),
     .cu_flush             ( cu_idex_flush   ),
-    .id_rd_addr           ( id_rd_addr      ),
     .idex_mem_r_in        ( idex_mem_r      ),
     .idex_mem_w_in        ( idex_mem_w      ),
     .idex_reg_w_in        ( idex_reg_w      ),
@@ -909,8 +908,11 @@ clock_control cc0(
     .sync_manual_clk(sync_manual_clk)
 );
 
-wire kb_overflow, kb_ready, kb_cpu_read;
-wire [7:0] kb_keycode;
+//==--------------------------------==
+// Singals indicating keyboard state.
+//==--------------------------------==
+wire kb_overflow;  // High if the keycode queue is overflow.
+wire kb_ready;     // High if there are keycodes in the queue.
 
 wire flash_read_done;
 wire [2:0] flash_state;
@@ -964,8 +966,6 @@ cpu_interface inst_ci  (
     // debug
     .kb_overflow       ( kb_overflow         ),
     .kb_ready          ( kb_ready            ),
-    .kb_keycode        ( kb_keycode          ),
-    .kb_read           ( kb_cpu_read         ),
     .dbg_que_low       ( ci_dbg_status       ),
     .cache_stall       ( cache_stall         ),
     .trap_stall        ( trap_stall          ),
@@ -1032,10 +1032,9 @@ assign led[3]       = cache_stall;
 assign led[4]       = flash_read_done;
 assign led[5]       = kb_overflow;
 assign led[6]       = kb_ready;
-assign led[7]       = kb_cpu_read;
-assign led[10:8]    = kb_keycode;
-assign led[15:13]   = flash_state;
-assign led[12]      = flash_cnt_begin;
+assign led[10:7]    = 0;
 assign led[11]      = flash_reading;
+assign led[12]      = flash_cnt_begin;
+assign led[15:13]   = flash_state;
 
 endmodule
