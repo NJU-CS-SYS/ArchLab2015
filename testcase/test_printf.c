@@ -47,6 +47,7 @@
  * -3: -003 zero padded
  * -3: -3   left justif.
  * -3:   -3 right justif.
+ * 24: 000000000000000000000024 right justif.
  */
 
 int main()
@@ -79,6 +80,7 @@ int main()
 	sprintf(buf, "-3: %04d zero padded\n", -3); printf("%s", buf);
 	sprintf(buf, "-3: %-4d left justif.\n", -3); printf("%s", buf);
 	sprintf(buf, "-3: %4d right justif.\n", -3); printf("%s", buf);
+	sprintf(buf, "24: %024d right justif.\n", 24); printf("%s", buf);
 
 	return 0;
 }
