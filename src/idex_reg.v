@@ -28,7 +28,6 @@ module idex_reg(
     input id_nop,
     input id_jmp,
     input id_jr,
-    input [4:0] id_rd_addr,
     input idex_mem_w_in,
     input idex_mem_r_in,
     input idex_reg_w_in,

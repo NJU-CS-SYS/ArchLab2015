@@ -211,3 +211,20 @@ char npc_getc()
         return ch;
     }
 }
+
+/**
+ * Get a string, terminated by '\n' (included).
+ *
+ * FIXME: This function does not focus on safety
+ *        so it does not check buffer boundary
+ */
+void npc_gets(char *buf)
+{
+    for (;;) {
+        char ch = npc_getc();
+        *buf++ = ch;
+        if (ch == '\n') {
+            break;
+        }
+    }
+}

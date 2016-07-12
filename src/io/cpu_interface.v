@@ -27,10 +27,8 @@ module cpu_interface(
     // ps2 interfaces
     input ps2_clk,
     input ps2_data,
-    output [7:0] kb_keycode,
     output kb_ready,
     output kb_overflow,
-    output kb_read,
 
     // ddr Inouts
     inout [15:0] ddr2_dq,
@@ -188,19 +186,17 @@ reg loader_en;
 // ensures that the pipeline will recover as soon as the writing finishes.
 `define num_vga_wait_cycle 2
 
-//==-------------------------------==
-// Keyboard signal definitions
-//==-------------------------------==
-wire       kb_ready;
-reg        kb_cpu_read;
-wire       kb_overflow;
+//==-----------------------------------==
+// Internal keyboard signal definitions.
+//==-----------------------------------==
+
+// Combinational logic to indicate whether the core is accessing
+// the keyboard queue. High if is accessing, while low not.
+reg kb_cpu_read;
+
+// Get the 8 bits keyboard scancode. It will be filled to 32 bits
+// word with leading zeros as the output.
 wire [7:0] kb_keycode;
-
-assign ready    = kb_ready;
-assign overflow = kb_overflow;
-assign keycode  = kb_keycode;
-assign read = kb_cpu_read;
-
 
 
 wire text_mem_clk = clk_to_ddr_pass;  // The clock driving text memory

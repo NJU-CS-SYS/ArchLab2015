@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: NJU_CS_COD_2015
-// Engineer: Yueqi Chen (yueqichen.0x0@gmail.com)
+// Engineer: Yueqi Chen (yueqichen.0x0@gmail.com), Wei Dai
 // 
 // Create Date: 2015/12/30 16:03:59
 // Design Name: multiple and divide unit
@@ -20,7 +20,6 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-
 module muldiv
 (
 	input [3:0] Md_op,
@@ -30,13 +29,6 @@ module muldiv
 	output [31:0] Res_out,
 	output Md_stall
 );
-
-// invalidate it because of implementation error
-
-assign Res_out = 32'd0;
-assign Md_stall = 0;
-
-/*
 
 // Md_op = 0001	op = DIV
 //	   0010 op = DIVU
@@ -53,13 +45,24 @@ reg [31:0] Lo;
 //reg [31:0] result_lo;
 reg [31:0] result_hi;
 
-reg [31:0] quotinent , quotient_temp;
-reg [63:0] dividend_copy , divider_copy , diff;
+reg [31:0] Y;
+reg [31:0] _Y;
+reg [31:0] R;
+reg [31:0] Q;
+reg [63:0] X;
 reg negative_output;
 reg multiplied, divided;
 reg [31:0] calculated_res;
+reg [63:0] res_MUL;
+reg [63:0] res_MUL_temp;
+reg MUL_signed;
+reg [31:0] MUL_Rs;
+reg [31:0] MUL_Rt;
 
-wire [31:0] remainder = (!negative_output)? dividend_copy[31:0] : ~dividend_copy[31:0] + 1'b1;
+
+
+
+//wire [31:0] remainder = (!negative_output)? dividend_copy[31:0] : ~dividend_copy[31:0] + 1'b1;
 
 reg [5:0] cnt;
 wire multiplying = (Md_op == 4'b0111) || (Md_op == 4'b1000) || (Md_op == 4'b1001);
@@ -74,7 +77,6 @@ initial begin
 	calculated_res = 32'h0;
 	Hi = 32'h0;
 	Lo = 32'h0;
-	result_hi = 32'h0;
 	cnt = 0;
 	negative_output = 0;
     multiplied = 1'b0;
@@ -109,45 +111,114 @@ begin
     else if(Md_op == 4'b1000) begin	//MULT
         divided <= 0;
         multiplied <= 1;
-		{Hi , Lo} <= $signed(Rs_in)*$signed(Rt_in);
+        MUL_Rs = Rs_in[31] ? ~Rs_in + 32'b1 : Rs_in;
+        MUL_Rt = Rt_in[31] ? ~Rt_in + 32'b1 : Rt_in;
+		res_MUL_temp = MUL_Rs * MUL_Rt;
+		MUL_signed = (Rs_in[31] & ~Rt_in[31])|(~Rs_in[31] & Rt_in[31]);
+		res_MUL = MUL_signed ? ~res_MUL_temp + 1 : res_MUL_temp;
+		Hi <= res_MUL[63:32];
+		Lo <= res_MUL[31:0];
     end
     else if(Md_op == 4'b1001) begin	//MULTU
         divided <= 0;
         multiplied <= 1;
-		{Hi , Lo} <= Rs_in * Rt_in;
+		{Hi , Lo} = Rs_in * Rt_in;
     end
-	else if(Md_op == 4'b0001 || Md_op == 4'b0010) 	//DIV & DIVU
+	else if(Md_op == 4'b0001) 	//DIV
 	begin
-        multiplied <= 0;
-		if(ready)		//initial some registers
+	    multiplied <= 0;
+	    if(Rs_in == Rt_in)
+	    begin
+            divided <= 1;
+            Hi <= 32'b0;
+            Lo <= 32'b1;
+		end
+		else if(ready&&!divided)		//initial some registers
 		begin
 			cnt = 6'd32;
-			quotinent = 0;
-			quotient_temp = 0;
-			dividend_copy = (!Md_op[0] || !Rs_in[31])? {32'h0 , Rs_in} : {32'h0 , ~Rs_in + 1'b1};
-			divider_copy = (!Md_op[0] || !Rt_in[31])? {1'b0 , Rt_in , 31'd0} : {1'b0 , ~Rt_in + 1'b1 , 31'd0};
-			negative_output = Md_op[0] && ((Rt_in[31] && !Rs_in[31]) || (!Rt_in[31] && (Rs_in[31])));
-            if(diff[31:0] == 0) begin
-                Hi <= diff[31:0];
-            end
+			X = (Md_op[0] && Rs_in[31])?{32'hffffffff,Rs_in}:{32'b0,Rs_in};
+			Y = Rt_in;
+			_Y = ~Y + 32'b1;
+			if(Md_op[0] && ((Rs_in[31] && !Rt_in[31])||(!Rs_in[31]&&Rt_in[31])))//不同号
+                R = X[63:32] + Y;
+            else
+                R = X[63:32] + _Y;
+            Q = X[31:0];
 		end
 		else if(cnt > 0)	//substract
 		begin
-			diff = dividend_copy - divider_copy;
-			quotient_temp = quotient_temp << 1;
-			if(!diff[63])
+			if((R[31] && !Y[31]) || (!R[31] && Y[31]))//不同号
 			begin
-				dividend_copy = diff;
-				quotient_temp[0] = 1'd1;
-			end
-			quotinent = (!negative_output) ? quotient_temp : ~quotient_temp + 1'b1;
-			divider_copy = divider_copy >> 1;
+                R = {R[30:0],Q[31]} + Y;
+                Q = {Q[30:0],1'b0};
+            end
+            else
+            begin
+                R = {R[30:0],Q[31]} + _Y;
+                Q = {Q[30:0],1'b1};
+            end
+            if((R[31] && !X[63]) || (!R[31] && X[63]))
+            begin
+                if(Md_op[0] && ((X[31] && !Y[31])||(!X[31]&&Y[31])))//不同号
+                begin
+                    Hi <= R + _Y;
+                    Lo <= {Q[30:0],!((R[31] && !Y[31]) || (!R[31] && Y[31]))} + 32'b1;
+                end
+                else
+                begin
+                    Hi <= R + Y;
+                    Lo <= {Q[30:0],!((R[31] && !Y[31]) || (!R[31] && Y[31]))};
+                end
+            end
+            else
+            begin
+                if(Md_op[0] && ((X[31] && !Y[31])||(!X[31]&&Y[31])))//不同号
+                begin
+                    Hi <= R;
+                    Lo <= {Q[30:0],!((R[31] && !Y[31]) || (!R[31] && Y[31]))} + 32'b1;
+                end
+                else
+                begin
+                    Hi <= R;
+                    Lo <= {Q[30:0],!((R[31] && !Y[31]) || (!R[31] && Y[31]))};
+                end
+            end
 			cnt <= cnt - 1'b1;
-			Hi <= remainder;
-			Lo <= quotinent;
             if(cnt == 1) divided <= 1;
 		end
 	end
+	else if(Md_op == 4'b0010) 	// DIVU
+        begin
+        multiplied <= 0;
+        if(ready&&!divided)        //initial some registers
+        begin
+            cnt = 6'd32;
+            X[63] = 1'b1;
+            Y = Rt_in;
+            _Y = ~Y + 32'b1;
+            R = Rs_in[31];
+            Q = {Rs_in[30:0],1'b0};
+        end
+        else if(cnt > 0)    //substract
+        begin
+            if({R[30:0],Q[31]} >= Y)
+            begin
+                R <= {R[30:0],Q[31]} + _Y;
+                Q <= {Q[30:0],1'b1};
+                Hi <= R;
+                Lo <= Q;
+            end
+            else
+            begin
+                R <= {R[30:0],Q[31]};
+                Q <= {Q[30:0],1'b0};
+                Hi <= R;
+                Lo <= Q;
+            end
+            cnt <= cnt - 1'b1;
+            if(cnt == 1) divided <= 1;
+        end
+    end
     else begin
         calculated_res <= 32'h0;
         multiplied <= 0;
@@ -155,5 +226,4 @@ begin
     end
 end
 
-*/
 endmodule
