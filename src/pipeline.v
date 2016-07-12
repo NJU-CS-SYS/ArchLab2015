@@ -81,8 +81,9 @@ reg [6:0] init_counter;
 reg reset_done;
 reg reset_sel;
 initial begin
-    reset_done <= 0;
+    reset_done <= 1;
     init_counter <= 0;
+    reset_sel <= 0; //selected reset_button
 end
 
 always @(posedge clk) begin
@@ -949,6 +950,7 @@ wire kb_ready;     // High if there are keycodes in the queue.
 
 wire flash_read_done;
 wire [5:0] flash_state;
+wire vga_stall;
 
 cpu_interface inst_ci  (
     // PS2
@@ -1002,6 +1004,7 @@ cpu_interface inst_ci  (
     .dbg_que_low       ( ci_dbg_status       ),
     .cache_stall       ( cache_stall         ),
     .trap_stall        ( trap_stall          ),
+    .vga_stall_2       ( vga_stall           ),
     .data_to_mig       ( data_to_mig         ),
     .buffer_of_ddrctrl ( buffer_of_ddrctrl   ),
     .addr_to_mig       ( addr_to_mig         ),
@@ -1066,10 +1069,11 @@ assign led[3]       = cache_stall;
 assign led[4]       = flash_read_done;
 assign led[5]       = kb_overflow;
 assign led[6]       = kb_ready;
-
-assign led[10:7]    = 0;
-assign led[11]      = flash_reading;
-assign led[12]      = flash_cnt_begin;
-assign led[15:13]   = flash_state;
+assign led[7]       = kb_cpu_read;
+//assign led[15:10]   = flash_state;
+assign led[8]      = flash_initiating;
+assign led[9]      = flash_reading;
+assign led[10]      = trap_stall;
+assign led[11]      = vga_stall;
 
 endmodule
