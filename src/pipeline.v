@@ -18,7 +18,7 @@ module pipeline (
     input [7:0] SW,
     input clk_in1,         // the global clock
     input manual_clk,
-    input reset,       // the global reset
+    input reset_button,       // the global reset
     input [3:0] debug_sel,
     //input [7:0] intr,   // 8 hardware interruption
     //output [31:0] mem_pc_out,
@@ -75,6 +75,39 @@ wire [DATA_WIDTH - 1 : 0] target;     // Control harzard
 reg [DATA_WIDTH - 1 : 0] pc_in;       // Next pc to go into the pipeline
 
 wire [DATA_WIDTH - 1 : 0] pc_out;  // PC to fetch instruction
+
+reg reset_init;
+reg [6:0] init_counter;
+reg reset_done;
+reg reset_sel;
+initial begin
+    reset_done <= 0;
+    init_counter <= 0;
+end
+
+always @(posedge clk) begin
+    if(~reset_done) begin
+        reset_sel = 1; // selected reset init
+        init_counter <= init_counter + 1;
+        if (init_counter < 15) begin
+            reset_init <= 0;
+        end
+        else if (init_counter < 30) begin
+            reset_init <= 1;
+        end
+        else if (init_counter < 45) begin
+            reset_init <= 0;
+        end
+        else begin
+            reset_done <= 1;
+        end
+    end
+    else begin
+        reset_sel <= 0; //selected reset_button
+    end
+end
+
+wire reset = reset_sel ? reset_init : reset_button;
 
 ////////////////////////////////////////////////////////////////////////////
 //  Instruction

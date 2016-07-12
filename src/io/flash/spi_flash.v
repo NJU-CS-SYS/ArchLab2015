@@ -115,7 +115,7 @@ module spi_flash(
 //------------------------------------------------------------------------------------------------
 //-------------button process
 reg button_r0,button_r1;
-always@(posedge clk or posedge rst) begin
+always@(posedge clk) begin
     if(rst)begin
         button_r0 <= 0;
         button_r1 <= 0;
@@ -126,21 +126,24 @@ always@(posedge clk or posedge rst) begin
     end
 end
 wire pos_button = button_r0 & (~button_r1);
+reg pos_b_latch;
 
 reg [10:0] cnt;
 reg start;
 
-always @ (posedge clk or posedge rst) begin
+always @ (posedge clk) begin
     if(rst)begin
         start <= 0;
         cnt_begin <=0;
         cnt<=0;
         debug_state <= 3'b100;
+        pos_b_latch <= 0;
     end
     else begin
+        pos_b_latch <= pos_button;
         start <= 0;
         debug_state <= 3'b000;
-        if(pos_button) begin
+        if(pos_b_latch) begin
             debug_state <= 3'b001;
             start <= 1;
         end
@@ -171,7 +174,7 @@ assign dout2 = address[1] ? (address[0] ? word[31:24] : word[23:16]) :
 (address[0] ? word[15:8] : word[7:0]);
 //------------------------------------------------------------------------------------------------
 //---------------main FSM
-	always @(posedge clk or posedge rst)
+	always @(posedge clk)
 		if(rst)begin
 			read_done <= 1'b0;
 			write_done <= 1'b0;

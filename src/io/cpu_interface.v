@@ -224,20 +224,19 @@ always @ (posedge text_mem_clk) begin
 end
 
 reg [23:0] flash_addr;
-reg flash_en;
 wire [31:0] flash_data;
 
 reg [5:0] flash_counter;
 reg read_finished;
 
 spi_flash sf0(
-    .clk(ui_clk_from_ddr),
+    .clk(clk_pipeline),
     .rst(~rst),
     .send_dummy(1'b0),
     .spi_mode(2'b00),
     .read_or_write_sel(1'b1), // read
     .addr_in(flash_addr),
-    .button(flash_en), // posedge to evoke a read
+    .button(flash_reading), // posedge to evoke a read
     .read_done(flash_read_done),
     .write_done(),
     .EOS(),
@@ -251,7 +250,7 @@ spi_flash sf0(
 );
 
 always @ (posedge clk_pipeline) begin
-    if (~rst) begin
+    if (rst) begin
         flash_counter <= 5'd31;
         read_finished <= 1'b0;
     end
@@ -289,15 +288,15 @@ always @ (*) begin
     loader_en     = 0;
     trap_stall    = 0;
     kb_cpu_read   = 0;
-    flash_en = 1'b0;
     flash_addr = 0;
     flash_reading = 1'b0;
 
-    if (dmem_addr[29:26] == 4'hb && dmem_read_in) begin
-        flash_reading = 1'b1;
-        dmem_data_out = flash_data;
-        flash_en = 1'b1;
-        flash_addr = {dmem_addr[21:0], 2'b00};
+    if (dmem_addr[29:26] == 4'hb) begin
+        if (dmem_read_in) begin
+            flash_reading = 1'b1;
+            dmem_data_out = flash_data;
+            flash_addr = {dmem_addr[21:0], 2'b00};
+        end
     end
     else if (dmem_addr[29:26] == 4'hc) begin // VMEM
         vga_stall = dmem_write_in;
