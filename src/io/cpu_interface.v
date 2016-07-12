@@ -83,11 +83,12 @@ module cpu_interface(
     output VGA_VS,
 
     //flash i/o:
-    output [2:0] flash_state,
-    output flash_cnt_begin,
+    output [5:0] flash_state,
+    output flash_initiating,
     output reg flash_reading,
     output flash_read_done,
     output flash_s,
+    output flash_c,
     inout [3:0] flash_dq
 );
 
@@ -225,7 +226,7 @@ end
 
 reg [23:0] flash_addr;
 wire [31:0] flash_data;
-
+wire flash_initiating;
 reg [5:0] flash_counter;
 reg read_finished;
 
@@ -242,15 +243,17 @@ spi_flash sf0(
     .EOS(),
     .dout2(),
     .word(flash_data),
-    .debug_state(flash_state),
+    .debug_state(),
     .cnt_begin(flash_cnt_begin),
+    .flash_initiating(flash_initiating),
+    .state(flash_state),
     .s(flash_s),
-    .c(),
+    .c(flash_c),
     .DQ(flash_dq)
 );
 
 always @ (posedge clk_pipeline) begin
-    if (rst) begin
+    if (!rst) begin
         flash_counter <= 5'd31;
         read_finished <= 1'b0;
     end
@@ -274,7 +277,7 @@ always @ (posedge clk_pipeline) begin
     end
 end
 
-wire flash_stall = flash_reading && ~read_finished;
+wire flash_stall = (flash_reading && ~read_finished) || flash_initiating;
 
 always @ (*) begin
     // data R/W redirect

@@ -31,6 +31,7 @@ spi_flash sf0(
     .word(flash_data),
     .debug_state(flash_state),
     .cnt_begin(flash_cnt_begin),
+    .flash_initiating(flash_initiating),
     .s(flash_s),
     .c(),
     .DQ(flash_dq)
@@ -54,7 +55,7 @@ always begin
 end
 
 always @ (posedge clk_pipeline) begin
-    if (rst) begin
+    if (~rst) begin
         flash_counter <= 5'd31;
         read_finished <= 1'b0;
     end

@@ -1,3 +1,5 @@
+`timescale 1ns / 1ps
+
 module spi_flash(
 	input clk,
 	input rst,
@@ -12,7 +14,9 @@ module spi_flash(
     output [7:0] dout2,
     output [31:0] word,
     output reg [2:0] debug_state,
+    output reg [5:0] state,
 	output reg cnt_begin,
+    output flash_initiating,
 
 	//flash memory device
 	output s,
@@ -31,72 +35,75 @@ module spi_flash(
 	
 //------------------------------------------------------------------------------------------------
 //-------------FSM state definitions
-	parameter IDLE 					= 6'h0, 		//wait for start
-                 READ_INSTRUCTION 	= 6'h1,		//read instruction
-                 READ_START 			= 6'h2,		//read start
-                 READ_DELAY_1			= 6'h3,		//wait a clock for genarating the start_out pluse
-                 READ_SEND_ADDRESS	= 6'h4,		//send 24bit address 
-                 READ_SEND_DUMMY		= 6'h5,
-                 READ_RECEIVE_DATA	= 6'h6, 		//receive data----------接收数据长度？
-                 READ_WAIT				= 6'h7,		//wait the end of the last transmission
-                 READ_DELAY_2			= 6'h8,
-                 
-                 WRITE_ENABLE_INSTRUCTION	= 6'h9,
-                 WRITE_ENABLE_START			= 6'ha,
-                 WRITE_ENABLE_WAIT			= 6'hb,
-                 WRITE_ENABLE_DELAY			= 6'hc,
-                 
-                 ERASE_INSTRUCTION			= 6'hd,
-                 ERASE_START					= 6'he,
-                 ERASE_DELAY_1					= 6'hf,
-                 ERASE_SEND_ADDRESS			= 6'h10,
-                 ERASE_WAIT						= 6'h11,
-                 ERASE_DELAY_2					= 6'h12,                                                                                                                                   
-                 
-                 ERASE_READ_STATUS_INSTRUCTION	= 6'h13,
-                 ERASE_READ_STATUS_START			= 6'h14,
-                 ERASE_READ_STATUS_DELAY_1			= 6'h15,
-                 ERASE_READ_STATUS_DATA				= 6'h16,
-                 ERASE_READ_STATUS_DELAY_2			= 6'h17,
-                 ERASE_READ_STATUS_WAIT				= 6'h18,
-                 ERASE_READ_STATUS_DELAY_3			= 6'h19,
-                 
-                 WRITE_INSTRUCTION			= 6'h1a,
-                 WRITE_START					= 6'h1b,
-                 WRITE_DELAY_1					= 6'h1c,
-                 WRITE_SEND_ADDRESS			= 6'h1d,
-                 WRITE_SEND_DATA				= 6'h1e,
-                 WRITE_WAIT						= 6'h1f,
-                 WRITE_DELAY_2					= 6'h20,
-                 
-                 WRITE_READ_STATUS_INSTRUCTION	= 6'h21,
-                 WRITE_READ_STATUS_START			= 6'h22,
-                 WRITE_READ_STATUS_DELAY_1			= 6'h23,
-                 WRITE_READ_STATUS_DATA				= 6'h24,
-                 WRITE_READ_STATUS_DELAY_2			= 6'h25,
-                 WRITE_READ_STATUS_WAIT				= 6'h26,
-                 WRITE_READ_STATUS_DELAY_3			= 6'h27,
-                 
-                 RESET_INSTRUCTION = 6'h28,
-                 RESET_START = 6'h29,
-                 RESET_WAIT = 6'h2a,
-                 RESET_DELAY = 6'h2b;
-				 
-				 
+parameter IDLE 					= 6'h0, 		//wait for start
+READ_INSTRUCTION 	= 6'h1,		//read instruction
+READ_START 			= 6'h2,		//read start
+READ_DELAY_1			= 6'h3,		//wait a clock for genarating the start_out pluse
+READ_SEND_ADDRESS	= 6'h4,		//send 24bit address 
+READ_SEND_DUMMY		= 6'h5,
+READ_RECEIVE_DATA	= 6'h6, 		//receive data----------接收数据长度？
+READ_WAIT				= 6'h7,		//wait the end of the last transmission
+READ_DELAY_2			= 6'h8,
+
+WRITE_ENABLE_INSTRUCTION	= 6'h9,
+WRITE_ENABLE_START			= 6'ha,
+WRITE_ENABLE_WAIT			= 6'hb,
+WRITE_ENABLE_DELAY			= 6'hc,
+
+ERASE_INSTRUCTION			= 6'hd,
+ERASE_START					= 6'he,
+ERASE_DELAY_1					= 6'hf,
+ERASE_SEND_ADDRESS			= 6'h10,
+ERASE_WAIT						= 6'h11,
+ERASE_DELAY_2					= 6'h12,
+
+ERASE_READ_STATUS_INSTRUCTION	= 6'h13,
+ERASE_READ_STATUS_START			= 6'h14,
+ERASE_READ_STATUS_DELAY_1			= 6'h15,
+ERASE_READ_STATUS_DATA				= 6'h16,
+ERASE_READ_STATUS_DELAY_2			= 6'h17,
+ERASE_READ_STATUS_WAIT				= 6'h18,
+ERASE_READ_STATUS_DELAY_3			= 6'h19,
+
+WRITE_INSTRUCTION			= 6'h1a,
+WRITE_START					= 6'h1b,
+WRITE_DELAY_1					= 6'h1c,
+WRITE_SEND_ADDRESS			= 6'h1d,
+WRITE_SEND_DATA				= 6'h1e,
+WRITE_WAIT						= 6'h1f,
+WRITE_DELAY_2					= 6'h20,
+
+WRITE_READ_STATUS_INSTRUCTION	= 6'h21,
+WRITE_READ_STATUS_START			= 6'h22,
+WRITE_READ_STATUS_DELAY_1			= 6'h23,
+WRITE_READ_STATUS_DATA				= 6'h24,
+WRITE_READ_STATUS_DELAY_2			= 6'h25,
+WRITE_READ_STATUS_WAIT				= 6'h26,
+WRITE_READ_STATUS_DELAY_3			= 6'h27,
+
+RESET_INSTRUCTION = 6'h28,
+RESET_START = 6'h29,
+RESET_WAIT = 6'h2a,
+RESET_DELAY = 6'h2b;
+
+
 //---------------------------------------------------------------------------------------------	
 //-----------Internal signals definitions
 	reg [7:0] instruction = 8'b0;
 	reg [ADDRESS_BYTE_NUMBER*8-1:0] address;
 	reg [7:0] data;
-	
-	reg [5:0] state;
+
 	reg start_transmission = 1'b0;
-	reg rnw;													//read or write transmission select
+	reg rnw;			//read or write transmission select
 	reg [2:0] address_send_counter = 3'b0;
 	reg [31:0] transmission_bytes_counter = 9'b0;
 	reg erase_done;
 	reg [31:0] delay_count;
-	
+
+assign flash_initiating = (state == RESET_INSTRUCTION) ||
+(state == RESET_START) ||
+(state == RESET_WAIT) ||
+(state == RESET_DELAY);
 //-----------------------------------------------
 //------------spi_tr8 signals
 	reg dummy = 1'b0;;
@@ -181,7 +188,7 @@ assign dout2 = address[1] ? (address[0] ? word[31:24] : word[23:16]) :
 			state <= RESET_INSTRUCTION;
 			erase_done <= 1'b0;
 		end
-		else
+        else begin
 			case(state)
 			RESET_INSTRUCTION:begin
 			    delay_count <= 0;
@@ -201,13 +208,14 @@ assign dout2 = address[1] ? (address[0] ? word[31:24] : word[23:16]) :
                     state <= RESET_WAIT;
             end
             RESET_DELAY:begin
-                if(delay_count < 'd20000)
+                // if(delay_count < 32'd20000)
+                if(delay_count < 32'd20)
                     delay_count <= delay_count + 1'b1;
                 else begin
                     delay_count <= 0;
                     state <= IDLE;
                 end
-            end 
+            end
 			IDLE:begin
 				start_transmission <= 1'b0;
 				if(start)
@@ -216,9 +224,9 @@ assign dout2 = address[1] ? (address[0] ? word[31:24] : word[23:16]) :
 					else
 						state <= WRITE_ENABLE_INSTRUCTION;
 				else
-					state <= IDLE;
+                    state <= IDLE;
 			end
-			
+
 	//-----------------------------------
 	//------Read Flash
 			READ_INSTRUCTION:begin
@@ -258,14 +266,16 @@ assign dout2 = address[1] ? (address[0] ? word[31:24] : word[23:16]) :
 					state <= READ_RECEIVE_DATA;
 					rnw <= 1'b1;
 				end
-			end					
+			end
 			READ_RECEIVE_DATA:begin
-				if(transmission_bytes_counter == NUMBER_OF_DATA_TRANSMITTED-1) begin //number of transmitted bytes
+				if(transmission_bytes_counter == NUMBER_OF_DATA_TRANSMITTED-1) begin
+                    //number of transmitted bytes
 					transmission_bytes_counter <= 9'b0;
-					state <= READ_WAIT;  
+					state <= READ_WAIT;
 				end
                 else if(transmission_done) begin
-					transmission_bytes_counter <= transmission_bytes_counter + 1'b1;
+					transmission_bytes_counter <=
+                    transmission_bytes_counter + 1'b1;
                 end
 			end
 			READ_WAIT:begin
@@ -282,8 +292,8 @@ assign dout2 = address[1] ? (address[0] ? word[31:24] : word[23:16]) :
 					state <= IDLE;
 				end
 			end
-			
-		//------------------------------------	
+
+		//-----------------------------------
 		//-------Write enable
 			WRITE_ENABLE_INSTRUCTION:begin
 				rnw <= 1'b0;
@@ -307,8 +317,8 @@ assign dout2 = address[1] ? (address[0] ? word[31:24] : word[23:16]) :
                 else
                     state <= ERASE_INSTRUCTION;
 			end
-				
-		//-----------------------------------------	
+
+		//-----------------------------------------
 		//--------Erase Flash
 			ERASE_INSTRUCTION:begin
 			    rnw <= 1'b0;
@@ -403,7 +413,8 @@ assign dout2 = address[1] ? (address[0] ? word[31:24] : word[23:16]) :
 					address_send_counter <= address_send_counter + 1'b1;
 			end
 			WRITE_SEND_DATA:begin
-				if(transmission_bytes_counter == 9'd256-1)begin//NUMBER_OF_DATA_TRANSMITTED-1) begin //number of transmitted bytes
+				if(transmission_bytes_counter == 9'd256-1)begin
+                    //NUMBER_OF_DATA_TRANSMITTED-1) begin //number of transmitted bytes
 					transmission_bytes_counter <= 9'b0;
 					state <= WRITE_WAIT;  
 				end
@@ -419,9 +430,9 @@ assign dout2 = address[1] ? (address[0] ? word[31:24] : word[23:16]) :
 				if(done_for_wr)
 					state <= WRITE_READ_STATUS_INSTRUCTION;
 			end
-			
 			WRITE_READ_STATUS_INSTRUCTION:begin
-				instruction <= 8'h05;							//read status register 1
+				instruction <= 8'h05;
+                //read status register 1
 				state <= WRITE_READ_STATUS_START;
 			end
 			WRITE_READ_STATUS_START:begin
@@ -433,15 +444,19 @@ assign dout2 = address[1] ? (address[0] ? word[31:24] : word[23:16]) :
 				state <= WRITE_READ_STATUS_DATA;
 			end
 			WRITE_READ_STATUS_DATA:begin
-				if(transmission_done)begin								
-					state <= WRITE_READ_STATUS_DELAY_2;		//wait the instruction transmission complete
+				if(transmission_done) begin
+					state <= WRITE_READ_STATUS_DELAY_2;
+                    //wait the instruction transmission complete
 				end
 			end
 			WRITE_READ_STATUS_DELAY_2:begin
-				if(transmission_done)							//wait the first data transmission complete
+                if(transmission_done) begin
+                    //wait the first data transmission complete
 					state <= WRITE_READ_STATUS_WAIT;
+                end
 			end
-			WRITE_READ_STATUS_WAIT:begin						//wait the last data transmission complete
+			WRITE_READ_STATUS_WAIT:begin
+            //wait the last data transmission complete
 				if(dout[0]==0)
 					if(transmission_done)begin
 						start_transmission <= 1'b0;
@@ -456,9 +471,9 @@ assign dout2 = address[1] ? (address[0] ? word[31:24] : word[23:16]) :
 					state <= IDLE;
 				end
 			end
-			
 			default: state <= IDLE;
 		endcase
+    end
 	
 //---------------------------------------------------------------------------------------------------------
 //----------transmission start control
