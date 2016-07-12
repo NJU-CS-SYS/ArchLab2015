@@ -74,6 +74,7 @@ module cpu_interface(
     output cache_stall,
     output reg trap_stall,
     output [31:0] dbg_que_low,
+    output vga_stall_2,
 
     // VGA outputs
     output [3:0] VGA_R,
@@ -232,7 +233,7 @@ reg read_finished;
 
 spi_flash sf0(
     .clk(clk_pipeline),
-    .rst(~rst),
+    .rst(0),
     .send_dummy(1'b0),
     .spi_mode(2'b00),
     .read_or_write_sel(1'b1), // read
@@ -597,10 +598,12 @@ Keyboard kb (
     .keycode  ( kb_keycode   )
 );
 
+assign vga_stall_2 = (vga_stall && (vga_stall_cnt <= `num_vga_wait_cycle));
+
 assign mem_stall = cache_stall
-        | (vga_stall && (vga_stall_cnt <= `num_vga_wait_cycle))
-        | (kb_cpu_read & ~kb_ready)
-        | trap_stall
-        | flash_stall;
+| vga_stall_2
+| (kb_cpu_read & ~kb_ready)
+| trap_stall
+| flash_stall;
 
 endmodule
