@@ -29,6 +29,8 @@ void check(unsigned int mem, unsigned int expected_val) {
 }
 
 int main() {
+  put_hex(deref(0xb0000000), vga);
+  vga += screen_width;
   for (unsigned int pointer = 0xb0000000; pointer <= 0xb0000400; pointer += 4) {
     put_hex(deref(pointer), vga);
     vga += screen_width/10;
