@@ -132,6 +132,7 @@ class DDRControlModule extends Module {
       }
     }
     when (state === r1wait_1) {
+      io.addr_to_mig := Cat(io.ram_addr(25, 3), UInt(0, 5))
       counter := counter + one_cycle
       when (io.mig_data_valid & counter >= read_wait_cyle) {
         state := r1req_2
@@ -159,6 +160,7 @@ class DDRControlModule extends Module {
       }
     }
     when (state === r1wait_2) {
+      io.addr_to_mig := Cat(io.ram_addr(25, 3), UInt(0, 5))
       counter := counter + one_cycle
       when (io.mig_data_valid & counter >= read_wait_cyle) {
         state := r2req_1
@@ -189,6 +191,7 @@ class DDRControlModule extends Module {
       }
     }
     when (state === r2wait_1) {
+      io.addr_to_mig := Cat(io.ram_addr(25, 3), UInt(16, 5))
       counter := counter + one_cycle
       when (io.mig_data_valid & counter >= read_wait_cyle) {
         state := r2req_2
@@ -216,6 +219,7 @@ class DDRControlModule extends Module {
       }
     }
     when (state === r2wait_2) {
+      io.addr_to_mig := Cat(io.ram_addr(25, 3), UInt(16, 5))
       counter := counter + one_cycle
       when (io.mig_data_valid & counter >= read_wait_cyle) {
         state := finish
