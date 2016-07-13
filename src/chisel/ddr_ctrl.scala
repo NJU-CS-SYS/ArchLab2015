@@ -23,17 +23,19 @@ class DDRControlModule extends Module {
     val addr_to_mig = UInt(OUTPUT, 27)
     val data_to_mig = UInt(OUTPUT, 128)
     val data_to_cpu = UInt(OUTPUT, 256)
-    val state_to_cpu = UInt(OUTPUT, 4)
+    val state_to_cpu = UInt(OUTPUT, 5)
   }
   val (idle ::
     w1req :: w1wait ::
     w2req :: w2wait ::
+    w1check_1 :: w1check_2 ::
+    w2check_1 :: w2check_2 ::
     r1req_1 :: r1wait_1 ::
     r1req_2 :: r1wait_2 ::
     r2req_1 :: r2wait_1 ::
     r2req_2 :: r2wait_2 ::
     finish :: Nil)
-  = Enum(UInt(), 14)
+  = Enum(UInt(), 18)
   val state = Reg(init = idle)
   val counter = Reg(init = UInt(0, 6))
   val buffer = Reg(init = UInt(0, 256))
@@ -86,7 +88,31 @@ class DDRControlModule extends Module {
     when (state === w1wait) {
       counter := counter + one_cycle
       when (io.mig_rdy & counter >= write_wait_cyle) {
+        state := w1check_1
+        counter := zero_cyle
+      }
+    }
+
+    when (state === w1check_1) {
+      io.app_en := UInt(1)
+      io.addr_to_mig := Cat(io.ram_addr(25, 3), UInt(0, 5))
+      counter := counter + one_cycle
+      when (io.mig_rdy & counter >= one_cycle) {
+        state := w1check_2
+        counter := zero_cyle
+      }
+    }
+    when (state === w1check_2) {
+      when (io.mig_data_valid & counter >= read_wait_cyle) {
+        counter := zero_cyle
         state := w2req
+        when (io.data_from_mig =/= io.data_to_ram(127, 0)) {
+          state := w1req
+        }
+      }
+      when (~io.mig_data_valid & counter >= UInt(60)) {
+        state := w1check_1
+        counter := zero_cyle
       }
     }
 
@@ -106,7 +132,31 @@ class DDRControlModule extends Module {
     when (state === w2wait) {
       counter := counter + one_cycle
       when (io.mig_rdy & counter >= write_wait_cyle) {
+        state := w2check_1
+        counter := zero_cyle
+      }
+    }
+
+    when (state === w2check_1) {
+      io.app_en := UInt(1)
+      io.addr_to_mig := Cat(io.ram_addr(25, 3), UInt(16, 5))
+      counter := counter + one_cycle
+      when (io.mig_rdy & counter >= one_cycle) {
+        state := w2check_2
+        counter := zero_cyle
+      }
+    }
+    when (state === w2check_2) {
+      when (io.mig_data_valid & counter >= read_wait_cyle) {
+        counter := zero_cyle
         state := finish
+        when (io.data_from_mig =/= io.data_to_ram(255, 128)) {
+          state := w2req
+        }
+      }
+      when (~io.mig_data_valid & counter >= UInt(60)) {
+        state := w2check_1
+        counter := zero_cyle
       }
     }
 
@@ -120,7 +170,6 @@ class DDRControlModule extends Module {
       }
     }
     when (state === r1wait_1) {
-      io.addr_to_mig := Cat(io.ram_addr(25, 3), UInt(0, 5))
       counter := counter + one_cycle
       when (io.mig_data_valid & counter >= read_wait_cyle) {
         state := r1req_2
@@ -143,7 +192,6 @@ class DDRControlModule extends Module {
       }
     }
     when (state === r1wait_2) {
-      io.addr_to_mig := Cat(io.ram_addr(25, 3), UInt(0, 5))
       counter := counter + one_cycle
       when (io.mig_data_valid & counter >= read_wait_cyle) {
         state := r2req_1
@@ -169,7 +217,6 @@ class DDRControlModule extends Module {
       }
     }
     when (state === r2wait_1) {
-      io.addr_to_mig := Cat(io.ram_addr(25, 3), UInt(16, 5))
       counter := counter + one_cycle
       when (io.mig_data_valid & counter >= read_wait_cyle) {
         state := r2req_2
@@ -192,7 +239,6 @@ class DDRControlModule extends Module {
       }
     }
     when (state === r2wait_2) {
-      io.addr_to_mig := Cat(io.ram_addr(25, 3), UInt(16, 5))
       counter := counter + one_cycle
       when (io.mig_data_valid & counter >= read_wait_cyle) {
         state := finish
