@@ -11,12 +11,8 @@
 #define PROG_MEM_END     0x00008000
 #define PROG_FLAHS_BEGIN 0xb0000000
 
-#define screen_width 160
-
-char* vga = VMEM + screen_width * 2 + 5;
-
-// #define start_addr 0xf0000000
-#define start_addr 0
+#define _S(x) # x
+#define S(x) _S(x)
 
 int main() {
   // Copy data flash from flash to memory.
@@ -25,8 +21,14 @@ int main() {
   deref(addr) = deref(flash_addr);  // Workaround the 1st-read failure
   for(; addr < PROG_MEM_END; addr += 4) {
     deref(addr) = deref(flash_addr);
+    if (deref(addr) != deref(flash_addr)) {
+        printf("0x%08x: write error flash %08x -> ddr %08x\n", addr, deref(flash_addr), deref(addr));
+        // Why not use local variables to save the deref result?
+        // Because this can detect whether a later access can be correct.
+        // (When this branch is taken but the output seems correct.)
+        for (;;) {}
+    }
     flash_addr += 4;
-    *vga++ = '.';
   }
 
   // Check whether the copy is correct.
@@ -34,19 +36,15 @@ int main() {
   flash_addr = PROG_FLAHS_BEGIN;
   deref(addr) = deref(flash_addr);  // Workaround the 1st-read failure
   for(; addr < PROG_MEM_END; addr += 4) {
-    unsigned int want = deref(flash_addr);
-    unsigned int real = deref(addr);
-    printf("0x%08x: flash %08x -> ddr %08x", addr, want, real);
-    if (want != real) {
-        printf(" error");
+    if (deref(flash_addr) != deref(addr)) {
+        printf("0x%08x: read error flash %08x -> ddr %08x\n", addr, deref(flash_addr), deref(addr));
         for (;;) {}
     }
-    printf("\n");
     flash_addr += 4;
   }
 
   // Use keyboard to confirm the execution of program.
   getchar();
-  asm volatile("li $ra, 0x00000100; jr $ra");
+  asm volatile("li $ra, "  S(PROG_MEM_BEGIN) "; jr $ra");
   return 0;
 }
