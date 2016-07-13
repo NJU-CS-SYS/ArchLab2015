@@ -35,7 +35,7 @@ class DDRControlModule extends Module {
     finish :: Nil)
   = Enum(UInt(), 14)
   val state = Reg(init = idle)
-  val counter = Reg(init = UInt(0, 4))
+  val counter = Reg(init = UInt(0, 6))
   val buffer = Reg(init = UInt(0, 256))
 
   val ram_addr_old = Reg(init = UInt(0, 22))
@@ -53,9 +53,10 @@ class DDRControlModule extends Module {
     | ((state === idle) & (ram_addr_old === io.ram_addr(25,3)) &
       (ram_write_old === io.ram_write)))
 
-  val read_wait_cyle = UInt(2)
-  val one_cycle = UInt(1)
-  val zero_cyle = UInt(0)
+  val read_wait_cyle = UInt(4, 6)
+  val write_wait_cyle = UInt(3, 6)
+  val one_cycle = UInt(1, 6)
+  val zero_cyle = UInt(0, 6)
 
   when (io.init_calib_complete) {
     counter := counter + UInt(1)
@@ -75,11 +76,12 @@ class DDRControlModule extends Module {
       io.data_to_mig := io.data_to_ram(127, 0)
       when (io.mig_rdy & io.mig_wdf_rdy) {
         state := w1wait
+        counter := zero_cyle
       }
     }
     when (state === w1wait) {
-      when (io.mig_rdy) {
-        counter := UInt(0)
+      counter := counter + one_cycle
+      when (io.mig_rdy && counter >= write_wait_cyle) {
         state := w2req
       }
     }
@@ -110,6 +112,10 @@ class DDRControlModule extends Module {
         buffer(127, 0) := io.data_from_mig
         counter := zero_cyle
       }
+      when (~io.mig_data_valid && counter >= UInt(60)) {
+        state := r1req_1
+        counter := zero_cyle
+      }
     }
 
     when (state === r1req_2) {
@@ -126,6 +132,10 @@ class DDRControlModule extends Module {
       when (io.mig_data_valid && counter >= read_wait_cyle) {
         state := r2req_1
         buffer(127, 0) := io.data_from_mig
+        counter := zero_cyle
+      }
+      when (~io.mig_data_valid && counter >= UInt(60)) {
+        state := r1req_2
         counter := zero_cyle
       }
     }
@@ -146,6 +156,10 @@ class DDRControlModule extends Module {
         buffer(255, 128) := io.data_from_mig
         counter := zero_cyle
       }
+      when (~io.mig_data_valid && counter >= UInt(60)) {
+        state := r2req_1
+        counter := zero_cyle
+      }
     }
 
     when (state === r2req_2) {
@@ -162,6 +176,10 @@ class DDRControlModule extends Module {
       when (io.mig_data_valid && counter >= read_wait_cyle) {
         state := finish
         buffer(255, 128) := io.data_from_mig
+      }
+      when (~io.mig_data_valid && counter >= UInt(60)) {
+        state := r2req_2
+        counter := zero_cyle
       }
     }
 
