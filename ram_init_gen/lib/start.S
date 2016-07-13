@@ -8,7 +8,7 @@
 .type _bad, @function
 
 _reset:
-  li $sp, 0xf0000100
+  li $sp, 0xf0008000
   # li $sp, 0x8000
   jal main
 $L_GOOD:

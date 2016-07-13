@@ -1,4 +1,4 @@
-#define VMEM ((char *)0xc0000000)
+#include <stdio.h>
 
 /* 0xc000 0000  : VMEM
  * 0x0          : cache + ddr
@@ -7,20 +7,43 @@
 
 #define deref(x) *((volatile unsigned int *) (x))
 
+#define PROG_MEM_BEGIN   0x00000100
+#define PROG_MEM_END     0x00008000
+#define PROG_FLAHS_BEGIN 0xb0000000
+
 #define screen_width 160
 
-char* vga = VMEM + screen_width*2 + 5;
+char* vga = VMEM + screen_width * 2 + 5;
 
 int main() {
-  unsigned int addr = 0xf0000100;
-  unsigned int flash_addr = 0xb0000000;
-  deref(addr) = deref(flash_addr);
-  for(; addr < 0xf0008000; addr += 4) {
+  // Copy data flash from flash to memory.
+  unsigned int addr = PROG_MEM_BEGIN;
+  unsigned int flash_addr = PROG_FLAHS_BEGIN;
+  deref(addr) = deref(flash_addr);  // Workaround the 1st-read failure
+  for(; addr < PROG_MEM_END; addr += 4) {
     deref(addr) = deref(flash_addr);
     flash_addr += 4;
     *vga++ = '.';
   }
 
-  asm volatile("li $ra, 0xf0000100; jr $ra");
+  // Check whether the copy is correct.
+  addr = PROG_MEM_BEGIN;
+  flash_addr = PROG_FLAHS_BEGIN;
+  deref(addr) = deref(flash_addr);  // Workaround the 1st-read failure
+  for(; addr < PROG_MEM_END; addr += 4) {
+    unsigned int want = deref(flash_addr);
+    unsigned int real = deref(addr);
+    printf("0x%08x: flash %08x -> ddr %08x", addr, want, real);
+    if (want != real) {
+        printf(" error");
+        for (;;) {}
+    }
+    printf("\n");
+    flash_addr += 4;
+  }
+
+  // Use keyboard to confirm the execution of program.
+  getchar();
+  asm volatile("li $ra, 0x00000100; jr $ra");
   return 0;
 }
