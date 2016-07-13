@@ -1,5 +1,11 @@
-.global _reset
-.global _qemu
+.globl _reset
+.type _reset, @function
+
+.globl _qemu
+.type _qemu, @function
+
+.globl _bad
+.type _bad, @function
 
 _reset:
   li $sp, 0xf0008000
@@ -13,3 +19,7 @@ _qemu:
   jal main
 $L_LOOP:
   b $L_LOOP
+
+_bad:
+$L_BAD:
+  b $L_BAD

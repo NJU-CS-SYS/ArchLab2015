@@ -6,6 +6,10 @@
 `include "common.vh"
 
 module pipeline (
+    // PS2 Keyboard
+    input PS2_CLK,
+    input PS2_DATA,
+
     // ddr Inouts
     inout [15:0] ddr2_dq,
     inout [1:0] ddr2_dqs_n,
@@ -14,7 +18,7 @@ module pipeline (
     input [7:0] SW,
     input clk_in1,         // the global clock
     input manual_clk,
-    input reset,       // the global reset
+    input reset_button,       // the global reset
     input [3:0] debug_sel,
     //input [7:0] intr,   // 8 hardware interruption
     //output [31:0] mem_pc_out,
@@ -39,6 +43,12 @@ module pipeline (
     output [3:0] VGA_B,
     output VGA_HS,
     output VGA_VS,
+
+    //flash
+    output flash_s,
+    inout [3:0] flash_dq,
+
+    //debug
     output [6:0] seg_out,
     output [7:0] seg_ctrl
 );
@@ -65,6 +75,40 @@ wire [DATA_WIDTH - 1 : 0] target;     // Control harzard
 reg [DATA_WIDTH - 1 : 0] pc_in;       // Next pc to go into the pipeline
 
 wire [DATA_WIDTH - 1 : 0] pc_out;  // PC to fetch instruction
+
+reg reset_init;
+reg [6:0] init_counter;
+reg reset_done;
+reg reset_sel;
+initial begin
+    reset_done <= 1;
+    init_counter <= 0;
+    reset_sel <= 0; //selected reset_button
+end
+
+always @(posedge clk) begin
+    if(~reset_done) begin
+        reset_sel = 1; // selected reset init
+        init_counter <= init_counter + 1;
+        if (init_counter < 15) begin
+            reset_init <= 0;
+        end
+        else if (init_counter < 30) begin
+            reset_init <= 1;
+        end
+        else if (init_counter < 45) begin
+            reset_init <= 0;
+        end
+        else begin
+            reset_done <= 1;
+        end
+    end
+    else begin
+        reset_sel <= 0; //selected reset_button
+    end
+end
+
+wire reset = reset_sel ? reset_init : reset_button;
 
 ////////////////////////////////////////////////////////////////////////////
 //  Instruction
@@ -435,7 +479,6 @@ idex_reg idex_reg (
     .id_jr                ( id_jr           ),
     .cu_stall             ( cu_idex_stall   ),
     .cu_flush             ( cu_idex_flush   ),
-    .id_rd_addr           ( id_rd_addr      ),
     .idex_mem_r_in        ( idex_mem_r      ),
     .idex_mem_w_in        ( idex_mem_w      ),
     .idex_reg_w_in        ( idex_reg_w      ),
@@ -515,9 +558,13 @@ always @(*) begin
 end
 
 // If the instruction is branch or lui, this operand should be immediate.
+// When the instruction is `movn(z)' or `movz', RT, a.k.a ope_B acts as a conditon,
+// while RS, a.k.a ope_A is where the data to be transfered from.
+// As move operation is ADD RD <- RS, 0, the ope_B should be selected as constant zero.
 always @(*) begin
     case (ex_B_sel)
-    1'b0: operand_B_after_selection = operand_B_after_forwarding;
+    1'b0: operand_B_after_selection = (ex_movz || ex_movn) ? operand_A_after_forwarding
+                                                           : operand_B_after_forwarding;
     1'b1: operand_B_after_selection = ex_imm_ext;
     endcase
 end
@@ -595,10 +642,16 @@ muldiv mul_div (
 
 wire ex_reg_w_gened;  // The handled reg_w, often disenable for special cases
 
+// When the instruction is `movn(z)' or `movn', the real RT data
+// is not sent to ALU to get the ZF. So we should change the input
+// ZF to generate exact write enable.
+// zf_if_cond_mov := the zero flag if condtitional move
+wire zf_if_cond_mov = (ex_movz || ex_movn) ? (operand_B_after_forwarding == 32'd0)
+                                           : ex_zero;
 reg_w_gen reg_w_gen (
     // Input
     .of              ( ex_overflow    ),
-    .zf              ( ex_zero        ),
+    .zf              ( zf_if_cond_mov ),
     .idex_movz       ( ex_movz        ),
     .idex_movnz      ( ex_movn        ),
     .idex_reg_w      ( ex_reg_w       ),
@@ -889,7 +942,20 @@ clock_control cc0(
     .sync_manual_clk(sync_manual_clk)
 );
 
+//==--------------------------------==
+// Singals indicating keyboard state.
+//==--------------------------------==
+wire kb_overflow;  // High if the keycode queue is overflow.
+wire kb_ready;     // High if there are keycodes in the queue.
+
+wire flash_read_done;
+wire [5:0] flash_state;
+wire vga_stall;
+
 cpu_interface inst_ci  (
+    // PS2
+    .ps2_clk           ( PS2_CLK             ),
+    .ps2_data          ( PS2_DATA            ),
     // DDR Inouts
     .ddr2_dq           ( ddr2_dq             ),
     .ddr2_dqs_n        ( ddr2_dqs_n          ),
@@ -933,12 +999,23 @@ cpu_interface inst_ci  (
     .mem_stall         ( mem_stall           ),
 
     // debug
+    .kb_overflow       ( kb_overflow         ),
+    .kb_ready          ( kb_ready            ),
     .dbg_que_low       ( ci_dbg_status       ),
     .cache_stall       ( cache_stall         ),
     .trap_stall        ( trap_stall          ),
+    .vga_stall_2       ( vga_stall           ),
     .data_to_mig       ( data_to_mig         ),
     .buffer_of_ddrctrl ( buffer_of_ddrctrl   ),
-    .addr_to_mig       ( addr_to_mig         )
+    .addr_to_mig       ( addr_to_mig         ),
+    // flash
+    .flash_s(flash_s),
+    .flash_c(flash_c),
+    .flash_dq(flash_dq),
+    .flash_state(flash_state),
+    .flash_initiating(flash_initiating),
+    .flash_reading(flash_reading),
+    .flash_read_done(flash_read_done)
 );
 
 reg [31:0] hex_to_seg;
@@ -989,7 +1066,14 @@ assign led[0]       = mem_mem_w;
 assign led[1]       = mem_mem_r;
 assign led[2]       = mem_stall;
 assign led[3]       = cache_stall;
-assign led[4]       = trap_stall;
-assign led[15:5]    = 14'd0;
+assign led[4]       = flash_read_done;
+assign led[5]       = kb_overflow;
+assign led[6]       = kb_ready;
+assign led[7]       = 0;
+//assign led[15:10]   = flash_state;
+assign led[8]      = flash_initiating;
+assign led[9]      = flash_reading;
+assign led[10]      = trap_stall;
+assign led[11]      = vga_stall;
 
 endmodule

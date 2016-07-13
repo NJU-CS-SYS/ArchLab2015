@@ -24,6 +24,12 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 module cpu_interface(
+    // ps2 interfaces
+    input ps2_clk,
+    input ps2_data,
+    output kb_ready,
+    output kb_overflow,
+
     // ddr Inouts
     inout [15:0] ddr2_dq,
     inout [1:0] ddr2_dqs_n,
@@ -66,13 +72,23 @@ module cpu_interface(
     output cache_stall,
     output reg trap_stall,
     output [31:0] dbg_que_low,
+    output vga_stall_2,
 
     // VGA outputs
     output [3:0] VGA_R,
     output [3:0] VGA_G,
     output [3:0] VGA_B,
     output VGA_HS,
-    output VGA_VS
+    output VGA_VS,
+
+    //flash i/o:
+    output [5:0] flash_state,
+    output flash_initiating,
+    output reg flash_reading,
+    output flash_read_done,
+    output flash_s,
+    output flash_c,
+    inout [3:0] flash_dq
 );
 
 localparam VMEM_START   = 32'hc0000000;
@@ -171,9 +187,17 @@ reg loader_en;
 // ensures that the pipeline will recover as soon as the writing finishes.
 `define num_vga_wait_cycle 2
 
-assign mem_stall = cache_stall
-        | (vga_stall && (vga_stall_cnt <= `num_vga_wait_cycle))
-        | trap_stall;
+//==-----------------------------------==
+// Internal keyboard signal definitions.
+//==-----------------------------------==
+
+// Combinational logic to indicate whether the core is accessing
+// the keyboard queue. High if is accessing, while low not.
+reg kb_cpu_read;
+
+// Get the 8 bits keyboard scancode. It will be filled to 32 bits
+// word with leading zeros as the output.
+wire [7:0] kb_keycode;
 
 
 wire text_mem_clk = clk_to_ddr_pass;  // The clock driving text memory
@@ -197,6 +221,60 @@ always @ (posedge text_mem_clk) begin
     end
 end
 
+reg [23:0] flash_addr;
+wire [31:0] flash_data;
+reg [5:0] flash_counter;
+reg read_finished;
+
+spi_flash sf0(
+    .clk(clk_pipeline),
+    .rst(0),
+    .send_dummy(1'b0),
+    .spi_mode(2'b00),
+    .read_or_write_sel(1'b1), // read
+    .addr_in(flash_addr),
+    .button(flash_reading), // posedge to evoke a read
+    .read_done(flash_read_done),
+    .write_done(),
+    .EOS(),
+    .dout2(),
+    .word(flash_data),
+    .debug_state(),
+    .cnt_begin(flash_cnt_begin),
+    .flash_initiating(flash_initiating),
+    .state(flash_state),
+    .s(flash_s),
+    .c(flash_c),
+    .DQ(flash_dq)
+);
+
+always @ (posedge clk_pipeline) begin
+    if (!rst) begin
+        flash_counter <= 5'd31;
+        read_finished <= 1'b0;
+    end
+    else if (flash_reading) begin
+        if (flash_reading && flash_counter == 5'd31) begin
+            flash_counter <= 5'd0;
+            read_finished <= 1'b0;
+        end
+        else if (flash_counter > 5'd10) begin
+            if (flash_read_done) begin
+                read_finished <= 1'b1;
+                flash_counter <= 5'd31;
+            end
+        end
+        else begin
+            flash_counter <= flash_counter + 5'd1;
+        end
+    end
+    else begin
+        read_finished <= 0;
+    end
+end
+
+wire flash_stall = (flash_reading && ~read_finished) || flash_initiating;
+
 always @ (*) begin
     // data R/W redirect
     // default value, which have the least effects on the memory system.
@@ -208,8 +286,18 @@ always @ (*) begin
     loader_wen    = 0;
     loader_en     = 0;
     trap_stall    = 0;
+    kb_cpu_read   = 0;
+    flash_addr = 0;
+    flash_reading = 1'b0;
 
-    if (dmem_addr[29:26] == 4'hc) begin // VMEM
+    if (dmem_addr[29:26] == 4'hb) begin
+        if (dmem_read_in) begin
+            flash_reading = 1'b1;
+            dmem_data_out = flash_data;
+            flash_addr = {dmem_addr[21:0], 2'b00};
+        end
+    end
+    else if (dmem_addr[29:26] == 4'hc) begin // VMEM
         vga_stall = dmem_write_in;
     end
     else if (dmem_addr[29:26] == 4'hd) begin // timer
@@ -278,7 +366,8 @@ always @ (*) begin
         end
     end
     else if (dmem_addr[29:26] == 4'he) begin //keyborad
-        // TODO dmem_data_out = kb_data, and needs further consideration.
+        kb_cpu_read = dmem_read_in;
+        dmem_data_out = { 24'd0, kb_keycode };
     end
     else if (dmem_addr[29:26] == 4'hf) begin  // loader
         loader_en = 1;
@@ -414,14 +503,14 @@ loader_mem loader (         // use dual port Block RAM
     .addra ( dmem_addr[12:0]    ),
     .dina  ( data_from_reg      ),
     .douta ( loader_data        ),
-    .clka  ( clk_to_ddr_pass    ),
+    .clka  ( clk_pipeline       ),
     .wea   ( loader_wen         ),
     // Instr port (read-only)
     .addrb ( instr_addr[12:0]   ), // lower 28 bits of initial address
                                    // must start at 0
     .dinb  ( 0                  ), // not used
     .doutb ( loader_instr       ),
-    .clkb  ( clk_to_ddr_pass    ),
+    .clkb  ( clk_pipeline       ),
     .web   ( 0                  )  // not used
 );
 
@@ -493,5 +582,23 @@ always @ (negedge clk_pipeline) begin
     end
 end
 
+Keyboard kb (
+    .clk      ( clk_pipeline ),
+    .clrn     ( rst          ),
+    .ps2_clk  ( ps2_clk      ),
+    .ps2_data ( ps2_data     ),
+    .cpu_read ( kb_cpu_read  ),
+    .ready    ( kb_ready     ),
+    .overflow ( kb_overflow  ),
+    .keycode  ( kb_keycode   )
+);
+
+assign vga_stall_2 = (vga_stall && (vga_stall_cnt <= `num_vga_wait_cycle));
+
+assign mem_stall = cache_stall
+| vga_stall_2
+| (kb_cpu_read & ~kb_ready)
+| trap_stall
+| flash_stall;
 
 endmodule

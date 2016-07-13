@@ -88,12 +88,12 @@ set_property PACKAGE_PIN B4 [get_ports {VGA_R[1]}]
 set_property PACKAGE_PIN A3 [get_ports {VGA_R[0]}]
 set_property PACKAGE_PIN E3 [get_ports clk_in1]
 set_property IOSTANDARD LVCMOS33 [get_ports clk_in1]
-set_property IOSTANDARD LVCMOS33 [get_ports reset]
+set_property IOSTANDARD LVCMOS33 [get_ports reset_button]
 set_property IOSTANDARD LVCMOS33 [get_ports VGA_HS]
 set_property IOSTANDARD LVCMOS33 [get_ports VGA_VS]
 set_property PACKAGE_PIN B11 [get_ports VGA_HS]
 set_property PACKAGE_PIN B12 [get_ports VGA_VS]
-set_property PACKAGE_PIN V10 [get_ports reset]
+set_property PACKAGE_PIN V10 [get_ports reset_button]
 set_property IOSTANDARD LVCMOS33 [get_ports manual_clk]
 set_property PACKAGE_PIN N17 [get_ports manual_clk]
 # set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets manual_clk_IBUF]
@@ -116,3 +116,25 @@ set_property -dict {PACKAGE_PIN T18 IOSTANDARD LVCMOS33} [get_ports {SW[5]}]
 set_property -dict {PACKAGE_PIN U18 IOSTANDARD LVCMOS33} [get_ports {SW[6]}]
 set_property -dict {PACKAGE_PIN R13 IOSTANDARD LVCMOS33} [get_ports {SW[7]}]
 
+set_property -dict { PACKAGE_PIN F4    IOSTANDARD LVCMOS33 } [get_ports { PS2_CLK }]; #IO_L13P_T2_MRCC_35 Sch=ps2_clk
+set_property -dict { PACKAGE_PIN B2    IOSTANDARD LVCMOS33 } [get_ports { PS2_DATA }]; #IO_L10N_T1_AD15N_35 Sch=ps2_data
+
+#Quad SPI Flash
+#Bank = CONFIG, Pin name = CCLK_0,              Sch name = QSPI_SCK
+#set_property PACKAGE_PIN E9 [get_ports {flash_c}]
+# set_property IOSTANDARD LVCMOS33 [get_ports {flash_c}]
+#Bank = CONFIG, Pin name = IO_L1P_T0_D00_MOSI_14,     Sch name = QSPI_DQ0
+set_property PACKAGE_PIN K17 [get_ports {flash_dq[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {flash_dq[0]}]
+#Bank = CONFIG, Pin name = IO_L1N_T0_D01_DIN_14,      Sch name = QSPI_DQ1
+set_property PACKAGE_PIN K18 [get_ports {flash_dq[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {flash_dq[1]}]
+#Bank = CONFIG, Pin name = IO_L20_T0_D02_14,        Sch name = QSPI_DQ2
+set_property PACKAGE_PIN L14 [get_ports {flash_dq[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {flash_dq[2]}]
+#Bank = CONFIG, Pin name = IO_L2P_T0_D03_14,        Sch name = QSPI_DQ3
+set_property PACKAGE_PIN M14 [get_ports {flash_dq[3]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {flash_dq[3]}]
+#Bank = CONFIG, Pin name = IO_L15N_T2_DQS_DOUT_CSO_B_14,  Sch name = QSPI_CSN
+set_property PACKAGE_PIN L13 [get_ports flash_s]
+set_property IOSTANDARD LVCMOS33 [get_ports flash_s]
