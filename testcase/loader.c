@@ -36,14 +36,19 @@ int main() {
   flash_addr = PROG_FLAHS_BEGIN;
   deref(addr) = deref(flash_addr);  // Workaround the 1st-read failure
   for(; addr < PROG_MEM_END; addr += 4) {
-    if (deref(flash_addr) != deref(addr)) {
-        printf("0x%08x: read error flash %08x -> ddr %08x\n", addr, deref(flash_addr), deref(addr));
-        for (;;) {}
+    unsigned int want = deref(flash_addr);
+    unsigned int real = deref(addr);
+    if (want != real) {
+      printf("0x%08x: flash %08x -> ddr %08x", addr, want, real);
+      printf("\n");
+      printf(" error");
+      for (;;) {}
     }
     flash_addr += 4;
   }
 
   // Use keyboard to confirm the execution of program.
+  printf("Memory Check OK!\n");
   getchar();
   asm volatile("li $ra, "  S(PROG_MEM_BEGIN) "; jr $ra");
   return 0;
