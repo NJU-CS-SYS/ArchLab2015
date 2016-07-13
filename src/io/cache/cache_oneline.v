@@ -32,7 +32,7 @@ module cache_oneline(/*autoarg*/
 
 parameter OFFSET_WIDTH = 3;
 parameter BLOCK_SIZE   = 1 << OFFSET_WIDTH;
-parameter INDEX_WIDTH  = 7;
+parameter INDEX_WIDTH  = 6;
 parameter CACHE_DEPTH  = 1 << INDEX_WIDTH;
 parameter TAG_WIDTH    = 30 - OFFSET_WIDTH - INDEX_WIDTH;
 parameter ADDR_WIDTH   = TAG_WIDTH + INDEX_WIDTH + OFFSET_WIDTH;
@@ -173,7 +173,7 @@ cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,1) mem_valid(/*autoinst*/
     .data_out ( valid_bit     )
 );
 
-assign hit = match;
+assign hit = match & valid_out;
 
 // Read:  expose the dirty bit
 // Write: expose the dirty bit if not matched
