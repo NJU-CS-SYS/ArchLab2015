@@ -85,6 +85,7 @@ class DDRControlModule extends Module {
         state := w2req
       }
     }
+
     when (state === w2req) {
       io.cmd_to_mig := UInt(0)
       io.app_en := UInt(1)
@@ -93,9 +94,18 @@ class DDRControlModule extends Module {
       io.addr_to_mig := Cat(io.ram_addr(25, 3), UInt(16, 5))
       io.data_to_mig := io.data_to_ram(255, 128)
       when (io.mig_rdy & io.mig_wdf_rdy) {
+        state := w2wait
+        counter := zero_cyle
+      }
+    }
+
+    when (state === w2wait) {
+      counter := counter + one_cycle
+      when (io.mig_rdy && counter >= write_wait_cyle) {
         state := finish
       }
     }
+
     when (state === r1req_1) {
       io.app_en := UInt(1)
       io.addr_to_mig := Cat(io.ram_addr(25, 3), UInt(0, 5))
