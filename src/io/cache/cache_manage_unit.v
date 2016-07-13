@@ -193,7 +193,7 @@ cache_control cctrl (
 
 
 // Instruction Cache
-cache_oneline ic (
+cache_2ways ic (
     .clk           ( clk             ),
     .rst           ( rst             ),
     .enable        ( enable_to_ic    ),
@@ -215,7 +215,7 @@ cache_oneline ic (
 );
 
 // Data Cache
-cache_oneline dc (
+cache_2ways dc (
     .clk           ( clk             ),
     .rst           ( rst             ),
     .enable        ( enable_to_dc    ),
