@@ -15,6 +15,9 @@
 
 char* vga = VMEM + screen_width * 2 + 5;
 
+// #define start_addr 0xf0000000
+#define start_addr 0
+
 int main() {
   // Copy data flash from flash to memory.
   unsigned int addr = PROG_MEM_BEGIN;

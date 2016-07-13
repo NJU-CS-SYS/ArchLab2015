@@ -20,3 +20,5 @@ ram_init_gen/boot*
 src/chisel
 !src/chisel/build.sbt
 !src/chisel/*.scala
+
+src/io/ddr/DDRControlModule.v
