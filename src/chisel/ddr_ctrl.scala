@@ -37,6 +37,7 @@ class DDRControlModule extends Module {
   val state = Reg(init = idle)
   val counter = Reg(init = UInt(0, 6))
   val buffer = Reg(init = UInt(0, 256))
+  val buffer_old = Reg(init = UInt(0, 256))
 
   val ram_addr_old = Reg(init = UInt(0, 22))
   val ram_write_old = Reg(init = UInt(0, 1))
@@ -91,7 +92,7 @@ class DDRControlModule extends Module {
     }
     when (state === w1wait) {
       counter := counter + one_cycle
-      when (io.mig_rdy && counter >= write_wait_cyle) {
+      when (io.mig_rdy & counter >= write_wait_cyle) {
         state := w2req
         counter := zero_cyle
         recorded_neg := false_
@@ -118,7 +119,7 @@ class DDRControlModule extends Module {
 
     when (state === w2wait) {
       counter := counter + one_cycle
-      when (io.mig_rdy && counter >= write_wait_cyle) {
+      when (io.mig_rdy & counter >= write_wait_cyle) {
         state := finish
       }
     }
@@ -130,20 +131,20 @@ class DDRControlModule extends Module {
       when (~io.mig_rdy) {
         recorded_neg := true_
       }
-      when (io.mig_rdy && counter >= one_cycle && recorded_neg) {
+      when (io.mig_rdy & counter >= one_cycle & recorded_neg) {
         state := r1wait_1
         counter := zero_cyle
       }
     }
     when (state === r1wait_1) {
       counter := counter + one_cycle
-      when (io.mig_data_valid && counter >= read_wait_cyle) {
+      when (io.mig_data_valid & counter >= read_wait_cyle) {
         state := r1req_2
-        buffer(127, 0) := io.data_from_mig
+        buffer_old(127, 0) := io.data_from_mig
         counter := zero_cyle
         recorded_neg := false_
       }
-      when (~io.mig_data_valid && counter >= UInt(60)) {
+      when (~io.mig_data_valid & counter >= UInt(60)) {
         state := r1req_1
         counter := zero_cyle
         recorded_neg := false_
@@ -157,20 +158,23 @@ class DDRControlModule extends Module {
       when (~io.mig_rdy) {
         recorded_neg := true_
       }
-      when (io.mig_rdy && counter >= one_cycle && recorded_neg) {
+      when (io.mig_rdy & counter >= one_cycle & recorded_neg) {
         state := r1wait_2
         counter := zero_cyle
       }
     }
     when (state === r1wait_2) {
       counter := counter + one_cycle
-      when (io.mig_data_valid && counter >= read_wait_cyle) {
+      when (io.mig_data_valid & counter >= read_wait_cyle) {
         state := r2req_1
         buffer(127, 0) := io.data_from_mig
         counter := zero_cyle
         recorded_neg := false_
+        when (io.data_from_mig =/= buffer_old(127, 0)) {
+          state := r1req_1
+        }
       }
-      when (~io.mig_data_valid && counter >= UInt(60)) {
+      when (~io.mig_data_valid & counter >= UInt(60)) {
         state := r1req_2
         counter := zero_cyle
         recorded_neg := false_
@@ -184,20 +188,20 @@ class DDRControlModule extends Module {
       when (~io.mig_rdy) {
         recorded_neg := true_
       }
-      when (io.mig_rdy && counter >= one_cycle && recorded_neg) {
+      when (io.mig_rdy & counter >= one_cycle & recorded_neg) {
         state := r2wait_1
         counter := zero_cyle
       }
     }
     when (state === r2wait_1) {
       counter := counter + one_cycle
-      when (io.mig_data_valid && counter >= read_wait_cyle) {
+      when (io.mig_data_valid & counter >= read_wait_cyle) {
         state := r2req_2
-        buffer(255, 128) := io.data_from_mig
+        buffer_old(127, 0) := io.data_from_mig
         counter := zero_cyle
         recorded_neg := false_
       }
-      when (~io.mig_data_valid && counter >= UInt(60)) {
+      when (~io.mig_data_valid & counter >= UInt(60)) {
         state := r2req_1
         counter := zero_cyle
         recorded_neg := false_
@@ -211,18 +215,22 @@ class DDRControlModule extends Module {
       when (~io.mig_rdy) {
         recorded_neg := true_
       }
-      when (io.mig_rdy && counter >= one_cycle && recorded_neg) {
+      when (io.mig_rdy & counter >= one_cycle & recorded_neg) {
         state := r2wait_2
         counter := zero_cyle
       }
     }
     when (state === r2wait_2) {
       counter := counter + one_cycle
-      when (io.mig_data_valid && counter >= read_wait_cyle) {
+      when (io.mig_data_valid & counter >= read_wait_cyle) {
         state := finish
         buffer(255, 128) := io.data_from_mig
+        recorded_neg := false_
+        when (io.data_from_mig =/= buffer_old(127, 0)) {
+          state := r2req_1
+        }
       }
-      when (~io.mig_data_valid && counter >= UInt(60)) {
+      when (~io.mig_data_valid & counter >= UInt(60)) {
         state := r2req_2
         counter := zero_cyle
         recorded_neg := false_
