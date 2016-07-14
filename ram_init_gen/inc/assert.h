@@ -5,10 +5,11 @@
 
 extern void _bad(void);
 
-#define S(x) #x
+#define _S(x) #x
+#define S(x) _S(x)
 #define assert(x) \
     do { \
-        if (!(x)) { puts("Assertion failed: " S(x)); _bad(); } \
+        if (!(x)) { puts(S(__FILE__) "#" S(__FUNCTION__) "@" S(__LINE__) ":" "Assertion failed: " S(x)); _bad(); } \
     } while (0)
 
 #endif

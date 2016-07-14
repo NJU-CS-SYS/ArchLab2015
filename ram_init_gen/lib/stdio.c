@@ -1,8 +1,8 @@
 #include <stdio.h>
 
-#define HEIGHT 128
-#define WIDTH 160
-#define SCROLL_SIZE  20320 // WIDTH * (HEIGHT - 1)
+#define HEIGHT 131
+#define WIDTH 210
+#define SCROLL_SIZE  (HEIGHT * WIDTH)// WIDTH * (HEIGHT - 1)
 
 int curr_line = 0;
 int curr_col = 0;
@@ -64,6 +64,7 @@ void npc_puts(const char *s)
     while (*s != '\0') {
         npc_putc(*s++);
     }
+    npc_putc('\n');
 }
 
 __attribute__((noinline)) void put_hex(unsigned int x, char *addr) {
@@ -222,6 +223,7 @@ void npc_gets(char *buf)
 {
     for (;;) {
         char ch = npc_getc();
+        npc_putc(ch);
         *buf++ = ch;
         if (ch == '\n') {
             break;
