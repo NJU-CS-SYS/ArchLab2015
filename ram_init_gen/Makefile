@@ -53,6 +53,7 @@ all: $(OBJECTS)
 flash: $(OBJECTS)
 	$(LD) $(LDFLAGS) -T rom.ld $(OBJECTS) -o $(ROM)
 	$(OBJCOPY) -O binary $(ROM) $(ROM_BIN)
+	ruby pad.rb $(ROM_BIN)
 	$(OBJDUMP) -d $(ROM) > $(ROM).txt
 	echo $(ISE_CMD) | $(ISE) $(ISE_FLAGS)
 
