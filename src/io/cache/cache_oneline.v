@@ -173,7 +173,7 @@ cache_vmem #(INDEX_WIDTH,CACHE_DEPTH,1) mem_valid(/*autoinst*/
     .data_out ( valid_bit     )
 );
 
-assign hit = match;
+assign hit = match & valid_bit;
 
 // Read:  expose the dirty bit
 // Write: expose the dirty bit if not matched
