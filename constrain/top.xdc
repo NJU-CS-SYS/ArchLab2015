@@ -95,7 +95,7 @@ set_property PACKAGE_PIN B11 [get_ports VGA_HS]
 set_property PACKAGE_PIN B12 [get_ports VGA_VS]
 set_property PACKAGE_PIN V10 [get_ports reset_button]
 set_property IOSTANDARD LVCMOS33 [get_ports manual_clk]
-set_property PACKAGE_PIN N17 [get_ports manual_clk]
+set_property PACKAGE_PIN P18 [get_ports manual_clk]
 # set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets manual_clk_IBUF]
 
 set_property IOSTANDARD LVCMOS33 [get_ports {debug_sel[0]}]

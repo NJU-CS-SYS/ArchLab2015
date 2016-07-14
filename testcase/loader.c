@@ -38,9 +38,11 @@ int main() {
   for(; addr < PROG_MEM_END; addr += 4) {
     unsigned int want = deref(flash_addr);
     unsigned int real = deref(addr);
+    if (addr < PROG_MEM_BEGIN + 32) {
+      printf("0x%08x: flash %08x -> ddr %08x\n", addr, want, real);
+    }
     if (want != real) {
-      printf("0x%08x: flash %08x -> ddr %08x", addr, want, real);
-      printf("\n");
+      printf("0x%08x: flash %08x -> ddr %08x\n", addr, want, real);
       printf(" error");
       for (;;) {}
     }

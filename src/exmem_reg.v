@@ -48,6 +48,7 @@ module exmem_reg(
     input cp0_w_en_in,
     input syscall_in,
     input idex_eret,
+    input [31:0] idex_instr,
     output reg mem_nop,
     output reg mem_jmp,
     output reg [31:0] exmem_pc,
@@ -69,7 +70,8 @@ module exmem_reg(
     output reg [4:0] exmem_cp0_dst_addr,
     output reg cp0_w_en_out,
     output reg syscall_out,
-    output reg exmem_eret
+    output reg exmem_eret,
+    output reg [31:0] exmem_instr
     );
 
     always@(negedge clk) begin
@@ -96,6 +98,7 @@ module exmem_reg(
             exmem_eret      <= 0;
             mem_nop         <= 1;
             mem_jmp         <= 0;
+            exmem_instr     <= 32'd0;
         end
         else if (!cu_stall) begin
             exmem_pc        <= idex_pc;
@@ -120,6 +123,7 @@ module exmem_reg(
             exmem_eret      <= idex_eret;
             mem_nop         <= ex_nop;
             mem_jmp         <= ex_jmp;
+            exmem_instr     <= idex_instr;
         end
     end
 endmodule

@@ -57,6 +57,7 @@ module idex_reg(
     input id_movz,
     input id_movn,
     input [3:0]id_md_op,
+    input [31:0] id_instr,
     output reg ex_nop,
     output reg ex_jmp,
     output reg ex_jr,
@@ -88,7 +89,8 @@ module idex_reg(
     output reg idex_cp0_w_en,
     output reg idex_syscall,
     output reg idex_eret,
-    output reg [3:0] idex_md_op
+    output reg [3:0] idex_md_op,
+    output reg [31:0] idex_instr
     );
     
     always @(negedge clk) begin
@@ -125,6 +127,7 @@ module idex_reg(
             ex_nop <= 1'b1;
             ex_jmp <= 1'b0;
             ex_jr  <= 1'b0;
+            idex_instr <= 32'd0;
         end
         else if(!cu_stall) begin
             idex_md_op <= id_md_op;
@@ -159,6 +162,7 @@ module idex_reg(
             ex_nop <= id_nop;
             ex_jmp <= id_jmp;
             ex_jr  <= id_jr;
+            idex_instr <= id_instr;
         end
     end
 endmodule

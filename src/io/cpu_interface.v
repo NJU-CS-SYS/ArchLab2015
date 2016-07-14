@@ -131,7 +131,7 @@ reg [5:0] dbg_que_start;
 reg [5:0] dbg_que_end;
 reg dbg_status;
 wire [6:0] miss_count;
-wire [3:0] ddr_ctrl_status;
+wire [4:0] ddr_ctrl_status;
 wire [255:0] wb_buffer;
 reg [255:0] wb_buffer_local;
 
@@ -158,7 +158,7 @@ wire [127:0] que_input = {
     mig_en,
     mig_wren,
     miss_count,
-    ddr_ctrl_status,
+    ddr_ctrl_status[3:0],
     8'd0
 };
 
