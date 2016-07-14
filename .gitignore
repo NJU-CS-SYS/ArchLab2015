@@ -14,6 +14,8 @@ ram_init_gen/*.s
 ram_init_gen/*.coe
 ram_init_gen/*.txt
 ram_init_gen/boot*
+ram_init_gen/main*
+ram_init_gen/rom*
 
 .clang_complete
 
