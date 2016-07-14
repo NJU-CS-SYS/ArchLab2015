@@ -290,6 +290,7 @@ always @ (*) begin
     kb_cpu_read   = 0;
     flash_addr = 0;
     flash_reading = 1'b0;
+    dc_wen        = 0;
 
     if (dmem_addr[29:26] == 4'hb) begin
         if (dmem_read_in) begin

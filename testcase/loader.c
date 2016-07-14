@@ -8,7 +8,8 @@
 #define deref(x) *((volatile unsigned int *) (x))
 
 #define PROG_MEM_BEGIN   0x00000100
-#define PROG_MEM_END     0x00008000
+#define PROG_MEM_END     0x00100000
+#define PROG_BSS_END     0x00600000
 #define PROG_FLASH_BEGIN 0xb0000000
 #define PROG_FLASH_CHECK_BEGIN 0xb0040000
 
@@ -67,6 +68,10 @@ int main() {
       for (;;) {}
     }
     flash_addr += 4;
+  }
+
+  for (addr = PROG_MEM_END; addr < PROG_BSS_END; addr += 4) {
+    deref(addr) = 0;
   }
 
   // Use keyboard to confirm the execution of program.

@@ -14,7 +14,7 @@ module clock_control(
 
 ddr_clock_gen dcg(
     .clk_in1(clk_in1),
-    .clk_out1(),
+    .clk_out1(clk_to_ddr ),
     .clk_out2(clk_to_pixel)
 );
 
@@ -49,6 +49,5 @@ always @(*) begin
     endcase
 end
 
-assign clk_to_ddr = clk_in1;
 
 endmodule
