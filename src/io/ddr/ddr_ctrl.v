@@ -64,7 +64,7 @@ module ddr_ctrl(
     output mig_data_valid,
     output app_en,
     output app_wdf_wren,
-    output [3:0] ddr_ctrl_status
+    output [4:0] ddr_ctrl_status
 );
 
 wire [2:0] cmd_to_mig;
