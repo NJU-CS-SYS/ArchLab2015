@@ -14,7 +14,7 @@ module clock_control(
 
 ddr_clock_gen dcg(
     .clk_in1(clk_in1),
-    .clk_out1(clk_to_ddr ),
+    .clk_out1(clk_to_ddr),
     .clk_out2(clk_to_pixel)
 );
 
@@ -48,6 +48,5 @@ always @(*) begin
         CLK_EX:     ui_clk_used = ui_clk_from_ddr;
     endcase
 end
-
 
 endmodule
