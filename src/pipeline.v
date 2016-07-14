@@ -190,6 +190,7 @@ wire [`REG_ADDR_BUS] ex_cp0_dst_addr;
 wire ex_cp0_w_en;
 wire ex_syscall;
 wire ex_eret;
+wire [31:0] ex_instr;
 
 wire [DATA_WIDTH - 1 : 0] imm_ext;
 
@@ -226,6 +227,7 @@ wire [`DATA_BUS] ex_aligned_rt_data;
 // MEM pc
 wire [`PC_BUS] mem_pc;
 wire [`PC_BUS] mem_pc_4;
+wire [31:0] mem_instr;
 // MEM enable
 wire mem_mem_w;
 wire mem_mem_r;
@@ -507,6 +509,7 @@ idex_reg idex_reg (
     .idex_eret_in         ( idex_eret       ),
     .id_movz              ( idex_movz       ),
     .id_movn              ( idex_movn       ),
+    .id_instr             ( ifid_instr      ),
     // Output
     .idex_md_op           ( ex_md_op        ),
     .ex_nop               ( ex_nop          ),
@@ -539,7 +542,8 @@ idex_reg idex_reg (
     .idex_movn            ( ex_movn         ),
     .idex_cp0_w_en        ( ex_cp0_w_en     ),
     .idex_syscall         ( ex_syscall      ),
-    .idex_eret            ( ex_eret         )
+    .idex_eret            ( ex_eret         ),
+    .idex_instr           ( ex_instr        )
 );
 
 ////////////////////////////////////////////////////////////////////////////
@@ -741,6 +745,7 @@ exmem_reg  inst_exmem_reg (
     .cp0_w_en_in           ( ex_cp0_w_en         ),
     .syscall_in            ( ex_syscall          ),
     .idex_eret             ( ex_eret             ),
+    .idex_instr            ( ex_instr            ),
     // Output to MEM
     .mem_nop               ( mem_nop             ),
     .mem_jmp               ( mem_jmp             ),
@@ -763,7 +768,8 @@ exmem_reg  inst_exmem_reg (
     .exmem_cp0_dst_addr    ( mem_cp0_dst_addr    ),
     .cp0_w_en_out          ( mem_cp0_w_en        ),
     .syscall_out           ( mem_syscall         ),
-    .exmem_eret            ( mem_eret            )
+    .exmem_eret            ( mem_eret            ),
+    .exmem_instr           ( mem_instr           )
 );
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1047,7 +1053,7 @@ always @ (*) begin
         7: part_of_buffer = buffer_of_ddrctrl[8*32-1: 7*32];
     endcase
     case (debug_sel)
-        4'b0000: hex_to_seg = ifid_instr;
+        4'b0000: hex_to_seg = mem_instr;
         4'b0001: hex_to_seg = mem_pc;
         4'b0010: hex_to_seg = mem_alu_res;
         4'b0011: hex_to_seg = mem_aligned_rt_data;
