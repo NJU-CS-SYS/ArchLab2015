@@ -19,11 +19,12 @@ int main() {
   // Copy data flash from flash to memory.
   unsigned int addr = PROG_MEM_BEGIN;
   unsigned int flash_addr = PROG_FLASH_BEGIN;
-  unsigned int flash_check_addr = PROG_FLASH_CHECK_BEGIN;
+  //unsigned int flash_check_addr = PROG_FLASH_CHECK_BEGIN;
 
   deref(addr) = deref(flash_addr);  // Workaround the 1st-read failure
 
   // check flash
+  /*
   for(; flash_addr < PROG_MEM_BEGIN + 0x8000; flash_addr += 4) {
     if (deref(flash_addr) != deref(flash_check_addr)) {
         printf(
@@ -34,6 +35,7 @@ int main() {
     }
     flash_check_addr += 4;
   }
+  */
 
   flash_addr = PROG_FLASH_BEGIN;
   for(; addr < PROG_MEM_END; addr += 4) {
