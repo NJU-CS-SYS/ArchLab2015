@@ -193,7 +193,7 @@ reg loader_en;
 
 // Combinational logic to indicate whether the core is accessing
 // the keyboard queue. High if is accessing, while low not.
-reg kb_cpu_read;
+(* mark_debug = "true" *) reg kb_cpu_read;
 
 // Get the 8 bits keyboard scancode. It will be filled to 32 bits
 // word with leading zeros as the output.
