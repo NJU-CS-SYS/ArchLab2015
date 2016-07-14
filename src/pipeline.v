@@ -50,6 +50,8 @@ module pipeline (
     inout [3:0] flash_dq,
 
     //debug
+    input BP_VALID,
+    input BP_SAMPLER,
     output [6:0] seg_out,
     output [7:0] seg_ctrl
 );
@@ -862,11 +864,20 @@ wire cu_cp0_w_en;
 wire [4:0] cu_exec_code;
 wire [`PC_BUS] cu_epc;
 
+// break_point_hit:
+//   High effective.
+//   Indicate whether mem pc runs inot break point.
+//   If BP_VALID is low, it will stay in slow also.
+wire break_point_hit;
+wire [31:0] break_point;
+
+wire global_stall = mem_stall | md_stall | break_point_hit;
+
 control_unit  inst_control_unit (
     // Input
     .clk               ( clk                    ),
     .reset             ( reset                  ),
-    .mem_stall         ( mem_stall | md_stall ),
+    .mem_stall         ( global_stall           ),
     .mem_nop           ( mem_nop                ),
     .ex_nop            ( ex_nop                 ),
     .mem_jmp           ( mem_jmp                ),
@@ -1042,6 +1053,16 @@ seg_ctrl seg_ctrl0 (
     .seg_ctrl      ( seg_ctrl          )
 );
 
+Breakpoint breakpoint (
+    .valid       ( BP_VALID        ),
+    .sampler     ( BP_SAMPLER      ),
+    .digit_sel   ( SW[6:4]         ),
+    .hex_digit   ( SW[3:0]         ),
+    .pc          ( mem_pc[31:2]    ),
+    .break_point ( break_point     ),
+    .hit         ( break_point_hit )
+);
+
 always @ (*) begin
     case (SW[2:0])
         0: part_of_buffer = buffer_of_ddrctrl[1*32-1: 0*32];
@@ -1064,23 +1085,23 @@ always @ (*) begin
         4'b0111: hex_to_seg = part_of_buffer;
         4'b1000: hex_to_seg = dbg_reg;
         4'b1001: hex_to_seg = ci_dbg_status;
+        4'b1010: hex_to_seg = break_point;
+        4'b1011: hex_to_seg = mem_data;
         default: hex_to_seg = mem_alu_res;
     endcase
 end
 
-//assign mem_pc_out = mem_pc;
-assign led[0]       = mem_mem_w;
-assign led[1]       = mem_mem_r;
-assign led[2]       = mem_stall;
-assign led[3]       = cache_stall;
-assign led[4]       = flash_read_done;
-assign led[5]       = kb_overflow;
-assign led[6]       = kb_ready;
-assign led[7]       = 0;
-//assign led[15:10]   = flash_state;
-assign led[8]      = flash_initiating;
-assign led[9]      = flash_reading;
-assign led[10]      = trap_stall;
-assign led[11]      = vga_stall;
+assign led[0]  = mem_mem_w;
+assign led[1]  = mem_mem_r;
+assign led[2]  = mem_stall;
+assign led[3]  = cache_stall;
+assign led[4]  = flash_read_done;
+assign led[5]  = kb_overflow;
+assign led[6]  = kb_ready;
+assign led[7]  = break_point_hit;
+assign led[8]  = flash_initiating;
+assign led[9]  = flash_reading;
+assign led[10] = trap_stall;
+assign led[11] = vga_stall;
 
 endmodule

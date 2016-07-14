@@ -139,5 +139,9 @@ set_property IOSTANDARD LVCMOS33 [get_ports {flash_dq[3]}]
 set_property PACKAGE_PIN L13 [get_ports flash_s]
 set_property IOSTANDARD LVCMOS33 [get_ports flash_s]
 
-set_property -dict { PACKAGE_PIN T8    IOSTANDARD LVCMOS18 } [get_ports { CLK_SEL[0] }]; #IO_L24N_T3_34 Sch=sw[8]
-set_property -dict { PACKAGE_PIN U8    IOSTANDARD LVCMOS18 } [get_ports { CLK_SEL[1] }]; #IO_25_34 Sch=sw[9]
+set_property -dict {PACKAGE_PIN T8 IOSTANDARD LVCMOS18} [get_ports {CLK_SEL[0]}]
+set_property -dict {PACKAGE_PIN U8 IOSTANDARD LVCMOS18} [get_ports {CLK_SEL[1]}]
+
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets BP_SAMPLER_IBUF]
+set_property -dict {PACKAGE_PIN M18 IOSTANDARD LVCMOS33} [get_ports BP_SAMPLER]
+set_property -dict {PACKAGE_PIN U11 IOSTANDARD LVCMOS33} [get_ports BP_VALID]
