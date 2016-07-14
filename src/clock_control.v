@@ -14,7 +14,7 @@ module clock_control(
 
 ddr_clock_gen dcg(
     .clk_in1(clk_in1),
-    .clk_out1(clk_to_ddr),
+    .clk_out1(),
     .clk_out2(clk_to_pixel)
 );
 
@@ -37,5 +37,7 @@ end
 assign ui_clk_used = SW[6] ?
     (SW[7] ? ui_clk_from_ddr : sync_manual_clk) :
     (SW[7] ? slow_clk : fast_clk);
+
+assign clk_to_ddr = clk_in1;
 
 endmodule

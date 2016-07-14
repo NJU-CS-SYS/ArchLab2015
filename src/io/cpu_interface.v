@@ -177,7 +177,7 @@ assign dbg_que_low = que_input[31:0];
 //       pipeline retrieves from stalling.
 reg vga_wen;
 reg vga_stall;
-reg [2:0] vga_stall_cnt;
+reg [3:0] vga_stall_cnt;
 reg loader_en;
 // reg loaded;
 
@@ -185,7 +185,7 @@ reg loader_en;
 // while the vga_wen needs a posedge of pixel_clk to become active.
 // At that time, the address and char data are stable. `vga_stall_cnt < 3'
 // ensures that the pipeline will recover as soon as the writing finishes.
-`define num_vga_wait_cycle 2
+`define num_vga_wait_cycle 5
 
 //==-----------------------------------==
 // Internal keyboard signal definitions.
@@ -593,7 +593,7 @@ Keyboard kb (
     .keycode  ( kb_keycode   )
 );
 
-assign vga_stall_2 = (vga_stall && (vga_stall_cnt <= `num_vga_wait_cycle));
+assign vga_stall_2 = (vga_stall && (vga_stall_cnt <= `num_vga_wait_cycle + 2));
 
 assign mem_stall = cache_stall
 | vga_stall_2
