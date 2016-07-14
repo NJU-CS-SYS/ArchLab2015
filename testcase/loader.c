@@ -59,12 +59,8 @@ int main() {
   for(; addr < PROG_MEM_END; addr += 4) {
     unsigned int want = deref(flash_addr);
     unsigned int real = deref(addr);
-    if (addr < PROG_MEM_BEGIN + 512) {
-      printf("0x%08x: flash %08x -> ddr %08x\n", addr, want, real);
-    }
     if (want != real) {
-      printf("0x%08x: flash %08x -> ddr %08x\n", addr, want, real);
-      printf(" error");
+      printf("0x%08x: flash %08x -> ddr %08x error\n", addr, want, real);
       for (;;) {}
     }
     flash_addr += 4;
@@ -75,8 +71,6 @@ int main() {
   }
 
   // Use keyboard to confirm the execution of program.
-  printf("Memory Check OK!\n");
-  getchar();
   asm volatile("li $ra, "  S(PROG_MEM_BEGIN) "; jr $ra");
   return 0;
 }
