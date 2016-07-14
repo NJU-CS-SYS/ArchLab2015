@@ -2,6 +2,8 @@
 
 int main()
 {
+    curr_line = 0;
+    curr_col = 0;
     for (;;) {
         npc_puts("nemu> ");
         for (;;) {
