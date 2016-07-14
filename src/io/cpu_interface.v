@@ -48,8 +48,8 @@ module cpu_interface(
     input sync_manual_clk,
 
     output ui_clk_from_ddr,
-    output reg [31:0] instr_data_out,
-    output reg [31:0] dmem_data_out,
+    (* mark_debug = "true" *)output reg [31:0] instr_data_out,
+    (* mark_debug = "true" *)output reg [31:0] dmem_data_out,
     output mem_stall,
 
     // ddr Outputs
