@@ -6,6 +6,9 @@
 #define KEY_CODE_ADDR ((volatile unsigned int *)0xe0000000)
 #define KEY_CODE (*KEY_CODE_ADDR)
 
+extern int curr_line;
+extern int curr_col;
+
 int npc_putc(char ch);
 
 void npc_puts(const char *s);

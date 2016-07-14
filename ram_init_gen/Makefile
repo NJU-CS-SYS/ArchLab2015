@@ -64,7 +64,7 @@ qemu:
 		-ex "target remote :1234" -ex "disp /i \$$pc"
 
 clean:
-	-rm -f boot *.bin $(DOT_D) $(OBJECTS) main.c *.txt *.mcs *.prm *.coe 2> /dev/null
+	-rm -f boot *.bin $(DOT_D) $(OBJECTS) main.c *.txt *.prm 2> /dev/null
 
 TOOL_DIR = ../tools
 
