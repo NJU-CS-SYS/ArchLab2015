@@ -16,6 +16,7 @@ module pipeline (
     inout [1:0] ddr2_dqs_p,
     // Just to simpilfy RTL generation,
     input [7:0] SW,
+    input [1:0] CLK_SEL,
     input clk_in1,         // the global clock
     input manual_clk,
     input reset_button,       // the global reset
@@ -940,7 +941,7 @@ wire clk_to_pipixel_pass;
 clock_control cc0(
     .clk_in1(clk_in1),
     .ui_clk_from_ddr(ui_clk_from_ddr),
-    .SW(SW[7:6]),
+    .SW(CLK_SEL),
     .manual_clk(manual_clk),
     .clk_to_ddr(clk_to_ddr_pass),
     .clk_to_pixel(clk_to_pixel_pass),

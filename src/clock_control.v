@@ -8,7 +8,7 @@ module clock_control(
     input manual_clk,
     output clk_to_ddr,
     output clk_to_pixel,
-    output ui_clk_used,
+    output reg ui_clk_used,
     output reg sync_manual_clk
 );
 
@@ -18,10 +18,16 @@ ddr_clock_gen dcg(
     .clk_out2(clk_to_pixel)
 );
 
-reg slow_clk;
-reg fast_clk;  // 32 times slow than ui_clk_from_ddr
+parameter CLK_MANUAL = 2'b00;
+parameter CLK_SLOW   = 2'b01;
+parameter CLK_FAST   = 2'b10;
+parameter CLK_EX     = 2'b11;
+
+reg slow_clk;  // 2^22 times slower than ui_clk_from_ddr
+reg fast_clk;  // 2^2  times slower than ui_clk_from_ddr
 reg [21:0] slow_clk_counter;
 reg [1:0] fast_clk_counter;
+
 always @ (posedge ui_clk_from_ddr) begin
     sync_manual_clk <= manual_clk;
     slow_clk_counter <= slow_clk_counter + 1;
@@ -34,9 +40,14 @@ always @ (posedge ui_clk_from_ddr) begin
     end
 end
 
-assign ui_clk_used = SW[6] ?
-    (SW[7] ? ui_clk_from_ddr : sync_manual_clk) :
-    (SW[7] ? slow_clk : fast_clk);
+always @(*) begin
+    case (SW[7:6])
+        CLK_MANUAL: ui_clk_used = sync_manual_clk;
+        CLK_SLOW:   ui_clk_used = slow_clk;
+        CLK_FAST:   ui_clk_used = fast_clk;
+        CLK_EX:     ui_clk_used = ui_clk_from_ddr;
+    endcase
+end
 
 assign clk_to_ddr = clk_in1;
 
