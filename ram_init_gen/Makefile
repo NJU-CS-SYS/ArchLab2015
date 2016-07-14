@@ -22,9 +22,11 @@ ASFLAGS = -MD -EL -mno-check-zero-division -mips32 -O0 -mno-abicalls
 ASFLAGS += -fno-pic -fno-delayed-branch
 LDFLAGS = -EL
 
+ROM = rom
+ROM_BIN = $(ROM).bin
 ISE = vivado
 ISE_FLAGS = -nojournal -nolog -mode tcl
-ISE_CMD = "write_cfgmem -force -format mcs -interface spix4 -size 16 -loaddata \"up 0x0 boot.bin\" -file main.mcs"
+ISE_CMD = "write_cfgmem -force -format mcs -interface spix4 -size 16 -loaddata \"up 0x0 $(ROM_BIN)\" -file main.mcs"
 
 
 CSRC = $(shell find -L . -name "*.c")
@@ -49,9 +51,9 @@ all: $(OBJECTS)
 	python python/load_coe_gen.py
 
 flash: $(OBJECTS)
-	$(LD) $(LDFLAGS) -T rom.ld $(OBJECTS) -o rom
-	$(OBJCOPY) -O binary rom rom.bin
-	$(OBJDUMP) -d rom > rom.txt
+	$(LD) $(LDFLAGS) -T rom.ld $(OBJECTS) -o $(ROM)
+	$(OBJCOPY) -O binary $(ROM) $(ROM_BIN)
+	$(OBJDUMP) -d $(ROM) > $(ROM).txt
 	echo $(ISE_CMD) | $(ISE) $(ISE_FLAGS)
 
 qemu:
