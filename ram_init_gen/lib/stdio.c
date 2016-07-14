@@ -4,8 +4,8 @@
 #define WIDTH 160
 #define SCROLL_SIZE  20320 // WIDTH * (HEIGHT - 1)
 
-int curr_line = 0;
-int curr_col = 0;
+volatile int curr_line = 0;
+volatile int curr_col = 0;
 
 // Record all characters in text buffer in favor of scrolling.
 // 160 * 128 = 20KB

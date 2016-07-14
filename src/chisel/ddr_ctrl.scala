@@ -39,7 +39,7 @@ class DDRControlModule extends Module {
   val state = Reg(init = idle)
   val counter = Reg(init = UInt(0, 6))
   val buffer = Reg(init = UInt(0, 256))
-  val buffer_old = Reg(init = UInt(0, 256))
+  val buffer_old = Reg(init = UInt(0, 128))
 
   val ram_addr_old = Reg(init = UInt(0, 22))
   val ram_write_old = Reg(init = UInt(0, 1))

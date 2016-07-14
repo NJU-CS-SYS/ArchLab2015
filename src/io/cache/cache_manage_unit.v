@@ -23,7 +23,7 @@
 
 module cache_manage_unit #(
     parameter OFFSET_WIDTH = 3,                                         // Block address(offset) width
-    parameter INDEX_WIDTH  = 7,                                         // Cache line(group) index width
+    parameter INDEX_WIDTH  = 6,                                         // Cache line(group) index width
     parameter ADDR_WIDTH   = 30,                                        // Total address width
     parameter DATA_WIDTH   = 32,                                        // Word size in bit
     // Local parameters
@@ -193,7 +193,7 @@ cache_control cctrl (
 
 
 // Instruction Cache
-cache_oneline #(OFFSET_WIDTH,BLOCK_SIZE,INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) ic(
+cache_2ways #(OFFSET_WIDTH,BLOCK_SIZE,INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) ic(
     .clk           ( clk             ),
     .rst           ( rst             ),
     .enable        ( enable_to_ic    ),
@@ -215,7 +215,7 @@ cache_oneline #(OFFSET_WIDTH,BLOCK_SIZE,INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) ic(
 );
 
 // Data Cache
-cache_oneline #(OFFSET_WIDTH,BLOCK_SIZE,INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) dc(
+cache_2ways #(OFFSET_WIDTH,BLOCK_SIZE,INDEX_WIDTH,CACHE_DEPTH,TAG_WIDTH) dc(
     .clk           ( clk             ),
     .rst           ( rst             ),
     .enable        ( enable_to_dc    ),
