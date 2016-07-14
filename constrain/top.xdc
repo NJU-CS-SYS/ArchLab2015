@@ -139,53 +139,6 @@ set_property IOSTANDARD LVCMOS33 [get_ports {flash_dq[3]}]
 set_property PACKAGE_PIN L13 [get_ports flash_s]
 set_property IOSTANDARD LVCMOS33 [get_ports flash_s]
 
-
-create_debug_core u_ila_0_0 ila
-set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0_0]
-set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0_0]
-set_property C_ADV_TRIGGER false [get_debug_cores u_ila_0_0]
-set_property C_DATA_DEPTH 8192 [get_debug_cores u_ila_0_0]
-set_property C_EN_STRG_QUAL false [get_debug_cores u_ila_0_0]
-set_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_0_0]
-set_property C_TRIGIN_EN false [get_debug_cores u_ila_0_0]
-set_property C_TRIGOUT_EN false [get_debug_cores u_ila_0_0]
-set_property port_width 1 [get_debug_ports u_ila_0_0/clk]
-connect_debug_port u_ila_0_0/clk [get_nets [list clk_BUFG]]
-set_property port_width 32 [get_debug_ports u_ila_0_0/probe0]
-connect_debug_port u_ila_0_0/probe0 [get_nets [list {inst_ci/instr_data_out[0]} {inst_ci/instr_data_out[1]} {inst_ci/instr_data_out[2]} {inst_ci/instr_data_out[3]} {inst_ci/instr_data_out[4]} {inst_ci/instr_data_out[5]} {inst_ci/instr_data_out[6]} {inst_ci/instr_data_out[7]} {inst_ci/instr_data_out[8]} {inst_ci/instr_data_out[9]} {inst_ci/instr_data_out[10]} {inst_ci/instr_data_out[11]} {inst_ci/instr_data_out[12]} {inst_ci/instr_data_out[13]} {inst_ci/instr_data_out[14]} {inst_ci/instr_data_out[15]} {inst_ci/instr_data_out[16]} {inst_ci/instr_data_out[17]} {inst_ci/instr_data_out[18]} {inst_ci/instr_data_out[19]} {inst_ci/instr_data_out[20]} {inst_ci/instr_data_out[21]} {inst_ci/instr_data_out[22]} {inst_ci/instr_data_out[23]} {inst_ci/instr_data_out[24]} {inst_ci/instr_data_out[25]} {inst_ci/instr_data_out[26]} {inst_ci/instr_data_out[27]} {inst_ci/instr_data_out[28]} {inst_ci/instr_data_out[29]} {inst_ci/instr_data_out[30]} {inst_ci/instr_data_out[31]}]]
-create_debug_core u_ila_1 ila
-set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_1]
-set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_1]
-set_property C_ADV_TRIGGER false [get_debug_cores u_ila_1]
-set_property C_DATA_DEPTH 8192 [get_debug_cores u_ila_1]
-set_property C_EN_STRG_QUAL false [get_debug_cores u_ila_1]
-set_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_1]
-set_property C_TRIGIN_EN false [get_debug_cores u_ila_1]
-set_property C_TRIGOUT_EN false [get_debug_cores u_ila_1]
-set_property port_width 1 [get_debug_ports u_ila_1/clk]
-connect_debug_port u_ila_1/clk [get_nets [list inst_ci/ddr_ctrl_0/m70/u_mig_7series_0_mig/u_ddr2_infrastructure/CLK]]
-set_property port_width 1 [get_debug_ports u_ila_1/probe0]
-connect_debug_port u_ila_1/probe0 [get_nets [list clk]]
-create_debug_port u_ila_0_0 probe
-set_property port_width 32 [get_debug_ports u_ila_0_0/probe1]
-connect_debug_port u_ila_0_0/probe1 [get_nets [list {inst_ci/dmem_data_out[0]} {inst_ci/dmem_data_out[1]} {inst_ci/dmem_data_out[2]} {inst_ci/dmem_data_out[3]} {inst_ci/dmem_data_out[4]} {inst_ci/dmem_data_out[5]} {inst_ci/dmem_data_out[6]} {inst_ci/dmem_data_out[7]} {inst_ci/dmem_data_out[8]} {inst_ci/dmem_data_out[9]} {inst_ci/dmem_data_out[10]} {inst_ci/dmem_data_out[11]} {inst_ci/dmem_data_out[12]} {inst_ci/dmem_data_out[13]} {inst_ci/dmem_data_out[14]} {inst_ci/dmem_data_out[15]} {inst_ci/dmem_data_out[16]} {inst_ci/dmem_data_out[17]} {inst_ci/dmem_data_out[18]} {inst_ci/dmem_data_out[19]} {inst_ci/dmem_data_out[20]} {inst_ci/dmem_data_out[21]} {inst_ci/dmem_data_out[22]} {inst_ci/dmem_data_out[23]} {inst_ci/dmem_data_out[24]} {inst_ci/dmem_data_out[25]} {inst_ci/dmem_data_out[26]} {inst_ci/dmem_data_out[27]} {inst_ci/dmem_data_out[28]} {inst_ci/dmem_data_out[29]} {inst_ci/dmem_data_out[30]} {inst_ci/dmem_data_out[31]}]]
-create_debug_port u_ila_0_0 probe
-set_property port_width 32 [get_debug_ports u_ila_0_0/probe2]
-connect_debug_port u_ila_0_0/probe2 [get_nets [list {mem_alu_res[0]} {mem_alu_res[1]} {mem_alu_res[2]} {mem_alu_res[3]} {mem_alu_res[4]} {mem_alu_res[5]} {mem_alu_res[6]} {mem_alu_res[7]} {mem_alu_res[8]} {mem_alu_res[9]} {mem_alu_res[10]} {mem_alu_res[11]} {mem_alu_res[12]} {mem_alu_res[13]} {mem_alu_res[14]} {mem_alu_res[15]} {mem_alu_res[16]} {mem_alu_res[17]} {mem_alu_res[18]} {mem_alu_res[19]} {mem_alu_res[20]} {mem_alu_res[21]} {mem_alu_res[22]} {mem_alu_res[23]} {mem_alu_res[24]} {mem_alu_res[25]} {mem_alu_res[26]} {mem_alu_res[27]} {mem_alu_res[28]} {mem_alu_res[29]} {mem_alu_res[30]} {mem_alu_res[31]}]]
-create_debug_port u_ila_0_0 probe
-set_property port_width 32 [get_debug_ports u_ila_0_0/probe3]
-connect_debug_port u_ila_0_0/probe3 [get_nets [list {mem_pc[0]} {mem_pc[1]} {mem_pc[2]} {mem_pc[3]} {mem_pc[4]} {mem_pc[5]} {mem_pc[6]} {mem_pc[7]} {mem_pc[8]} {mem_pc[9]} {mem_pc[10]} {mem_pc[11]} {mem_pc[12]} {mem_pc[13]} {mem_pc[14]} {mem_pc[15]} {mem_pc[16]} {mem_pc[17]} {mem_pc[18]} {mem_pc[19]} {mem_pc[20]} {mem_pc[21]} {mem_pc[22]} {mem_pc[23]} {mem_pc[24]} {mem_pc[25]} {mem_pc[26]} {mem_pc[27]} {mem_pc[28]} {mem_pc[29]} {mem_pc[30]} {mem_pc[31]}]]
-create_debug_port u_ila_0_0 probe
-set_property port_width 32 [get_debug_ports u_ila_0_0/probe4]
-connect_debug_port u_ila_0_0/probe4 [get_nets [list {mem_data[0]} {mem_data[1]} {mem_data[2]} {mem_data[3]} {mem_data[4]} {mem_data[5]} {mem_data[6]} {mem_data[7]} {mem_data[8]} {mem_data[9]} {mem_data[10]} {mem_data[11]} {mem_data[12]} {mem_data[13]} {mem_data[14]} {mem_data[15]} {mem_data[16]} {mem_data[17]} {mem_data[18]} {mem_data[19]} {mem_data[20]} {mem_data[21]} {mem_data[22]} {mem_data[23]} {mem_data[24]} {mem_data[25]} {mem_data[26]} {mem_data[27]} {mem_data[28]} {mem_data[29]} {mem_data[30]} {mem_data[31]}]]
-create_debug_port u_ila_0_0 probe
-set_property port_width 1 [get_debug_ports u_ila_0_0/probe5]
-connect_debug_port u_ila_0_0/probe5 [get_nets [list inst_ci/kb_cpu_read]]
-set_property C_CLK_INPUT_FREQ_HZ 300000000 [get_debug_cores dbg_hub]
-set_property C_ENABLE_CLK_DIVIDER false [get_debug_cores dbg_hub]
-set_property C_USER_SCAN_CHAIN 1 [get_debug_cores dbg_hub]
-connect_debug_port dbg_hub/clk [get_nets clk_BUFG]
-
 set_property -dict {PACKAGE_PIN T8 IOSTANDARD LVCMOS18} [get_ports {CLK_SEL[0]}]
 set_property -dict {PACKAGE_PIN U8 IOSTANDARD LVCMOS18} [get_ports {CLK_SEL[1]}]
 
