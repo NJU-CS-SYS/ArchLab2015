@@ -52,7 +52,7 @@ always @(rst or prev or go or line0_valid or line0_dirty or line1_valid or line1
         else begin
             if(line0_valid && line1_valid)begin // both valid
                 if(!line0_dirty && !line1_dirty) begin // both no dirty
-                    v = 0;
+                    v = ~prev;
                 end
                 else begin
                     if(line0_dirty && line1_dirty)begin //both dirty

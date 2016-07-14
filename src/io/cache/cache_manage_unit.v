@@ -138,7 +138,7 @@ assign ic_data_out = word_from_ic;
 assign dc_data_wb  = block_from_dc;
 assign word_to_ic  = 0;  // I-cache 不需要来自 CPU 的写操作
 assign word_to_dc  = data_from_reg;
-assign block_to_ic = block_from_ram;
+assign block_to_ic = (loading_ic && hit_from_dc) ? block_from_dc : block_from_ram;
 assign block_to_dc = block_from_ram;
 
 wire hit_from_ic, valid_from_ic;
@@ -257,7 +257,7 @@ always @(posedge clk) begin
             // 如果 I-cache 缺失的数据在 D-cache 中已经存在并被载入，
             // 那么就不需要等待存储器准备好，而尽早地结束阻塞状态。
             // 其他情况下，ram_ready 至少对于 counter 的更新是必要的。
-            if(ram_ready || (loading_ic && hit_from_ic)) begin
+            if(ram_ready || (loading_ic && hit_from_dc)) begin
                 status <= status_next;
                 counter <= counter_next;
             end
