@@ -140,7 +140,6 @@ set_property PACKAGE_PIN L13 [get_ports flash_s]
 set_property IOSTANDARD LVCMOS33 [get_ports flash_s]
 
 
-
 create_debug_core u_ila_0_0 ila
 set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0_0]
 set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0_0]
@@ -186,3 +185,11 @@ set_property C_CLK_INPUT_FREQ_HZ 300000000 [get_debug_cores dbg_hub]
 set_property C_ENABLE_CLK_DIVIDER false [get_debug_cores dbg_hub]
 set_property C_USER_SCAN_CHAIN 1 [get_debug_cores dbg_hub]
 connect_debug_port dbg_hub/clk [get_nets clk_BUFG]
+
+set_property -dict {PACKAGE_PIN T8 IOSTANDARD LVCMOS18} [get_ports {CLK_SEL[0]}]
+set_property -dict {PACKAGE_PIN U8 IOSTANDARD LVCMOS18} [get_ports {CLK_SEL[1]}]
+
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets BP_SAMPLER_IBUF]
+set_property -dict {PACKAGE_PIN M18 IOSTANDARD LVCMOS33} [get_ports BP_SAMPLER]
+set_property -dict {PACKAGE_PIN U11 IOSTANDARD LVCMOS33} [get_ports BP_VALID]
+

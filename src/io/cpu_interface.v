@@ -274,6 +274,7 @@ always @ (posedge clk_pipeline) begin
 end
 
 wire flash_stall = (flash_reading && ~read_finished) || flash_initiating;
+reg [3:0] dc_wen;
 
 always @ (*) begin
     // data R/W redirect
@@ -388,6 +389,13 @@ always @ (*) begin
         dc_read_in    = dmem_read_in;
         dc_write_in   = dmem_write_in;
         dmem_data_out = dc_data_out;
+        case (dmem_byte_w_en)
+            4'b0001: dc_wen = 4'b1000;
+            4'b0010: dc_wen = 4'b0100;
+            4'b0100: dc_wen = 4'b0010;
+            4'b1000: dc_wen = 4'b0001;
+            default: dc_wen = 4'b1111;
+        endcase
     end
 
     // instruction fetch redirect
@@ -432,7 +440,7 @@ cache_manage_unit u_cm_0 (
     .ic_read_in      ( ic_read_in           ),
     .dc_read_in      ( dc_read_in           ),
     .dc_write_in     ( dc_write_in          ),
-    .dc_byte_w_en_in ( dmem_byte_w_en       ),
+    .dc_byte_w_en_in ( dc_wen               ),
     .ic_addr         ( ic_addr              ),
     .dc_addr         ( dmem_addr            ),
     .data_from_reg   ( data_from_reg        ),
