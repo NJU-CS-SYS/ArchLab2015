@@ -11,7 +11,6 @@
 #define PROG_MEM_END     0x00100000
 #define PROG_BSS_END     0x00600000
 #define PROG_FLASH_BEGIN 0xb0000000
-#define PROG_FLASH_CHECK_BEGIN 0xb0040000
 
 #define _S(x) # x
 #define S(x) _S(x)

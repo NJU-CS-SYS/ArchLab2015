@@ -28,10 +28,10 @@ ISE = vivado
 ISE_FLAGS = -nojournal -nolog -mode tcl
 ISE_CMD = "write_cfgmem -force -format mcs -interface spix4 -size 16 -loaddata \"up 0x0 $(ROM_BIN)\" -file main.mcs"
 
-
+OBJ_DIR = obj
 CSRC = $(shell find -L . -name "*.c")
 SSRC = $(shell find -L . -name "*.S")
-OBJECTS = $(SSRC:.S=.o) $(CSRC:.c=.o)
+OBJECTS = $(SSRC:%.S=$(OBJ_DIR)/%.o) $(CSRC:%.c=$(OBJ_DIR)/%.o)
 DOT_D = $(SSRC:.S=.d) $(CSRC:.c=.d)
 ASMS = $(CSRC:.c=.S)
 
@@ -63,6 +63,11 @@ qemu:
 	qemu-mipsel-static -g 1234 qemu.bin &
 	gdb-multiarch qemu.bin -ex "set arch mips" -ex "set endian little" \
 		-ex "target remote :1234" -ex "disp /i \$$pc"
+
+# Common rule
+$(OBJ_DIR)/%.o: %.[cS]
+	@mkdir -p `dirname $@`
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	-rm -f boot *.bin $(DOT_D) $(OBJECTS) main.c *.txt *.prm 2> /dev/null

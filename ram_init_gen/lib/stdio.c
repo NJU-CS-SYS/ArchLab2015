@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#define HEIGHT 131
-#define WIDTH 210
+#define HEIGHT 128
+#define WIDTH 160
 #define SCROLL_SIZE  (HEIGHT * WIDTH)// WIDTH * (HEIGHT - 1)
 
 int curr_line = 0;
