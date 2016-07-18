@@ -380,6 +380,8 @@ always @ (*) begin
                 4'b0010: loader_wen = 4'b0100;
                 4'b0100: loader_wen = 4'b0010;
                 4'b1000: loader_wen = 4'b0001;
+                4'b0011: loader_wen = 4'b1100;
+                4'b1100: loader_wen = 4'b0011;
                 default: loader_wen = 4'b1111;
             endcase
         end
@@ -395,6 +397,8 @@ always @ (*) begin
             4'b0010: dc_wen = 4'b0100;
             4'b0100: dc_wen = 4'b0010;
             4'b1000: dc_wen = 4'b0001;
+            4'b0011: dc_wen = 4'b1100;
+            4'b1100: dc_wen = 4'b0011;
             default: dc_wen = 4'b1111;
         endcase
     end
