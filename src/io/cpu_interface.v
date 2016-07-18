@@ -606,6 +606,18 @@ Keyboard kb (
     .keycode  ( kb_keycode   )
 );
 
+//////////////////////////////
+//
+// NEMU INTERFACE
+//
+//////////////////////////////
+nemu_interface nemu (
+    .clk  ( clk_pipeline  ),
+    .addr ( dmem_addr     ),
+    .data ( data_from_reg ),
+    .not_used ( not_used  )
+);
+
 assign vga_stall_2 = (vga_stall && (vga_stall_cnt <= `num_vga_wait_cycle + 2));
 
 assign mem_stall = cache_stall
