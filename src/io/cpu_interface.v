@@ -72,7 +72,6 @@ module cpu_interface(
     output cache_stall,
     output reg trap_stall,
     output [31:0] dbg_que_low,
-    output vga_stall_2,
 
     // VGA outputs
     output [3:0] VGA_R,
@@ -110,8 +109,6 @@ reg [29:0] ic_addr;
 
 reg ic_read_in, dc_read_in, dc_write_in;
 reg [3:0] loader_wen;  // accessing loader mapping area & writing request
-reg [14:0] vga_addr; // 2**15 is enough for vga mem
-reg [7:0] char_to_vga;
 
 // debug variables
 wire [127:0] data_from_mig;
@@ -164,28 +161,8 @@ wire [127:0] que_input = {
 
 assign dbg_que_low = que_input[31:0];
 
-// vga_wen is synchronized by pixel_clk to avoid race between wen, addr & char.
-// vga_stall is a combinational logic which just indicates the address to write
-// falls in text memory.
-// vga_stall_cnt is used to stall enough pixel cycles, whose value can be
-// considered simply as a
-// cycle counter as well as the following semantic meaning:
-//   0 - initial state, nothing happened
-//   1 - starting / during the 1st pixel cycle to write;
-//   2 - starting / during the 2nd pixel cycle to write;
-//   3 - writing finished and the counter will spin on this value to ensure that
-//       pipeline retrieves from stalling.
-reg vga_wen;
-reg vga_stall;
-reg [3:0] vga_stall_cnt;
 reg loader_en;
 // reg loaded;
-
-// As vga_stall is a combinational logic, the pipeline will stall immediately
-// while the vga_wen needs a posedge of pixel_clk to become active.
-// At that time, the address and char data are stable. `vga_stall_cnt < 3'
-// ensures that the pipeline will recover as soon as the writing finishes.
-`define num_vga_wait_cycle 5
 
 //==-----------------------------------==
 // Internal keyboard signal definitions.
@@ -193,33 +170,80 @@ reg loader_en;
 
 // Combinational logic to indicate whether the core is accessing
 // the keyboard queue. High if is accessing, while low not.
-(* mark_debug = "true" *) reg kb_cpu_read;
+reg kb_cpu_read;
 
 // Get the 8 bits keyboard scancode. It will be filled to 32 bits
 // word with leading zeros as the output.
 wire [7:0] kb_keycode;
 
+//==----------------------------------==
+// VGA Definitions
+//==----------------------------------==
+reg vga_wen;
+reg scroll_req;  // indicate the scroll request from cpu.
+reg [14:0] vga_addr; // 2**15 is enough for vga mem
+reg [7:0] char_to_vga;
 
-wire text_mem_clk = clk_to_ddr_pass;  // The clock driving text memory
+wire vga_fifo_full, vga_fifo_empty, vga_fifo_valid;
+wire [23:0] vga_request_in = { scroll_req, vga_addr, char_to_vga };
 
-always @ (posedge text_mem_clk) begin
-    if (!rst || !vga_stall) begin  // when reseted (low-active)
-              //  or not accessing vmem, keep this initial state
-        vga_wen <= 0;
-        vga_stall_cnt <= 0;
-    end
-    else if (vga_stall) begin
-        vga_stall_cnt <= vga_stall_cnt + 1;
-        if (vga_stall_cnt > `num_vga_wait_cycle) begin
-            // spin state, disabling write enable, allowing the pipeline to go
-            // on,and expecting the pipeline to reset the state.
-            vga_wen <= 0;
-        end
-        else begin
-            vga_wen <= 1;
-        end
-    end
-end
+wire [23:0] vga_request_out;
+wire        scroll_from_fifo    = vga_request_out[23] & vga_fifo_valid;
+wire [14:0] char_addr_from_fifo = vga_request_out[22-:15];
+wire [7:0]  char_from_fifo      = vga_request_out[0+:8];
+
+vga_request_fifo vga_fifo (
+    .full   ( vga_fifo_full     ),
+    .din    ( vga_request_in    ),
+    .wr_en  ( vga_wen           ),
+    .empty  ( vga_fifo_empty    ),
+    .valid  ( vga_fifo_valid    ),
+    .dout   ( vga_request_out   ),
+    .rd_en  ( 1                 ),
+    .wr_clk ( ~clk_pipeline     ),
+    .rd_clk ( clk_to_pixel_pass )
+);
+
+vga #(
+    .DATA_ADDR_WIDTH( 15 ),
+
+    // 148.50 MHz
+    .h_pol          ( 1  ),
+    .v_pol          ( 0  ),
+    .h_disp         (1920),
+    .h_front        ( 88 ),
+    .h_sync         ( 44 ),
+    .h_back         (148 ),
+    .v_disp         (1080),
+    .v_front        ( 4  ),
+    .v_sync         ( 5  ),
+    .v_back         ( 36 )
+
+    /*
+    .h_pol          ( 0  ),
+    .v_pol          ( 1  ),
+    .h_disp         (1680),
+    .h_front        (104 ),
+    .h_sync         (184 ),
+    .h_back         (288 ),
+    .v_disp         (1050),
+    .v_front        ( 1  ),
+    .v_sync         ( 3  ),
+    .v_back         ( 33 )
+    */
+) vga0 (
+    .RESET      ( rst                 ),
+    .DATA_ADDR  ( char_addr_from_fifo ),
+    .DATA_IN    ( char_from_fifo      ),
+    .scroll     ( scroll_from_fifo    ),
+    .WR_EN      ( vga_fifo_valid      ),
+    .pixel_clk  ( clk_to_pixel_pass   ),
+    .VGA_R      ( VGA_R               ),
+    .VGA_G      ( VGA_G               ),
+    .VGA_B      ( VGA_B               ),
+    .VGA_HS     ( VGA_HS              ),
+    .VGA_VS     ( VGA_VS              )
+);
 
 reg [23:0] flash_addr;
 wire [31:0] flash_data;
@@ -283,7 +307,6 @@ always @ (*) begin
     dc_read_in    = 0;
     dc_write_in   = 0;
     dmem_data_out = 0;
-    vga_stall     = 0;
     loader_wen    = 0;
     loader_en     = 0;
     trap_stall    = 0;
@@ -291,6 +314,8 @@ always @ (*) begin
     flash_addr = 0;
     flash_reading = 1'b0;
     dc_wen        = 0;
+    scroll_req    = 0;
+    vga_wen       = 0;
 
     if (dmem_addr[29:26] == 4'hb) begin
         if (dmem_read_in) begin
@@ -300,7 +325,10 @@ always @ (*) begin
         end
     end
     else if (dmem_addr[29:26] == 4'hc) begin // VMEM
-        vga_stall = dmem_write_in;
+        vga_wen = dmem_write_in;
+        if (dmem_addr[25-:4] == 4'hf) begin
+            scroll_req = dmem_write_in;
+        end
     end
     else if (dmem_addr[29:26] == 4'hd) begin // timer
         // TODO dmem_data_out = timer_data
@@ -527,42 +555,6 @@ loader_mem loader (         // use dual port Block RAM
     .web   ( 0                  )  // not used
 );
 
-vga #(
-    .DATA_ADDR_WIDTH( 15 ),
-
-    .h_disp         (1280),
-    .h_front        ( 48 ),
-    .h_sync         (112 ),
-    .h_back         (248 ),
-    .v_disp         (1024),
-    .v_front        ( 1  ),
-    .v_sync         ( 3  ),
-    .v_back         ( 38 )
-
-    /*
-    .h_disp         (1680),
-    .h_front        (104 ),
-    .h_sync         (184 ),
-    .h_back         (288 ),
-    .v_disp         (1050),
-    .v_front        ( 1  ),
-    .v_sync         ( 3  ),
-    .v_back         ( 33 )
-    */
-) vga0 (
-    .RESET      ( rst            ),
-    .DATA_ADDR  ( vga_addr[14:0] ),
-    .DATA_IN    ( char_to_vga    ),
-    .WR_EN      ( vga_wen        ),
-    .pixel_clk  ( clk_to_pixel_pass),
-    .cpu_clk    ( text_mem_clk   ),
-    .VGA_R      ( VGA_R          ),
-    .VGA_G      ( VGA_G          ),
-    .VGA_B      ( VGA_B          ),
-    .VGA_HS     ( VGA_HS         ),
-    .VGA_VS     ( VGA_VS         )
-);
-
 initial begin
     dbg_status <= 0;
     dbg_que_start <= 0;
@@ -618,10 +610,8 @@ nemu_interface nemu (
     .not_used ( not_used  )
 );
 
-assign vga_stall_2 = (vga_stall && (vga_stall_cnt <= `num_vga_wait_cycle + 2));
-
 assign mem_stall = cache_stall
-| vga_stall_2
+| (vga_wen & vga_fifo_full)
 | (kb_cpu_read & ~kb_ready)
 | trap_stall
 | flash_stall;

@@ -947,7 +947,7 @@ wire [127:0] data_to_mig;
 reg [31:0] part_of_buffer;
 wire [31:0] ci_dbg_status;
 wire clk_to_ddr_pass;
-wire clk_to_pipixel_pass;
+wire clk_to_pixel_pass;
 
 clock_control cc0(
     .clk_in1(clk_in1),
@@ -968,7 +968,6 @@ wire kb_ready;     // High if there are keycodes in the queue.
 
 wire flash_read_done;
 wire [5:0] flash_state;
-wire vga_stall;
 
 cpu_interface inst_ci  (
     // PS2
@@ -1022,10 +1021,10 @@ cpu_interface inst_ci  (
     .dbg_que_low       ( ci_dbg_status       ),
     .cache_stall       ( cache_stall         ),
     .trap_stall        ( trap_stall          ),
-    .vga_stall_2       ( vga_stall           ),
     .data_to_mig       ( data_to_mig         ),
     .buffer_of_ddrctrl ( buffer_of_ddrctrl   ),
     .addr_to_mig       ( addr_to_mig         ),
+
     // flash
     .flash_s(flash_s),
     .flash_c(flash_c),
@@ -1102,6 +1101,10 @@ assign led[7]  = break_point_hit;
 assign led[8]  = flash_initiating;
 assign led[9]  = flash_reading;
 assign led[10] = trap_stall;
-assign led[11] = vga_stall;
+assign led[11] = 0;
+assign led[12] = 0;
+assign led[13] = 0;
+assign led[14] = 0;
+assign led[15] = 0;
 
 endmodule

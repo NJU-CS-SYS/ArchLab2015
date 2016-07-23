@@ -1,15 +1,13 @@
 #include <stdio.h>
 
-#define HEIGHT 128
-#define WIDTH 160
-#define SCROLL_SIZE  (HEIGHT * WIDTH)// WIDTH * (HEIGHT - 1)
+#define HEIGHT 135
+#define WIDTH 240
+
+#define SCROLL *(volatile int *)(0xcf000000)
+#define SCROLL_ADDR ((char *)(VMEM + (HEIGHT - 1) * WIDTH))
 
 int curr_line = 0;
 int curr_col = 0;
-
-// Record all characters in text buffer in favor of scrolling.
-// 160 * 128 = 20KB
-static char scroll_buffer[WIDTH * HEIGHT];
 
 int npc_putc(char ch)
 {
@@ -18,39 +16,35 @@ int npc_putc(char ch)
     int local_line = curr_line;
     int local_col = curr_col;
 
-    if (local_line == HEIGHT) {
-        // No line for print, it is time to scroll ;-)
-        char *dst = VMEM;
-        char *buf = scroll_buffer;
-        char *src = scroll_buffer + WIDTH;
-        for (int i = 0; i < SCROLL_SIZE; i++) {
-            *dst++ = *src;
-            *buf++ = *src++;
-        }
-        for (int i = 0; i < WIDTH; i++) {
-            *dst++ = ' ';
-        }
-        local_line--;
-    }
-
-    char *ws_pos = VMEM + local_col;
-    for (int i = 0; i < local_line; i++) ws_pos += WIDTH;
-    char *bk_pos = scroll_buffer + (ws_pos - VMEM);
     if (ch == '\n') {
-        // Use space to mimic new line
-        while (local_col < WIDTH) {
-            *ws_pos++ = ' '; *bk_pos++ = ' ';
-            local_col++;
+        if (local_line >= HEIGHT - 1) {
+            SCROLL = 1;
+            local_line = HEIGHT - 1;
+            for (int i = 0; i < WIDTH; i++) SCROLL_ADDR[i] = ' ';
         }
+        else {
+            local_line++;
+        }
+        local_col = 0;
     }
     else {
-        *ws_pos = ch; *bk_pos = ch;
-        local_col++;
-    }
+        if (local_line == HEIGHT) {
+            // wrap into a new line.
+            SCROLL = 1;
+            local_line = HEIGHT - 1;
+            for (int i = 0; i < WIDTH; i++) SCROLL_ADDR[i] = ' ';
+        }
 
-    if (local_col == WIDTH) {
-        local_line++;
-        local_col = 0;
+        int offset = local_col + local_line * WIDTH;
+        char *ws_pos = VMEM + offset;
+
+        *ws_pos = ch;
+        local_col++;
+
+        if (local_col == WIDTH) {
+            local_line++;
+            local_col = 0;
+        }
     }
 
     curr_line = local_line;
