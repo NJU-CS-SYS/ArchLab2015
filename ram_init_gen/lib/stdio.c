@@ -8,6 +8,7 @@
 
 int curr_line = 0;
 int curr_col = 0;
+char *pos = (char *)VMEM;
 
 int npc_putc(char ch)
 {
@@ -21,9 +22,11 @@ int npc_putc(char ch)
             SCROLL = 1;
             local_line = HEIGHT - 1;
             for (int i = 0; i < WIDTH; i++) SCROLL_ADDR[i] = ' ';
+            pos = SCROLL_ADDR;
         }
         else {
             local_line++;
+            pos = pos + WIDTH - local_col;
         }
         local_col = 0;
     }
@@ -33,16 +36,16 @@ int npc_putc(char ch)
             SCROLL = 1;
             local_line = HEIGHT - 1;
             for (int i = 0; i < WIDTH; i++) SCROLL_ADDR[i] = ' ';
+            pos = SCROLL_ADDR;
         }
 
-        int offset = local_col + local_line * WIDTH;
-        char *ws_pos = VMEM + offset;
-
-        *ws_pos = ch;
+        *pos++ = ch;
         local_col++;
 
+        // non-scrolling common wrap
         if (local_col == WIDTH) {
             local_line++;
+            // pos is rightly at the begin of the next line.
             local_col = 0;
         }
     }
@@ -223,4 +226,5 @@ void npc_gets(char *buf)
             break;
         }
     }
+    *buf = '\0';
 }
