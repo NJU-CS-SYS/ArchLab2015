@@ -8,8 +8,7 @@ module clock_control(
     input manual_clk,
     output clk_to_ddr,
     output clk_to_pixel,
-    output reg ui_clk_used,
-    output reg sync_manual_clk
+    output reg ui_clk_used
 );
 
 ddr_clock_gen dcg(
@@ -25,6 +24,7 @@ parameter CLK_EX     = 2'b11;
 
 reg slow_clk;  // 2^22 times slower than ui_clk_from_ddr
 reg fast_clk;  // 2^2  times slower than ui_clk_from_ddr
+reg sync_manual_clk;
 reg [21:0] slow_clk_counter;
 reg [1:0] fast_clk_counter;
 

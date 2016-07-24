@@ -9,7 +9,7 @@
 `define PC_WIDTH 32
 `define INSTR_WIDTH 32
 `define PC_BUS 31:0
-`define JMP_BUS 31:0
+`define JMP_BUS 29:0
 `define REG_ADDR_BUS 4:0
 `define JMP_SLICE 25:0
 `define JMP_HEAD_SLICE 31:28

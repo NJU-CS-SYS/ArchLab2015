@@ -35,7 +35,6 @@ module exmem_reg(
     input [31:0] addr_target,
     input alu_lf,
     input alu_zf,
-    input alu_of,
     input [31:0] ex_res,
     input [4:0] real_rd_addr,
     input [2:0] idex_load_sel,

@@ -32,7 +32,7 @@ module ifid_reg(
         ifid_instr = `PC_WIDTH'd0;
     end
 
-    assign ifid_jump_addr = { ifid_pc[`JMP_HEAD_SLICE], ifid_instr[`JMP_SLICE], 2'b0 };
+    assign ifid_jump_addr = { ifid_pc[`JMP_HEAD_SLICE], ifid_instr[`JMP_SLICE] };
     assign ifid_rs_addr   = ifid_instr[`RS_SLICE];
     assign ifid_rt_addr   = ifid_instr[`RT_SLICE];
     assign ifid_rd_addr   = ifid_instr[`RD_SLICE];

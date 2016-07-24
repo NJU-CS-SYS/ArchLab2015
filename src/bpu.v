@@ -25,35 +25,26 @@
 
 module BPU (
     input clk,
-    input reset,
     input bpu_w_en,                    // 写使能, 驱动 bpu 进行状态更新
     input [`PC_BUS] current_pc,        // 当前用来查询下一条指令的PC
-    input [`PC_BUS] tag_pc,            // 用来获取标签的PC
-    input [`PC_BUS] next_pc,           // 标签PC对应的下一条执行指令的PC
+    input [`VALID_PC_BUS] tag_pc,            // 用来获取标签的PC
+    input [`VALID_PC_BUS] next_pc,           // 标签PC对应的下一条执行指令的PC
     output reg [`PC_BUS] predicted_pc  // 预测 PC
 );
 
 reg [`VALID_PC_BUS] bpu_pc [`INDEX_BUS]; // 存储预测pc
+reg [`VALID_PC_BUS] bpu_tag [`INDEX_BUS];
 reg bpu_valid [`INDEX_BUS];              // 存储有效位, 指示是否使用预测pc
 reg bpu_predict [`INDEX_BUS];            // 存储预测位, 指示预测pc是否可以修改
 
-integer i;
-initial begin
-    for (i = 0; i < `NR_SLOT; i = i + 1) begin
-        bpu_pc[i] = 0;
-        bpu_valid[i] = 0;
-        bpu_predict[i] = 0;
-    end
-end
-
-wire [`VALID_PC_BUS] valid_current_pc = current_pc[`VALID_SLICE];
-wire [`VALID_PC_BUS] valid_tag_pc = tag_pc[`VALID_SLICE];
+wire [`VALID_PC_BUS] valid_current_pc = current_pc;
+wire [`VALID_PC_BUS] valid_tag_pc = tag_pc;
 
 // 预测逻辑
 wire [`TAG_BUS] predict_tag = valid_current_pc[`TAG_BUS];
 
 always @(*) begin
-   if (bpu_valid[predict_tag] == 1'b1) begin
+   if (bpu_valid[predict_tag] == 1'b1 && bpu_tag[predict_tag] == valid_current_pc) begin
        predicted_pc = { bpu_pc[predict_tag], 2'd0 };
    end
    else begin
@@ -64,25 +55,19 @@ end
 // 更新逻辑
 wire [`TAG_BUS] update_tag = valid_tag_pc[`TAG_BUS];
 wire update_predict = bpu_predict[update_tag];
-always @(negedge clk or posedge reset) begin
-    if (reset) begin
-        for (i = 0; i < `NR_SLOT; i = i + 1) begin
-            bpu_pc[i] <= 0;
-            bpu_valid[i] <= 0;
-            bpu_predict[i] <= 0;
-        end
-    end
-    else if (bpu_w_en) begin
+always @(negedge clk) begin
+    if (bpu_w_en) begin
         // 有效位有效后一直有效
         bpu_valid[update_tag] <= 1'b1;
         // 预测位为 0 时立即更新, 之后容忍一次错误
         if (update_predict == 1'b0) begin
-            bpu_pc[update_tag] <= next_pc[`VALID_SLICE];
+            bpu_pc[update_tag] <= next_pc;
+            bpu_tag[update_tag] <=valid_tag_pc;
         end
         // 翻转预测位, 因为只有一位, 相当于加一
         bpu_predict[update_tag] <= ~update_predict;
     end
-    else begin
+    else if (bpu_tag[update_tag] == valid_tag_pc) begin
         // 预测正确的情况, 将预测位维持在 1, 只有有效的slot的预测位才采取这一行为
         bpu_predict[update_tag] <= 1'b1 & bpu_valid[update_tag];
     end

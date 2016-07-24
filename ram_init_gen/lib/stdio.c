@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#define HEIGHT 135
-#define WIDTH 240
+#define HEIGHT 128
+#define WIDTH 160
 
 #define SCROLL *(volatile int *)(0xcf000000)
 #define SCROLL_ADDR ((char *)(VMEM + (HEIGHT - 1) * WIDTH))

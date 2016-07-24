@@ -297,11 +297,10 @@ wire [`PC_BUS] if_pc_4;
 BPU bpu (
     // Input
     .clk          ( clk              ),
-    .reset        ( reset            ),
     .bpu_w_en     ( bpu_w_en         ),
     .current_pc   ( if_pc_4          ),  // When reseted, ifid is flushed, and ifid_pc_4 is zero.
-    .tag_pc       ( mem_pc_4         ),
-    .next_pc      ( mem_final_target ),
+    .tag_pc       ( mem_pc_4[31:2]   ),
+    .next_pc      ( mem_final_target[31:2] ),
     // Output
     .predicted_pc ( predicted_pc     )
 );
@@ -341,7 +340,7 @@ PC PC (
 //  IFID register
 ////////////////////////////////////////////////////////////////////////////
 
-assign jmp = ifid_jump_addr;
+assign jmp = { ifid_jump_addr, 2'b0 };
 assign jr = id_rs_out;
 assign if_pc_4 = (reset) ? 0 : pc_out + 4;  // Start from zero
 
@@ -735,7 +734,6 @@ exmem_reg  inst_exmem_reg (
     .addr_target           ( branch_addr         ),
     .alu_lf                ( ex_less             ),
     .alu_zf                ( ex_zero             ),
-    .alu_of                ( ex_overflow         ),
     .ex_res                ( exec_result         ),
     .real_rd_addr          ( ex_rd_addr          ),
     .idex_load_sel         ( ex_load_sel         ),
@@ -956,8 +954,7 @@ clock_control cc0(
     .manual_clk(manual_clk),
     .clk_to_ddr(clk_to_ddr_pass),
     .clk_to_pixel(clk_to_pixel_pass),
-    .ui_clk_used(clk),
-    .sync_manual_clk(sync_manual_clk)
+    .ui_clk_used(clk)
 );
 
 //==--------------------------------==
@@ -1010,7 +1007,6 @@ cpu_interface inst_ci  (
     .clk_pipeline      ( clk                 ),
 
     .ui_clk_from_ddr   ( ui_clk_from_ddr     ),
-    .sync_manual_clk   ( sync_manual_clk     ),
     .instr_data_out    ( ic_data_out         ),
     .dmem_data_out     ( mem_data            ),
     .mem_stall         ( mem_stall           ),

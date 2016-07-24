@@ -45,11 +45,10 @@ module cpu_interface(
     input clk_to_ddr_pass,
     input clk_to_pixel_pass,
     input clk_pipeline,
-    input sync_manual_clk,
 
     output ui_clk_from_ddr,
-    (* mark_debug = "true" *)output reg [31:0] instr_data_out,
-    (* mark_debug = "true" *)output reg [31:0] dmem_data_out,
+    (* mark_debug = "true" *) output reg [31:0] instr_data_out,
+    (* mark_debug = "true" *) output reg [31:0] dmem_data_out,
     output mem_stall,
 
     // ddr Outputs
@@ -207,17 +206,17 @@ vga_request_fifo vga_fifo (
 vga #(
     .DATA_ADDR_WIDTH( 15 ),
 
-    // 148.50 MHz
+    // 108.0 MHz
     .h_pol          ( 1  ),
-    .v_pol          ( 0  ),
-    .h_disp         (1920),
-    .h_front        ( 88 ),
-    .h_sync         ( 44 ),
-    .h_back         (148 ),
-    .v_disp         (1080),
-    .v_front        ( 4  ),
-    .v_sync         ( 5  ),
-    .v_back         ( 36 )
+    .v_pol          ( 1  ),
+    .h_disp         (1280),
+    .h_front        ( 48 ),
+    .h_sync         (112 ),
+    .h_back         (248 ),
+    .v_disp         (1024),
+    .v_front        ( 1  ),
+    .v_sync         ( 3  ),
+    .v_back         ( 38 )
 
     /*
     .h_pol          ( 0  ),
